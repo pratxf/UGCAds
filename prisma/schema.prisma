@@ -1,0 +1,347 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ─────────────────────────────────────────────────────
+//  USER
+// ─────────────────────────────────────────────────────
+
+model User {
+  id            String         @id @default(cuid())
+  supabaseId    String         @unique // Supabase Auth UID
+  email         String         @unique
+  name          String?
+  avatar        String?
+  role          Role           @default(USER)
+  credits       Int            @default(0) // tenths: 10 = 1.0 credit, 1 = 0.1 credit
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  subscription  Subscription?
+  generations   Generation[]
+  transactions  Transaction[]
+
+  @@index([supabaseId])
+  @@index([email])
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+// ─────────────────────────────────────────────────────
+//  SUBSCRIPTION
+// ─────────────────────────────────────────────────────
+
+model Subscription {
+  id                 String             @id @default(cuid())
+  userId             String             @unique
+  user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan               Plan
+  status             SubscriptionStatus @default(ACTIVE)
+  billingCycle       BillingCycle       @default(MONTHLY)
+  monthlyCredits     Int                // tenths: 10 = 1 credit
+  currentPeriodStart DateTime           @default(now())
+  currentPeriodEnd   DateTime
+  cancelAtPeriodEnd  Boolean            @default(false)
+
+  // payment provider tracking
+  provider           PaymentProvider
+  providerSubId      String?            // external subscription id
+  providerCustomerId String?            // external customer id
+
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  @@index([userId])
+  @@index([providerSubId])
+}
+
+enum Plan {
+  BASIC
+  CREATOR
+  AGENCY
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELED
+  PAST_DUE
+  EXPIRED
+}
+
+enum BillingCycle {
+  MONTHLY
+  YEARLY
+}
+
+enum PaymentProvider {
+  CASHFREE
+  DODO
+  RAZORPAY
+}
+
+// ─────────────────────────────────────────────────────
+//  GENERATION
+// ─────────────────────────────────────────────────────
+
+model Generation {
+  id            String         @id @default(cuid())
+  userId        String
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type          GenType
+  status        GenStatus      @default(PENDING)
+
+  // inputs
+  characterId    String?        // Avatar.id (library) — null when custom
+  characterImage String?        // resolved character image URL (snapshot at creation)
+  isCustomAvatar Boolean        @default(false)
+  customAvatarUrl String?       // R2 URL of user-uploaded avatar
+  productImage   String?        // R2 url for uploaded product
+  script         String?
+  voiceId        String?        // ElevenLabs voice ID (Voice.voiceId)
+  aspectRatio    AspectRatio    @default(NINE_SIXTEEN)
+  quality        Quality        @default(HD)
+  customPrompt   String?        // Product Photoshoot custom prompt (when no template used)
+  aiModel        String?        @default("flux-kontext")  // "flux-kontext" | "seedream"
+
+  // Try-On
+  tryonModelId    String?
+  garmentImageUrl String?
+  garmentCategory String?       // "tops" | "bottoms" | "full-body" | "outerwear"
+
+  // pipeline outputs (each step uploads to R2)
+  compositeImageUrl String?    // Flux Kontext output (product ads only)
+  audioUrl      String?        // ElevenLabs voiceover
+  rawVideoUrl   String?        // Kling 2.5 silent video
+  finalVideoUrl String?        // LatentSync lip-synced video
+  thumbnailUrl  String?
+
+  // pipeline tracking
+  provider      AIProvider     @default(FAL)
+  errorMessage  String?
+
+  creditsUsed   Int            @default(200) // tenths (20 display credits)
+  creditCost    Int            @default(200) // alias kept in sync; tenths
+  metadata      Json?
+
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  completedAt   DateTime?
+
+  @@index([userId])
+  @@index([status])
+}
+
+enum GenType {
+  UGC_AD
+  PRODUCT_AD
+  MOCKUP              // deprecated alias for PRODUCT_PHOTOSHOOT
+  PRODUCT_PHOTOSHOOT
+  TRYON
+}
+
+enum GenStatus {
+  PENDING
+  GENERATING_AUDIO
+  GENERATING_SCENE
+  GENERATING_VIDEO
+  SYNCING_LIPS
+  UPSCALING
+  UPLOADING_GARMENT
+  GENERATING_TRYON
+  COMPLETED
+  FAILED
+}
+
+enum AspectRatio {
+  NINE_SIXTEEN  // 9:16 vertical
+  SIXTEEN_NINE  // 16:9 horizontal
+  ONE_ONE       // 1:1 square
+  PORTRAIT_45   // 4:5
+}
+
+enum Quality {
+  SD     // 720p
+  HD     // 1080p
+  UHD    // 4K
+}
+
+enum AIProvider {
+  FAL
+}
+
+// ─────────────────────────────────────────────────────
+//  TRANSACTION (credits / payments)
+// ─────────────────────────────────────────────────────
+
+model Transaction {
+  id              String           @id @default(cuid())
+  userId          String
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type            TransactionType
+  status          TransactionStatus @default(PENDING)
+
+  credits         Int              // tenths. positive = added, negative = consumed
+  amountCents     Int              @default(0) // money paid (0 for refunds/usage)
+  currency        String           @default("USD")
+
+  // payment provider info (null for usage/refund)
+  provider        PaymentProvider?
+  providerTxnId   String?
+  description     String?
+  metadata        Json?
+
+  createdAt       DateTime         @default(now())
+
+  @@index([userId])
+  @@index([providerTxnId])
+}
+
+enum TransactionType {
+  SUBSCRIPTION    // monthly/yearly plan
+  TOPUP           // extra credit pack purchase
+  USAGE           // generation cost
+  REFUND          // failed generation refund
+  RENEWAL         // monthly credit grant
+}
+
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+// ─────────────────────────────────────────────────────
+//  ADMIN SETTINGS (announcement bar, etc.)
+// ─────────────────────────────────────────────────────
+
+model AppSetting {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt
+}
+
+// ─────────────────────────────────────────────────────
+//  AVATAR LIBRARY (admin-managed)
+// ─────────────────────────────────────────────────────
+
+model AvatarCategory {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  slug      String   @unique
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+
+  avatars   Avatar[]
+}
+
+model Avatar {
+  id         String          @id @default(cuid())
+  name       String
+  imageUrl   String
+  categoryId String?
+  category   AvatarCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  sortOrder  Int             @default(0)
+  active     Boolean         @default(true)
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+
+  @@index([categoryId])
+  @@index([active])
+}
+
+// ─────────────────────────────────────────────────────
+//  PHOTOSHOOT TEMPLATE LIBRARY (admin-managed)
+// ─────────────────────────────────────────────────────
+
+model PhotoshootCategory {
+  id        String              @id @default(cuid())
+  name      String              @unique
+  slug      String              @unique
+  sortOrder Int                 @default(0)
+  createdAt DateTime            @default(now())
+
+  templates PhotoshootTemplate[]
+}
+
+// ─────────────────────────────────────────────────────
+//  VOICE LIBRARY (ElevenLabs IDs + R2 preview audio)
+// ─────────────────────────────────────────────────────
+
+// ─────────────────────────────────────────────────────
+//  TRY-ON BASE MODELS (admin-managed)
+// ─────────────────────────────────────────────────────
+
+// ─────────────────────────────────────────────────────
+//  PRODUCT-AD AVATAR LIBRARY (specifically for Product Ads —
+//  models posed with empty hands ready to hold a product)
+// ─────────────────────────────────────────────────────
+
+model ProductAdAvatar {
+  id          String   @id @default(cuid())
+  name        String
+  gender      String   // "female" | "male"
+  nationality String   @default("american") // "american" | "british"
+  imageUrl    String   @default("")
+  isActive    Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  @@index([gender])
+  @@index([isActive])
+}
+
+model TryonModel {
+  id         String   @id @default(cuid())
+  name       String
+  gender     String   // "female" | "male"
+  bodyType   String   // "slim" | "athletic" | "curvy" | "plus" | "average" | "muscular"
+  ethnicity  String
+  imageUrl   String   @default("")
+  isActive   Boolean  @default(true)
+  sortOrder  Int      @default(0)
+  createdAt  DateTime @default(now())
+
+  @@index([gender])
+  @@index([isActive])
+}
+
+model Voice {
+  id          String   @id @default(cuid())
+  name        String
+  gender      String   // "male" | "female"
+  voiceId     String   @unique // ElevenLabs voice ID
+  previewUrl  String   // R2 URL of preview audio
+  descriptor  String   // "Friendly & warm"
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  @@index([gender])
+  @@index([isActive])
+}
+
+model PhotoshootTemplate {
+  id         String              @id @default(cuid())
+  name       String
+  imageUrl   String              // preview image shown to user
+  prompt     String              // server-only; never sent to client
+  categoryId String?
+  category   PhotoshootCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  sortOrder  Int                 @default(0)
+  active     Boolean             @default(true)
+  createdAt  DateTime            @default(now())
+  updatedAt  DateTime            @updatedAt
+
+  @@index([categoryId])
+  @@index([active])
+}
