@@ -21,7 +21,7 @@ import { cn } from "@/lib/utils";
 
 const faqs = [
   { q: "How do credits work?", a: "Each ad generation uses credits from your plan. UGC ads, Product ads, and Product Photoshoots all cost 2 credits each. Credits reset monthly." },
-  { q: "What formats are supported?", a: "Videos are delivered in MP4 at up to 1080p. Choose between 9:16 (vertical) and 16:9 (horizontal)." },
+  { q: "What formats are supported?", a: "Videos are delivered in MP4. Choose 5 or 10 seconds, with 9:16, 1:1, and 16:9 aspect ratios." },
   { q: "Can I use ads commercially?", a: "Yes! All generated content is fully licensed for commercial use across all platforms." },
   { q: "How long does generation take?", a: "UGC and Product ads take 2 to 3 minutes. Product Photoshoots are faster at around 30 seconds." },
   { q: "Can I get a refund?", a: "Failed generations are automatically refunded. For other requests, contact our support team." },

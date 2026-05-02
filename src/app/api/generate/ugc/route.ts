@@ -2,19 +2,25 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { inngest } from "@/lib/inngest";
+import { generateKieVideo, type VideoModel } from "@/lib/kie";
 import { COSTS_UNITS } from "@/lib/credits";
 import { rateLimitOrResponse } from "@/lib/rate-limit";
 
 const Body = z.object({
-  characterId: z.string().optional(),         // Avatar.id from library
+  characterId: z.string().optional(),
   isCustomAvatar: z.boolean().default(false),
   customAvatarUrl: z.string().url().optional(),
-  script: z.string().min(1).max(2000),
-  voiceId: z.string().min(1),                 // ElevenLabs voice ID
+  prompt: z.string().min(1).max(500),
+  videoModel: z.enum(["kling-3.0/video", "sora-2-image-to-video"]).default("kling-3.0/video"),
   aspectRatio: z.enum(["NINE_SIXTEEN", "SIXTEEN_NINE", "ONE_ONE"]).default("NINE_SIXTEEN"),
-  quality: z.enum(["SD", "HD"]).default("HD"),
+  duration: z.enum(["5", "10", "15"]).default("5"),
 });
+
+const ASPECT_MAP: Record<string, string> = {
+  NINE_SIXTEEN: "9:16",
+  SIXTEEN_NINE: "16:9",
+  ONE_ONE: "1:1",
+};
 
 export async function POST(request: Request) {
   try {
@@ -35,25 +41,14 @@ export async function POST(request: Request) {
       characterImageUrl = body.customAvatarUrl!;
     } else {
       const character = await prisma.avatar.findUnique({ where: { id: body.characterId! } });
-      if (!character) {
-        return NextResponse.json({ error: "Invalid character" }, { status: 400 });
-      }
+      if (!character) return NextResponse.json({ error: "Invalid character" }, { status: 400 });
       characterImageUrl = character.imageUrl;
     }
 
-    // Validate voice (DB)
-    const voice = await prisma.voice.findUnique({ where: { voiceId: body.voiceId } });
-    if (!voice) {
-      return NextResponse.json({ error: "Invalid voice" }, { status: 400 });
-    }
-
-    const CREDIT_COST = body.quality === "HD" ? COSTS_UNITS.UGC_AD_HD : COSTS_UNITS.UGC_AD_SD;
+    const CREDIT_COST = COSTS_UNITS.UGC_AD_5S;
 
     if (user.credits < CREDIT_COST) {
-      return NextResponse.json(
-        { error: "Insufficient credits", needed: CREDIT_COST, have: user.credits },
-        { status: 402 }
-      );
+      return NextResponse.json({ error: "Insufficient credits" }, { status: 402 });
     }
 
     const generation = await prisma.$transaction(async (tx) => {
@@ -61,46 +56,51 @@ export async function POST(request: Request) {
         where: { id: user.id, credits: { gte: CREDIT_COST } },
         data: { credits: { decrement: CREDIT_COST } },
       });
-
       const gen = await tx.generation.create({
         data: {
           userId: user.id,
           type: "UGC_AD",
-          status: "PENDING",
+          status: "GENERATING_VIDEO",
           characterId: body.isCustomAvatar ? null : body.characterId,
           characterImage: characterImageUrl,
           isCustomAvatar: body.isCustomAvatar,
           customAvatarUrl: body.customAvatarUrl ?? null,
-          script: body.script,
-          voiceId: body.voiceId,
+          script: body.prompt,
           aspectRatio: body.aspectRatio,
-          quality: body.quality,
+          quality: "HD",
           creditsUsed: CREDIT_COST,
           creditCost: CREDIT_COST,
-          provider: "FAL",
+          provider: "KIE",
+          aiModel: body.videoModel,
         },
       });
-
       await tx.transaction.create({
         data: {
           userId: user.id,
           type: "USAGE",
           status: "COMPLETED",
           credits: -CREDIT_COST,
-          description: `UGC Ad generation`,
+          description: `UGC Ad (${body.videoModel})`,
           metadata: { generationId: gen.id },
         },
       });
-
       return gen;
     });
 
-    await inngest.send({
-      name: "video.generate",
-      data: { generationId: generation.id },
+    const kieTaskId = await generateKieVideo({
+      model: body.videoModel as VideoModel,
+      imageUrl: characterImageUrl,
+      prompt: body.prompt,
+      aspectRatio: ASPECT_MAP[body.aspectRatio] || "9:16",
+      duration: body.duration,
     });
 
-    return NextResponse.json({ id: generation.id, status: generation.status });
+    await prisma.generation.update({
+      where: { id: generation.id },
+      data: { metadata: { kieTaskId } },
+    });
+
+    return NextResponse.json({ id: generation.id, status: "Processing" });
   } catch (err: unknown) {
     const e = err as { message?: string; name?: string; code?: string; errors?: unknown };
     if (e?.message === "Unauthorized") return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

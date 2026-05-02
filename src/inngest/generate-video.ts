@@ -8,9 +8,8 @@ import {
   generatePhotoshootFlux,
   generatePhotoshootSeedream,
   generateTryon,
-  upscaleVideo,
 } from "@/lib/fal";
-import { uploadToR2FromUrl } from "@/lib/r2";
+import { mirrorToR2FromUrl } from "@/lib/r2";
 
 export const generateVideoFn = inngest.createFunction(
   {
@@ -42,7 +41,8 @@ export const generateVideoFn = inngest.createFunction(
     const isProductAd = gen.type === "PRODUCT_AD";
     const isMockup = gen.type === "MOCKUP" || gen.type === "PRODUCT_PHOTOSHOOT";
     const isTryon = gen.type === "TRYON";
-    const isHD = gen.quality === "HD";
+    const creativeDirection = getCreativeDirection(gen.metadata);
+    const durationSeconds = getDurationSeconds(gen.metadata);
 
     try {
       // ─── TRY-ON (single step, virtual try-on composite) ───
@@ -60,7 +60,7 @@ export const generateVideoFn = inngest.createFunction(
             garmentImage: gen.garmentImageUrl!,
             category: (gen.garmentCategory as "tops" | "bottoms" | "full-body" | "outerwear") || "tops",
           });
-          return await uploadToR2FromUrl(
+          return await mirrorToR2FromUrl(
             imageUrl,
             `generations/${generationId}/tryon-result.jpg`,
             "image/jpeg",
@@ -110,7 +110,7 @@ export const generateVideoFn = inngest.createFunction(
                   size,
                 });
 
-          return await uploadToR2FromUrl(
+          return await mirrorToR2FromUrl(
             imageUrl,
             `generations/${generationId}/photoshoot.jpg`,
             "image/jpeg",
@@ -145,7 +145,7 @@ export const generateVideoFn = inngest.createFunction(
           script: gen.script!,
           voiceId: gen.voiceId!,
         });
-        const r2Url = await uploadToR2FromUrl(
+        const r2Url = await mirrorToR2FromUrl(
           audioUrl,
           `generations/${generationId}/audio.mp3`,
           "audio/mpeg",
@@ -173,7 +173,7 @@ export const generateVideoFn = inngest.createFunction(
             productImage: gen.productImage!,
             prompt: buildCompositePrompt(),
           });
-          const r2Url = await uploadToR2FromUrl(
+          const r2Url = await mirrorToR2FromUrl(
             imageUrl,
             `generations/${generationId}/composite.jpg`,
             "image/jpeg",
@@ -195,15 +195,16 @@ export const generateVideoFn = inngest.createFunction(
       });
 
       const rawVideoUrl = await step.run("generate-video", async () => {
-        const motionPrompt = isProductAd
+        const baseMotionPrompt = isProductAd
           ? "A person naturally holding a product and talking to the camera, expressive face, subtle movements, professional lighting, UGC style"
           : "A person speaking naturally to the camera, subtle head movements, expressive face, professional lighting, talking style";
+        const motionPrompt = buildMotionPrompt(baseMotionPrompt, creativeDirection);
         const { videoUrl } = await generateVideo({
           imageUrl: sourceImage,
           prompt: motionPrompt,
-          duration: 10,
+          duration: durationSeconds,
         });
-        const r2Url = await uploadToR2FromUrl(
+        const r2Url = await mirrorToR2FromUrl(
           videoUrl,
           `generations/${generationId}/raw-video.mp4`,
           "video/mp4",
@@ -228,32 +229,12 @@ export const generateVideoFn = inngest.createFunction(
           videoUrl: rawVideoUrl,
           audioUrl: audioUrl,
         });
-        return await uploadToR2FromUrl(
+        return await mirrorToR2FromUrl(
           videoUrl,
           `generations/${generationId}/synced.mp4`,
           "video/mp4",
         );
       });
-
-      // ─── STEP 5 (HD only): Upscale to 1080p ───
-      let finalVideoUrl = syncedVideoUrl;
-      if (isHD) {
-        await step.run("status-upscaling", async () => {
-          await prisma.generation.update({
-            where: { id: generationId },
-            data: { status: "UPSCALING" },
-          });
-        });
-
-        finalVideoUrl = await step.run("upscale-video", async () => {
-          const { videoUrl } = await upscaleVideo({ videoUrl: syncedVideoUrl });
-          return await uploadToR2FromUrl(
-            videoUrl,
-            `generations/${generationId}/final-1080p.mp4`,
-            "video/mp4",
-          );
-        });
-      }
 
       // ─── DONE ───
       await step.run("complete", async () => {
@@ -261,13 +242,13 @@ export const generateVideoFn = inngest.createFunction(
           where: { id: generationId },
           data: {
             status: "COMPLETED",
-            finalVideoUrl,
+            finalVideoUrl: syncedVideoUrl,
             completedAt: new Date(),
           },
         });
       });
 
-      return { success: true, finalVideoUrl };
+      return { success: true, finalVideoUrl: syncedVideoUrl };
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Unknown error";
       // ─── FAIL: refund credits ───
@@ -307,6 +288,28 @@ function buildCompositePrompt(): string {
     "Person naturally holding [product], lifestyle UGC style,",
     "front facing, looking at camera, soft natural lighting,",
     "authentic feel, preserve all product details exactly.",
+  ].join(" ");
+}
+
+function getCreativeDirection(metadata: unknown): string {
+  if (!metadata || typeof metadata !== "object" || Array.isArray(metadata)) return "";
+  const value = (metadata as { creativeDirection?: unknown }).creativeDirection;
+  return typeof value === "string" ? value.trim().slice(0, 4000) : "";
+}
+
+function getDurationSeconds(metadata: unknown): 5 | 10 {
+  if (!metadata || typeof metadata !== "object" || Array.isArray(metadata)) return 5;
+  const value = (metadata as { durationSeconds?: unknown }).durationSeconds;
+  return value === 10 ? 10 : 5;
+}
+
+function buildMotionPrompt(base: string, creativeDirection: string): string {
+  if (!creativeDirection) return base;
+  return [
+    base,
+    "Follow these creator performance and camera directions:",
+    creativeDirection,
+    "Use the directions as visual/performance guidance only. Do not render captions, labels, headings, or on-screen text.",
   ].join(" ");
 }
 

@@ -1,188 +1,316 @@
 "use client";
 
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faCheck,
-  faChevronRight,
-  faChevronLeft,
   faWandMagicSparkles,
-  faMicrophone,
   faPlay,
-  faPause,
   faDownload,
   faArrowsRotate,
-  faCrop,
-  faShareNodes,
-  faXmark,
+  faChevronDown,
+  faChevronUp,
   faPlus,
   faCircleNotch,
+  faVideo,
+  faCheck,
 } from "@fortawesome/free-solid-svg-icons";
 import { cn } from "@/lib/utils";
-import { useAvatars, useVoices, type LibraryItem, type LibraryCategory, type Voice } from "@/lib/hooks/use-library";
+import { useAvatars, type LibraryItem, type LibraryCategory } from "@/lib/hooks/use-library";
+import { addActiveGeneration } from "@/lib/active-generations";
 
-type VoiceGender = "female" | "male";
+type VideoModel = "kling-3.0/video" | "sora-2-image-to-video";
+type AspectRatio = "9:16" | "1:1" | "16:9";
+type Duration = "5" | "10" | "15";
 
-const presets: Record<string, string> = {
-  hook: "Stop scrolling! You need to see this...",
-  ps: "I used to struggle with [problem]. Then I found [product], and everything changed.",
-  test: "I've been using [product] for 3 months now, and honestly? It's a game changer.",
-  unbox: "Okay so this just arrived and I'm SO excited to open it...",
-};
-
-const _presetButtons: { key: keyof typeof presets; label: string }[] = [
-  { key: "hook", label: "Punchy hook" },
-  { key: "ps", label: "Problem to solution" },
-  { key: "test", label: "Testimonial" },
-  { key: "unbox", label: "Unboxing" },
+const VIDEO_MODELS: { id: VideoModel; name: string; tag: string; initials: string; color: string }[] = [
+  { id: "kling-3.0/video", name: "Kling 3.0", tag: "Pro · Native Audio", initials: "K", color: "bg-orange-500" },
+  { id: "sora-2-image-to-video", name: "Sora 2", tag: "OpenAI · Experimental", initials: "S", color: "bg-black border border-white/20" },
 ];
 
-const aspectChoices: Array<{
-  value: "9:16" | "1:1" | "16:9";
-  hint: string;
-  px: string;
-  boxClass: string;
-}> = [
-  { value: "9:16", hint: "TikTok / Reels", px: "1080x1920", boxClass: "w-4 h-7" },
-  { value: "1:1", hint: "Instagram", px: "1080x1080", boxClass: "w-6 h-6" },
-  { value: "16:9", hint: "YouTube", px: "1920x1080", boxClass: "w-7 h-4" },
+const ASPECT_CHOICES: { value: AspectRatio; hint: string; boxClass: string }[] = [
+  { value: "9:16", hint: "TikTok / Reels", boxClass: "w-4 h-7" },
+  { value: "1:1", hint: "Instagram", boxClass: "w-6 h-6" },
+  { value: "16:9", hint: "YouTube", boxClass: "w-7 h-4" },
 ];
 
-const _stepHeaders: { title: string; subtitle: string }[] = [
-  {
-    title: "Choose Character and Voice",
-    subtitle: "Select the visual and audio persona for your ad.",
-  },
-  {
-    title: "Write Script and Settings",
-    subtitle: "Draft your narrative and configure output parameters.",
-  },
-  {
-    title: "Generating your ad",
-    subtitle: "Hang tight, the AI is composing your video.",
-  },
-  {
-    title: "Your Generated Ad",
-    subtitle: "Rendering complete. Ready for distribution.",
-  },
+const DURATION_CHOICES: { value: Duration; label: string }[] = [
+  { value: "5", label: "5s" },
+  { value: "10", label: "10s" },
+  { value: "15", label: "15s" },
 ];
 
-const checklistLabels = [
-  "Loading character model",
-  "Generating voiceover",
-  "Syncing lip movements",
-  "Rendering final video",
-];
+function downloadAsset(url: string, id: string) {
+  const proxied = `/api/download?url=${encodeURIComponent(url)}&filename=${encodeURIComponent(`ugc-ad-${id.slice(-6)}.mp4`)}`;
+  const a = document.createElement("a");
+  a.href = proxied;
+  a.download = `ugc-ad-${id.slice(-6)}.mp4`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+// ─── Model Picker ────────────────────────────────────────────────
+
+function ModelPicker({ value, onChange }: { value: VideoModel; onChange: (v: VideoModel) => void }) {
+  const [open, setOpen] = useState(false);
+  const current = VIDEO_MODELS.find((m) => m.id === value)!;
+
+  return (
+    <div className="rounded-2xl border border-white/10 bg-white/[0.025] overflow-hidden">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-white/5 transition"
+      >
+        <span className="text-xs font-semibold uppercase tracking-[0.12em] text-white/50">Video Model</span>
+        <FontAwesomeIcon icon={open ? faChevronUp : faChevronDown} className="text-white/40" style={{ fontSize: 11 }} />
+      </button>
+
+      <div className="px-4 pb-3">
+        <div className="flex items-center justify-between rounded-xl bg-white/5 border border-white/10 px-3 py-2.5">
+          <div className="flex items-center gap-2.5">
+            <div className={cn("flex size-7 items-center justify-center rounded-lg text-white text-[11px] font-bold", current.color)}>
+              {current.initials}
+            </div>
+            <div>
+              <p className="text-[13px] font-semibold text-white">{current.name}</p>
+              <p className="text-[10px] text-white/40">{current.tag}</p>
+            </div>
+          </div>
+          {!open && (
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); setOpen(true); }}
+              className="text-[11px] font-semibold text-primary/80 hover:text-primary flex items-center gap-1 transition"
+            >
+              Switch →
+            </button>
+          )}
+        </div>
+      </div>
+
+      {open && (
+        <div className="px-4 pb-4 space-y-2">
+          {VIDEO_MODELS.map((m) => (
+            <button
+              key={m.id}
+              type="button"
+              onClick={() => { onChange(m.id); setOpen(false); }}
+              className={cn(
+                "w-full flex items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition",
+                value === m.id
+                  ? "border-primary/40 bg-primary/5"
+                  : "border-white/10 bg-white/[0.02] hover:bg-white/5"
+              )}
+            >
+              <div className={cn("flex size-7 items-center justify-center rounded-lg text-white text-[11px] font-bold shrink-0", m.color)}>
+                {m.initials}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[13px] font-semibold text-white">{m.name}</p>
+                <p className="text-[10px] text-white/40">{m.tag}</p>
+              </div>
+              {value === m.id && (
+                <FontAwesomeIcon icon={faCheck} className="text-primary" style={{ fontSize: 11 }} />
+              )}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Character Picker ────────────────────────────────────────────
+
+function CharacterPicker({
+  selected,
+  onSelect,
+  items,
+  categories,
+  categoryFilter,
+  setCategoryFilter,
+  onCustomUpload,
+}: {
+  selected: string | null;
+  onSelect: (id: string) => void;
+  items: LibraryItem[];
+  categories: LibraryCategory[];
+  categoryFilter: string;
+  setCategoryFilter: (c: string) => void;
+  onCustomUpload: (av: { id: string; name: string; imageUrl: string; categoryId: null }) => void;
+}) {
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+
+  async function handleFile(file: File) {
+    if (!file.type.startsWith("image/")) return;
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("/api/upload/avatar", { method: "POST", body: fd });
+      const data = await res.json() as { id: string; imageUrl: string };
+      if (res.ok) {
+        onCustomUpload({ id: data.id, name: "My Avatar", imageUrl: data.imageUrl, categoryId: null });
+        onSelect(data.id);
+      }
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  return (
+    <div className="flex flex-col h-full">
+      {/* Category tabs */}
+      <div className="flex gap-1.5 flex-wrap mb-3">
+        <button
+          onClick={() => setCategoryFilter("all")}
+          className={cn(
+            "rounded-full px-3 py-1 text-[11px] font-medium transition",
+            categoryFilter === "all" ? "bg-foreground text-background" : "border border-white/10 bg-white/5 text-white/60 hover:text-white"
+          )}
+        >All</button>
+        {categories.map((c) => (
+          <button
+            key={c.id}
+            onClick={() => setCategoryFilter(c.id)}
+            className={cn(
+              "rounded-full px-3 py-1 text-[11px] font-medium transition",
+              categoryFilter === c.id ? "bg-foreground text-background" : "border border-white/10 bg-white/5 text-white/60 hover:text-white"
+            )}
+          >{c.name}</button>
+        ))}
+      </div>
+
+      {/* Grid */}
+      <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-3 xl:grid-cols-4 gap-2 overflow-y-auto flex-1 pr-1" style={{ maxHeight: 480 }}>
+        {/* Upload button */}
+        <button
+          type="button"
+          onClick={() => fileRef.current?.click()}
+          disabled={uploading}
+          className="relative aspect-[3/4] rounded-2xl border-2 border-dashed border-white/15 bg-white/[0.02] flex flex-col items-center justify-center gap-1.5 hover:border-primary/40 hover:bg-primary/5 transition text-white/40 hover:text-primary disabled:opacity-50"
+        >
+          {uploading ? (
+            <FontAwesomeIcon icon={faCircleNotch} className="animate-spin" style={{ fontSize: 20 }} />
+          ) : (
+            <>
+              <FontAwesomeIcon icon={faPlus} style={{ fontSize: 18 }} />
+              <span className="text-[10px] font-medium">Upload</span>
+            </>
+          )}
+        </button>
+        <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])} />
+
+        {items.map((c) => (
+          <button
+            key={c.id}
+            type="button"
+            onClick={() => onSelect(c.id)}
+            className={cn(
+              "relative aspect-[3/4] rounded-2xl overflow-hidden border-2 transition-all",
+              selected === c.id ? "border-primary shadow-[0_0_0_2px_rgba(57,255,20,0.3)]" : "border-transparent hover:border-white/20"
+            )}
+          >
+            <Image src={c.imageUrl} alt={c.name} fill className="object-cover object-top" sizes="120px" />
+            {selected === c.id && (
+              <div className="absolute top-1.5 right-1.5 flex size-5 items-center justify-center rounded-full bg-primary">
+                <FontAwesomeIcon icon={faCheck} className="text-black" style={{ fontSize: 9 }} />
+              </div>
+            )}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Shimmer ─────────────────────────────────────────────────────
+
+function VideoShimmer() {
+  return (
+    <div className="relative rounded-3xl overflow-hidden bg-white/[0.03] border border-white/10 aspect-[9/16] max-w-[260px] mx-auto">
+      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-[shimmer_1.8s_ease-in-out_infinite] bg-[length:200%_100%]" />
+      <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
+        <div className="flex gap-1.5">
+          {[0, 0.2, 0.4].map((d) => (
+            <span key={d} className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse-dot" style={{ animationDelay: `${d}s` }} />
+          ))}
+        </div>
+        <p className="text-sm font-semibold text-white/70">Generating video...</p>
+        <p className="text-[11px] text-white/40">This may take a few minutes</p>
+      </div>
+    </div>
+  );
+}
+
+// ─── Main ────────────────────────────────────────────────────────
 
 export default function UGCAdCreator() {
-  // Preserved state
   const [selectedCharacter, setSelectedCharacter] = useState<string | null>(null);
-  const [script, setScript] = useState("");
-  const [voiceId, setVoiceId] = useState<string>("");
-  const [voiceGender, setVoiceGender] = useState<VoiceGender>("female");
-  const [categoryFilter, setCategoryFilter] = useState<string>("all");
-  const [aspectRatio, setAspectRatio] = useState<"9:16" | "1:1" | "16:9">("9:16");
-  const [quality, setQuality] = useState<"1080p" | "720p">("1080p");
+  const [customAvatar, setCustomAvatar] = useState<{ id: string; name: string; imageUrl: string; categoryId: null } | null>(null);
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [prompt, setPrompt] = useState("");
+  const [videoModel, setVideoModel] = useState<VideoModel>("kling-3.0/video");
+  const [aspectRatio, setAspectRatio] = useState<AspectRatio>("9:16");
+  const [duration, setDuration] = useState<Duration>("5");
+
   const [isGenerating, setIsGenerating] = useState(false);
-  const [generationStep, setGenerationStep] = useState(0);
-  const [generationComplete, setGenerationComplete] = useState(false);
   const [generationId, setGenerationId] = useState<string | null>(null);
   const [finalVideoUrl, setFinalVideoUrl] = useState<string | null>(null);
-  const [generationError, setGenerationError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  // Wizard state
-  const [currentStep, setCurrentStep] = useState<1 | 2 | 3 | 4>(1);
-
-  // Local UI
-  const [playingVoice, setPlayingVoice] = useState<string | null>(null);
-  const previewAudioRef = useRef<HTMLAudioElement | null>(null);
-  const videoRef = useRef<HTMLVideoElement | null>(null);
-
-  const { items: dbCharacters, categories: characterCategories } = useAvatars();
-  const [customAvatar, setCustomAvatar] = useState<{ id: string; name: string; imageUrl: string; categoryId: null } | null>(null);
+  const { items: dbCharacters, categories } = useAvatars();
   const characters = customAvatar ? [customAvatar, ...dbCharacters] : dbCharacters;
-  const charData = characters.find((c) => c.id === selectedCharacter);
-  const filteredCharacters = characters.filter(
-    (c) => categoryFilter === "all" || c.categoryId === categoryFilter || c.id === customAvatar?.id,
+  const filtered = characters.filter(
+    (c) => categoryFilter === "all" || c.categoryId === categoryFilter || c.id === customAvatar?.id
   );
-  const { voices: allVoices } = useVoices();
-  const filteredVoices = allVoices.filter((v) => v.gender === voiceGender);
+  const selectedChar = characters.find((c) => c.id === selectedCharacter);
 
-  // auto-select first voice when list loads
-  useEffect(() => {
-    if (!voiceId && filteredVoices.length > 0) {
-      setVoiceId(filteredVoices[0].voiceId);
-    }
-  }, [voiceId, filteredVoices]);
+  // Polling
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const statusToStep: Record<string, number> = {
-    PENDING: 0,
-    GENERATING_AUDIO: 1,
-    GENERATING_VIDEO: 2,
-    SYNCING_LIPS: 3,
-    UPSCALING: 4,
-    COMPLETED: 5,
-    FAILED: -1,
-  };
+  const stopPolling = useCallback(() => {
+    if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; }
+  }, []);
 
-  // Real polling: every 3s while generating
-  useEffect(() => {
-    if (!generationId || generationComplete) return;
-    let cancelled = false;
-    const tick = async () => {
+  useEffect(() => () => stopPolling(), [stopPolling]);
+
+  function startPolling(id: string) {
+    pollRef.current = setInterval(async () => {
       try {
-        const res = await fetch(`/api/generations/${generationId}`);
-        if (!res.ok) return;
-        const data = await res.json();
-        if (cancelled) return;
-        const step = statusToStep[data.status] ?? 0;
-        setGenerationStep(step);
-        if (data.status === "COMPLETED" && data.finalVideoUrl) {
-          setFinalVideoUrl(data.finalVideoUrl);
-          setGenerationComplete(true);
-        } else if (data.status === "FAILED") {
-          setGenerationError(data.errorMessage || "Generation failed. Your credits have been refunded.");
+        const res = await fetch(`/api/generate/status?id=${id}`);
+        const data = await res.json() as { status: string; finalUrl?: string; errorMessage?: string };
+        if (data.status === "Complete") {
+          stopPolling();
+          setFinalVideoUrl(data.finalUrl!);
+          setIsGenerating(false);
+        } else if (data.status === "Failed") {
+          stopPolling();
+          setError(data.errorMessage || "Generation failed. Credits refunded.");
           setIsGenerating(false);
         }
-      } catch {
-        /* swallow */
-      }
-    };
-    tick();
-    const interval = setInterval(tick, 3000);
-    return () => {
-      cancelled = true;
-      clearInterval(interval);
-    };
-  }, [generationId, generationComplete, statusToStep]);
+      } catch {}
+    }, 5000);
+  }
 
-  // Auto-advance to step 4 when generation completes
-  useEffect(() => {
-    if (generationComplete && finalVideoUrl) {
-      setCurrentStep(4);
-      setIsGenerating(false);
-    }
-  }, [generationComplete, finalVideoUrl]);
-
-  const handleGenerate = async () => {
-    if (!charData || !script.trim() || !voiceId) return;
-    setGenerationError(null);
+  async function handleGenerate() {
+    if (!selectedCharacter || !prompt.trim() || isGenerating) return;
+    setError(null);
     setFinalVideoUrl(null);
     setIsGenerating(true);
-    setGenerationStep(0);
-    setGenerationComplete(false);
 
-    const isCustom = !!customAvatar && customAvatar.id === selectedCharacter;
+    const isCustom = selectedCharacter === customAvatar?.id;
     const body = {
       characterId: isCustom ? undefined : selectedCharacter,
       isCustomAvatar: isCustom,
-      customAvatarUrl: isCustom ? customAvatar.imageUrl : undefined,
-      script,
-      voiceId,
-      aspectRatio:
-        aspectRatio === "9:16" ? "NINE_SIXTEEN" : aspectRatio === "16:9" ? "SIXTEEN_NINE" : "ONE_ONE",
-      quality: quality === "1080p" ? "HD" : "SD",
+      customAvatarUrl: isCustom ? customAvatar?.imageUrl : undefined,
+      prompt: prompt.trim(),
+      videoModel,
+      aspectRatio: aspectRatio === "9:16" ? "NINE_SIXTEEN" : aspectRatio === "16:9" ? "SIXTEEN_NINE" : "ONE_ONE",
+      duration,
     };
 
     try {
@@ -191,1177 +319,174 @@ export default function UGCAdCreator() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
-      const data = await res.json();
-      if (!res.ok) {
-        setGenerationError(data?.error || "Generation failed");
+      const data = await res.json() as { id?: string; error?: string };
+      if (!res.ok || !data.id) {
+        setError(data.error || "Failed to start generation");
         setIsGenerating(false);
         return;
       }
       setGenerationId(data.id);
+      addActiveGeneration({ id: data.id, type: "UGC Ad", status: "Processing" });
+      startPolling(data.id);
     } catch {
-      setGenerationError("Generation failed. Please try again.");
+      setError("Network error. Please try again.");
       setIsGenerating(false);
     }
-  };
+  }
 
-  const resetGeneration = () => {
-    setIsGenerating(false);
-    setGenerationStep(0);
-    setGenerationComplete(false);
-    setSelectedCharacter(null);
-    setScript("");
-    setGenerationId(null);
-    setFinalVideoUrl(null);
-    setGenerationError(null);
-    setCurrentStep(1);
-  };
-
-  const playVoicePreview = (id: string, url: string) => {
-    if (previewAudioRef.current) {
-      previewAudioRef.current.pause();
-      previewAudioRef.current = null;
-    }
-    if (playingVoice === id) {
-      setPlayingVoice(null);
-      return;
-    }
-    const audio = new Audio(url);
-    previewAudioRef.current = audio;
-    setPlayingVoice(id);
-    audio.onended = () => setPlayingVoice(null);
-    audio.play().catch(() => setPlayingVoice(null));
-  };
-
-  const wordCount = useMemo(
-    () => script.trim().split(/\s+/).filter(Boolean).length,
-    [script]
-  );
-  const progressPct =
-    generationStep <= 0
-      ? 15
-      : generationStep === 1
-      ? 40
-      : generationStep === 2
-      ? 70
-      : generationStep === 3
-      ? 90
-      : 100;
-  const currentStepLabel =
-    checklistLabels[Math.min(Math.max(generationStep, 0), checklistLabels.length - 1)];
-
-  const canAdvance =
-    currentStep === 1
-      ? !!selectedCharacter && !!voiceId
-      : currentStep === 2
-      ? script.trim().length > 0
-      : false;
-
-  const goToStep = (n: 1 | 2 | 3 | 4) => {
-    if (isGenerating) return;
-    if (n > currentStep) return;
-    if (n === 3 || n === 4) return;
-    setCurrentStep(n);
-  };
-
-  const handleNext = () => {
-    if (currentStep === 1 && canAdvance) {
-      setCurrentStep(2);
-    } else if (currentStep === 2 && canAdvance) {
-      setCurrentStep(3);
-      handleGenerate();
-    }
-  };
+  const canGenerate = !!selectedCharacter && prompt.trim().length > 0 && !isGenerating;
 
   return (
-    <div className="mx-auto w-full max-w-[1400px]">
-      <div className="flex flex-col gap-4">
+    <div className="mx-auto w-full max-w-[1300px]">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
 
-      {/* Step content */}
-      {currentStep === 1 && (
-        <Step1
-          selectedCharacter={selectedCharacter}
-          setSelectedCharacter={setSelectedCharacter}
-          categoryFilter={categoryFilter}
-          setCategoryFilter={setCategoryFilter}
-          filteredCharacters={filteredCharacters}
-          characterCategories={characterCategories}
-          onCustomAvatarUploaded={(av) => {
-            setCustomAvatar(av);
-            setSelectedCharacter(av.id);
-          }}
-          voiceGender={voiceGender}
-          setVoiceGender={setVoiceGender}
-          voiceId={voiceId}
-          setVoiceId={setVoiceId}
-          filteredVoices={filteredVoices}
-          allVoices={allVoices}
-          playingVoice={playingVoice}
-          playVoicePreview={playVoicePreview}
-        />
-      )}
-
-      {currentStep === 2 && (
-        <Step2
-          script={script}
-          setScript={setScript}
-          aspectRatio={aspectRatio}
-          setAspectRatio={setAspectRatio}
-          quality={quality}
-          setQuality={setQuality}
-          wordCount={wordCount}
-        />
-      )}
-
-      {currentStep === 3 && (
-        <Step3
-          generationStep={generationStep}
-          progressPct={progressPct}
-          currentStepLabel={currentStepLabel}
-          generationError={generationError}
-          onRetry={() => {
-            setGenerationError(null);
-            setCurrentStep(2);
-          }}
-        />
-      )}
-
-      {currentStep === 4 && (
-        <Step4
-          finalVideoUrl={finalVideoUrl}
-          charData={charData}
-          aspectRatio={aspectRatio}
-          quality={quality}
-          wordCount={wordCount}
-          videoRef={videoRef}
-          onReset={resetGeneration}
-        />
-      )}
-
-      </div>
-
-      {/* Bottom action bar (steps 1 and 2) — shrink-0 sticks at bottom of flex column */}
-      {(currentStep === 1 || currentStep === 2) && (
-        <div className="sticky bottom-4 z-20 mt-4 flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-black/60 backdrop-blur-md px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_8px_32px_rgba(0,0,0,0.5)]">
-          <button
-            type="button"
-            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white/60 hover:text-foreground hover:bg-white/5 transition disabled:opacity-30 disabled:cursor-not-allowed"
-            onClick={() => setCurrentStep((currentStep - 1) as 1 | 2)}
-            disabled={currentStep === 1}
-          >
-            <FontAwesomeIcon icon={faChevronLeft} style={{ fontSize: 11 }} />
-            Back
-          </button>
-          <button
-            type="button"
-            className="flex items-center gap-2 px-7 py-2.5 rounded-xl bg-primary text-black ring-1 ring-inset ring-black/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.45),0_1px_2px_rgba(0,0,0,0.35)] text-sm font-bold transition-all hover:brightness-105 active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed"
-            onClick={handleNext}
-            disabled={!canAdvance}
-          >
-            {currentStep === 1 ? "Next: Script" : "Generate UGC Ad"}
-            <FontAwesomeIcon
-              icon={currentStep === 1 ? faChevronRight : faWandMagicSparkles}
-              style={{ fontSize: 12 }}
-            />
-          </button>
+        {/* Left: character picker */}
+        <div className="lg:col-span-5 rounded-3xl border border-white/10 bg-white/[0.025] p-5 backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
+          <h2 className="text-xs font-semibold uppercase tracking-[0.12em] text-white/50 mb-4">Choose Character</h2>
+          <CharacterPicker
+            selected={selectedCharacter}
+            onSelect={setSelectedCharacter}
+            items={filtered}
+            categories={categories}
+            categoryFilter={categoryFilter}
+            setCategoryFilter={setCategoryFilter}
+            onCustomUpload={(av) => { setCustomAvatar(av); setSelectedCharacter(av.id); }}
+          />
         </div>
-      )}
-    </div>
-  );
-}
 
-/* ────────────────────────────────────────────────────────────────────── */
-/*  Step Indicator                                                        */
-/* ────────────────────────────────────────────────────────────────────── */
+        {/* Right: settings + result */}
+        <div className="lg:col-span-7 flex flex-col gap-4">
 
-function StepIndicator({
-  currentStep,
-  canStepBack,
-  onJump,
-}: {
-  currentStep: 1 | 2 | 3 | 4;
-  canStepBack: boolean;
-  onJump: (n: 1 | 2 | 3 | 4) => void;
-}) {
-  const steps = [
-    { n: 1 as const, label: "Character" },
-    { n: 2 as const, label: "Script" },
-    { n: 3 as const, label: "Generation" },
-    { n: 4 as const, label: "Results" },
-  ];
-
-  return (
-    <div className="mx-auto max-w-xl">
-      <div className="flex items-center justify-between gap-1.5">
-        {steps.map((s, idx) => {
-          const isActive = s.n === currentStep;
-          const isDone = s.n < currentStep;
-          const clickable =
-            canStepBack && s.n <= currentStep && (s.n === 1 || s.n === 2);
-          const nextDone = idx < steps.length - 1 && steps[idx + 1].n < currentStep;
-          return (
-            <div key={s.n} className="flex flex-1 items-center">
-              <button
-                type="button"
-                disabled={!clickable}
-                onClick={() => clickable && onJump(s.n)}
-                className={cn(
-                  "flex items-center gap-2.5 transition",
-                  clickable
-                    ? "cursor-pointer hover:opacity-90"
-                    : "cursor-default"
-                )}
-              >
-                <span
-                  className={cn(
-                    "flex h-7 w-7 items-center justify-center rounded-full text-[11px] font-bold transition",
-                    isActive &&
-                      "bg-primary text-black shadow-[0_0_0_3px_rgba(57,255,20,0.15)]",
-                    isDone &&
-                      "bg-primary/15 border border-primary/40 text-primary",
-                    !isActive &&
-                      !isDone &&
-                      "bg-white/[0.03] border border-white/10 text-white/35"
-                  )}
-                >
-                  {isDone ? (
-                    <FontAwesomeIcon icon={faCheck} style={{ fontSize: 10 }} />
-                  ) : (
-                    s.n
-                  )}
-                </span>
-                <span
-                  className={cn(
-                    "hidden sm:inline text-[11px] font-semibold truncate",
-                    isActive && "text-foreground",
-                    isDone && "text-white/70",
-                    !isActive && !isDone && "text-white/35"
-                  )}
-                >
-                  {s.label}
-                </span>
-              </button>
-              {idx < steps.length - 1 && (
-                <span
-                  className={cn(
-                    "mx-2 sm:mx-3 h-px flex-1 transition",
-                    isDone && nextDone
-                      ? "bg-gradient-to-r from-primary/40 to-primary/40"
-                      : isDone
-                      ? "bg-gradient-to-r from-primary/40 to-white/10"
-                      : "bg-white/10"
-                  )}
-                />
+          {/* Result / shimmer panel */}
+          {(isGenerating || finalVideoUrl) && (
+            <div className="rounded-3xl border border-white/10 bg-white/[0.025] p-5 flex flex-col items-center">
+              {isGenerating && !finalVideoUrl && <VideoShimmer />}
+              {finalVideoUrl && (
+                <div className="w-full flex flex-col items-center gap-4">
+                  <video
+                    src={finalVideoUrl}
+                    controls
+                    autoPlay
+                    className="rounded-2xl max-h-[480px] max-w-full"
+                    style={{ aspectRatio: aspectRatio.replace(":", "/") }}
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => downloadAsset(finalVideoUrl, generationId!)}
+                      className="inline-flex items-center gap-2 rounded-xl bg-primary text-black px-4 h-9 text-xs font-bold hover:brightness-105 transition"
+                    >
+                      <FontAwesomeIcon icon={faDownload} style={{ fontSize: 12 }} />
+                      Download
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setFinalVideoUrl(null); setGenerationId(null); setError(null); }}
+                      className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 text-white/70 px-4 h-9 text-xs font-semibold hover:bg-white/10 transition"
+                    >
+                      <FontAwesomeIcon icon={faArrowsRotate} style={{ fontSize: 12 }} />
+                      New
+                    </button>
+                  </div>
+                </div>
               )}
             </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-/* ────────────────────────────────────────────────────────────────────── */
-/*  Section header helper                                                 */
-/* ────────────────────────────────────────────────────────────────────── */
-
-function SectionHeader({
-  icon,
-  title,
-  subtitle,
-}: {
-  icon?: typeof faMicrophone;
-  title: string;
-  subtitle?: string;
-}) {
-  return (
-    <div className="flex items-center justify-between pb-3 mb-4 border-b border-white/5">
-      <div className="flex items-center gap-2.5">
-        {icon && (
-          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10 border border-primary/20 text-primary">
-            <FontAwesomeIcon icon={icon} style={{ fontSize: 12 }} />
-          </span>
-        )}
-        <div>
-          <h2 className="text-base font-semibold text-foreground">{title}</h2>
-          {subtitle && (
-            <p className="text-[11px] text-white/45 mt-0.5">{subtitle}</p>
           )}
-        </div>
-      </div>
-    </div>
-  );
-}
 
-/* ────────────────────────────────────────────────────────────────────── */
-/*  Step 1                                                                */
-/* ────────────────────────────────────────────────────────────────────── */
+          {/* Settings panel */}
+          <div className="rounded-3xl border border-white/10 bg-white/[0.025] p-5 backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] flex flex-col gap-5">
 
-function Step1({
-  selectedCharacter,
-  setSelectedCharacter,
-  categoryFilter,
-  setCategoryFilter,
-  filteredCharacters,
-  characterCategories,
-  onCustomAvatarUploaded,
-  voiceGender,
-  setVoiceGender,
-  voiceId,
-  setVoiceId,
-  filteredVoices,
-  allVoices,
-  playingVoice,
-  playVoicePreview,
-}: {
-  selectedCharacter: string | null;
-  setSelectedCharacter: (id: string) => void;
-  categoryFilter: string;
-  setCategoryFilter: (c: string) => void;
-  filteredCharacters: LibraryItem[];
-  characterCategories: LibraryCategory[];
-  onCustomAvatarUploaded: (av: { id: string; name: string; imageUrl: string; categoryId: null }) => void;
-  voiceGender: VoiceGender;
-  setVoiceGender: (g: VoiceGender) => void;
-  voiceId: string;
-  setVoiceId: (id: string) => void;
-  filteredVoices: Voice[];
-  allVoices: Voice[];
-  playingVoice: string | null;
-  playVoicePreview: (id: string, url: string) => void;
-}) {
-  const [libraryOpen, setLibraryOpen] = useState(false);
-
-  // Ensure selected character is always visible in the small grid (slot 2)
-  const visibleCharacters = (() => {
-    const first4 = filteredCharacters.slice(0, 4);
-    if (!selectedCharacter) return first4;
-    const sel = filteredCharacters.find((c) => c.id === selectedCharacter);
-    if (!sel) return first4;
-    if (first4.some((c) => c.id === selectedCharacter)) return first4;
-    return [sel, ...first4.slice(0, 3)];
-  })();
-
-  return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-      {/* Visual Avatar */}
-      <section className="lg:col-span-7 rounded-2xl border border-white/10 bg-white/[0.025] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
-        <SectionHeader title="Choose Character" />
-
-        <div className="flex flex-wrap gap-1.5 mb-4">
-          {[{ id: "all", name: "All" }, ...characterCategories].map((cat) => {
-            const active = categoryFilter === cat.id;
-            return (
-              <button
-                key={cat.id}
-                type="button"
-                onClick={() => setCategoryFilter(cat.id)}
-                className={cn(
-                  "rounded-full px-3 py-1 text-[11px] font-medium transition border",
-                  active
-                    ? "bg-primary/15 border-primary/30 text-primary"
-                    : "bg-white/5 border-white/10 text-white/55 hover:bg-white/10"
-                )}
-              >
-                {cat.name}
-              </button>
-            );
-          })}
-        </div>
-
-        <div className="grid grid-cols-3 gap-4">
-          {/* Upload your own avatar (always first) */}
-          <CustomAvatarTile onUploaded={onCustomAvatarUploaded} />
-
-
-          {visibleCharacters.map((char) => {
-            const isSel = selectedCharacter === char.id;
-            return (
-              <button
-                key={char.id}
-                type="button"
-                onClick={() => setSelectedCharacter(char.id)}
-                className={cn(
-                  "relative rounded-2xl overflow-hidden border cursor-pointer aspect-[3/4] group transition",
-                  isSel
-                    ? "border-primary shadow-[0_0_0_3px_rgba(57,255,20,0.18)]"
-                    : "border-white/10 hover:border-white/20"
-                )}
-              >
-                <Image
-                  src={char.imageUrl}
-                  alt={char.name}
-                  fill
-                  sizes="220px"
-                  className="object-cover object-top transition group-hover:scale-[1.03]"
-                />
-                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent p-2.5">
-                  <p className="truncate text-left text-[11px] font-medium text-white">
-                    {char.name}
-                  </p>
-                </div>
-                {isSel && (
-                  <div className="absolute right-2 top-2 flex size-5 items-center justify-center rounded-full bg-primary">
-                    <FontAwesomeIcon
-                      icon={faCheck}
-                      className="text-black"
-                      style={{ fontSize: 9 }}
-                    />
-                  </div>
-                )}
-              </button>
-            );
-          })}
-
-          {/* View more — opens library modal */}
-          {filteredCharacters.length > 4 && (
-            <button
-              type="button"
-              onClick={() => setLibraryOpen(true)}
-              className="flex aspect-[3/4] flex-col items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/[0.02] hover:border-white/20 hover:bg-white/[0.05] transition text-center"
-            >
-              <span className="flex size-9 items-center justify-center rounded-full bg-white/5 border border-white/10 text-white/70">
-                <FontAwesomeIcon icon={faChevronRight} style={{ fontSize: 11 }} />
-              </span>
-              <span className="text-[11px] font-semibold text-white/70 leading-tight px-2">
-                View {filteredCharacters.length - 4} more
-              </span>
-            </button>
-          )}
-        </div>
-      </section>
-
-      {/* Character library modal */}
-      {libraryOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-md p-6" onClick={() => setLibraryOpen(false)}>
-          <div className="w-full max-w-5xl max-h-[85vh] overflow-hidden rounded-3xl border border-white/10 bg-[#0c0c10] flex flex-col" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-6 py-4 border-b border-white/10">
-              <h3 className="text-lg font-bold tracking-tight">Character library</h3>
-              <button
-                type="button"
-                onClick={() => setLibraryOpen(false)}
-                className="flex size-8 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-white/60 hover:text-foreground hover:bg-white/10 transition"
-              >
-                <FontAwesomeIcon icon={faXmark} style={{ fontSize: 13 }} />
-              </button>
+            {/* Video prompt */}
+            <div>
+              <label className="text-xs font-semibold uppercase tracking-[0.12em] text-white/50 block mb-2">Video Prompt</label>
+              <textarea
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                rows={4}
+                placeholder="Describe what you want the character to do in the video..."
+                className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-[13px] text-white placeholder:text-white/25 outline-none resize-none focus:border-primary/40 transition"
+              />
             </div>
-            <div className="flex flex-wrap gap-2 px-6 py-3 border-b border-white/10">
-              {[{ id: "all", name: "All" }, ...characterCategories].map((cat) => {
-                const active = categoryFilter === cat.id;
-                return (
-                  <button
-                    key={cat.id}
-                    type="button"
-                    onClick={() => setCategoryFilter(cat.id)}
-                    className={cn(
-                      "rounded-full px-3 py-1 text-[11px] font-medium transition border",
-                      active
-                        ? "bg-primary/15 border-primary/30 text-primary"
-                        : "bg-white/5 border-white/10 text-white/55 hover:bg-white/10"
-                    )}
-                  >
-                    {cat.name}
-                  </button>
-                );
-              })}
-            </div>
-            <div className="overflow-y-auto p-6">
-              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
-                {filteredCharacters.map((char) => {
-                  const isSel = selectedCharacter === char.id;
-                  return (
+
+            {/* Video model */}
+            <ModelPicker value={videoModel} onChange={setVideoModel} />
+
+            {/* Aspect ratio + duration */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs font-semibold uppercase tracking-[0.12em] text-white/50 block mb-2">Aspect Ratio</label>
+                <div className="flex gap-2">
+                  {ASPECT_CHOICES.map((a) => (
                     <button
-                      key={char.id}
+                      key={a.value}
                       type="button"
-                      onClick={() => {
-                        setSelectedCharacter(char.id);
-                        setLibraryOpen(false);
-                      }}
+                      onClick={() => setAspectRatio(a.value)}
                       className={cn(
-                        "relative rounded-2xl overflow-hidden border cursor-pointer aspect-[3/4] group transition",
-                        isSel
-                          ? "border-primary shadow-[0_0_0_3px_rgba(57,255,20,0.18)]"
-                          : "border-white/10 hover:border-white/20"
+                        "flex-1 rounded-xl border py-3 flex flex-col items-center gap-1.5 transition text-[11px]",
+                        aspectRatio === a.value
+                          ? "border-primary/40 bg-primary/5 text-primary"
+                          : "border-white/10 bg-white/5 text-white/50 hover:text-white"
                       )}
                     >
-                      <Image
-                        src={char.imageUrl}
-                        alt={char.name}
-                        fill
-                        sizes="200px"
-                        className="object-cover object-top transition group-hover:scale-[1.03]"
-                      />
-                      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent p-2">
-                        <p className="truncate text-left text-[11px] font-medium text-white">{char.name}</p>
-                      </div>
-                      {isSel && (
-                        <div className="absolute right-2 top-2 flex size-5 items-center justify-center rounded-full bg-primary">
-                          <FontAwesomeIcon icon={faCheck} className="text-black" style={{ fontSize: 9 }} />
-                        </div>
-                      )}
+                      <div className={cn("border-2 rounded-sm", aspectRatio === a.value ? "border-primary" : "border-current", a.boxClass)} />
+                      {a.value}
                     </button>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Voice Persona */}
-      <section className="lg:col-span-5 rounded-2xl border border-white/10 bg-white/[0.025] p-5 flex flex-col shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
-        <SectionHeader icon={faMicrophone} title="Choose Voice" />
-
-        <div className="flex justify-start mb-4">
-          <div className="inline-flex p-0.5 rounded-full bg-white/5 border border-white/10">
-            {(["female", "male"] as const).map((g) => {
-              const active = voiceGender === g;
-              return (
-                <button
-                  key={g}
-                  type="button"
-                  onClick={() => {
-                    setVoiceGender(g);
-                    const first = allVoices.find((v) => v.gender === g);
-                    if (first) setVoiceId(first.voiceId);
-                  }}
-                  className={cn(
-                    "capitalize transition",
-                    active
-                      ? "bg-primary text-black rounded-full px-4 py-1 text-xs font-bold"
-                      : "text-white/60 px-4 py-1 text-xs hover:text-foreground"
-                  )}
-                >
-                  {g}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        <div className="flex flex-col gap-2 overflow-y-auto pr-1">
-          {filteredVoices.map((v) => {
-            const isSel = voiceId === v.voiceId;
-            const isPlay = playingVoice === v.voiceId;
-            return (
-              <div
-                key={v.id}
-                onClick={() => setVoiceId(v.voiceId)}
-                className={cn(
-                  "flex items-center gap-3 rounded-xl border p-3 cursor-pointer transition",
-                  isSel
-                    ? "border-primary bg-primary/[0.06]"
-                    : "border-white/10 bg-white/[0.02] hover:border-white/20"
-                )}
-              >
-                <div
-                  className={cn(
-                    "flex h-9 w-9 items-center justify-center rounded-lg border",
-                    isSel
-                      ? "bg-primary/10 border-primary/30 text-primary"
-                      : "bg-white/5 border-white/10 text-white/60"
-                  )}
-                >
-                  <FontAwesomeIcon icon={faMicrophone} style={{ fontSize: 13 }} />
+                  ))}
                 </div>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-[13px] font-semibold text-foreground">
-                    {v.name}
-                  </p>
-                  <p className="truncate text-[11px] text-white/45">
-                    {v.descriptor}
-                  </p>
-                </div>
-                {isPlay && <AudioBars />}
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setVoiceId(v.voiceId);
-                    playVoicePreview(v.voiceId, v.previewUrl);
-                  }}
-                  className={cn(
-                    "flex h-8 w-8 items-center justify-center rounded-lg border transition",
-                    isPlay
-                      ? "border-primary bg-primary text-black hover:brightness-110"
-                      : "border-white/10 bg-white/5 text-white/60 hover:text-foreground hover:bg-white/10",
-                  )}
-                  aria-label={isPlay ? "Pause voice" : "Play voice preview"}
-                >
-                  <FontAwesomeIcon
-                    icon={isPlay ? faPause : faPlay}
-                    style={{ fontSize: 11 }}
-                  />
-                </button>
               </div>
-            );
-          })}
-        </div>
-      </section>
-    </div>
-  );
-}
-
-/* ────────────────────────────────────────────────────────────────────── */
-/*  Step 2                                                                */
-/* ────────────────────────────────────────────────────────────────────── */
-
-function Step2({
-  script,
-  setScript,
-  aspectRatio,
-  setAspectRatio,
-  quality,
-  setQuality,
-  wordCount,
-}: {
-  script: string;
-  setScript: (s: string) => void;
-  aspectRatio: "9:16" | "1:1" | "16:9";
-  setAspectRatio: (a: "9:16" | "1:1" | "16:9") => void;
-  quality: "1080p" | "720p";
-  setQuality: (q: "1080p" | "720p") => void;
-  wordCount: number;
-}) {
-  return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:items-start">
-      {/* Script editor */}
-      <div className="lg:col-span-8 flex flex-col gap-4">
-        <ScriptEditor script={script} setScript={setScript} />
-
-        <div className="flex items-center gap-2 px-1 text-[11px] text-white/55">
-          <span className="h-1.5 w-1.5 rounded-full bg-primary/80" />
-          <span>{wordCount} words</span>
-        </div>
-      </div>
-
-      {/* Output Configuration */}
-      <aside className="lg:col-span-4 rounded-2xl border border-white/10 bg-white/[0.025] p-5 flex flex-col shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
-        <SectionHeader title="Output Configuration" />
-
-        <div className="space-y-4">
-          {/* Aspect Ratio */}
-          <div className="flex flex-col gap-2.5">
-            <label className="text-[10px] uppercase tracking-widest text-white/40 flex items-center gap-1.5">
-              <FontAwesomeIcon icon={faCrop} style={{ fontSize: 10 }} />
-              Aspect Ratio
-            </label>
-            <div className="grid grid-cols-3 gap-2">
-              {aspectChoices.map((a) => {
-                const isSel = aspectRatio === a.value;
-                return (
-                  <button
-                    key={a.value}
-                    type="button"
-                    onClick={() => setAspectRatio(a.value)}
-                    className={cn(
-                      "rounded-xl border p-3 flex flex-col items-center gap-1.5 transition",
-                      isSel
-                        ? "border-primary bg-primary/[0.06] text-primary"
-                        : "border-white/10 bg-white/[0.03] text-white/60 hover:border-white/20"
-                    )}
-                  >
-                    <span
+              <div>
+                <label className="text-xs font-semibold uppercase tracking-[0.12em] text-white/50 block mb-2">Duration</label>
+                <div className="flex gap-2">
+                  {DURATION_CHOICES.map((d) => (
+                    <button
+                      key={d.value}
+                      type="button"
+                      onClick={() => setDuration(d.value)}
                       className={cn(
-                        "rounded-sm border",
-                        a.boxClass,
-                        isSel ? "border-primary" : "border-white/40"
+                        "flex-1 rounded-xl border py-3 text-[12px] font-semibold transition",
+                        duration === d.value
+                          ? "border-primary/40 bg-primary/5 text-primary"
+                          : "border-white/10 bg-white/5 text-white/50 hover:text-white"
                       )}
-                    />
-                    <span className="text-[12px] font-semibold">{a.value}</span>
-                    <span className="text-[9px] text-white/40 leading-tight">
-                      {a.px.replace("x", "×")}
-                    </span>
-                  </button>
-                );
-              })}
+                    >
+                      {d.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
-          </div>
 
-          {/* Video Quality */}
-          <div className="flex flex-col gap-2.5">
-            <label className="text-[10px] uppercase tracking-widest text-white/40">
-              Video Quality
-            </label>
-            <div className="grid grid-cols-2 gap-2">
-              {(["1080p", "720p"] as const).map((q) => {
-                const active = quality === q;
-                return (
-                  <button
-                    key={q}
-                    type="button"
-                    onClick={() => setQuality(q)}
-                    className={cn(
-                      "rounded-xl border px-3 py-2.5 text-center transition",
-                      active
-                        ? "border-primary/40 bg-primary/[0.08] text-primary"
-                        : "border-white/10 bg-white/[0.03] text-white/60 hover:border-white/20 hover:text-foreground"
-                    )}
-                  >
-                    <div className="text-[13px] font-semibold">
-                      {q === "1080p" ? "1080p" : "720p"}
-                    </div>
-                    <div className={cn("text-[10px] mt-0.5", active ? "text-primary/70" : "text-white/40")}>
-                      {q === "1080p" ? "HD" : "Standard"}
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-            <p className="text-[11px] text-white/55">
-              This generation will use{" "}
-              <span className="text-primary font-semibold">
-                {quality === "1080p" ? 25 : 20}
-              </span>{" "}
-              credits
-            </p>
-          </div>
+            {/* Error */}
+            {error && (
+              <p className="text-xs text-destructive bg-destructive/10 rounded-xl px-4 py-2.5">{error}</p>
+            )}
 
-        </div>
-      </aside>
-    </div>
-  );
-}
-
-/* ────────────────────────────────────────────────────────────────────── */
-/*  Step 3                                                                */
-/* ────────────────────────────────────────────────────────────────────── */
-
-function Step3({
-  generationStep,
-  progressPct,
-  currentStepLabel,
-  generationError,
-  onRetry,
-}: {
-  generationStep: number;
-  progressPct: number;
-  currentStepLabel: string;
-  generationError: string | null;
-  onRetry: () => void;
-}) {
-  if (generationError) {
-    return (
-      <div className="max-w-md mx-auto py-12">
-        <div className="rounded-2xl border border-destructive/30 bg-destructive/[0.06] p-6 text-center">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-destructive/15 border border-destructive/30">
-            <FontAwesomeIcon
-              icon={faXmark}
-              className="text-destructive"
-              style={{ fontSize: 22 }}
-            />
-          </div>
-          <h2 className="mt-5 text-xl font-bold text-foreground">
-            Generation failed
-          </h2>
-          <p className="mt-2 text-sm text-white/60">{generationError}</p>
-          <p className="mt-1 text-[11px] text-primary">
-            Your credits have been refunded
-          </p>
-          <button
-            type="button"
-            onClick={onRetry}
-            className="mt-6 rounded-xl bg-primary text-black ring-1 ring-inset ring-black/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.45),0_1px_2px_rgba(0,0,0,0.35)] px-6 py-2.5 text-sm font-bold transition hover:brightness-105"
-          >
-            Try Again
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="max-w-md mx-auto py-6 text-center">
-      {/* Polished spinner */}
-      <div className="relative size-16 mx-auto">
-        <div className="absolute inset-0 rounded-full border-2 border-white/10" />
-        <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-primary border-r-primary animate-spin" />
-        <div className="absolute inset-2 rounded-full border-2 border-transparent border-b-primary/60 animate-spin-reverse" />
-        <div className="absolute inset-0 flex items-center justify-center">
-          <FontAwesomeIcon
-            icon={faWandMagicSparkles}
-            className="text-primary"
-            style={{ fontSize: 16 }}
-          />
-        </div>
-      </div>
-
-      <h2 className="text-lg font-bold mt-5 text-foreground">
-        Generating your ad
-      </h2>
-
-      {/* Progress bar */}
-      <div className="mt-6">
-        <div className="h-1 rounded-full bg-white/[0.08] overflow-hidden">
-          <div
-            className="h-full bg-gradient-to-r from-primary via-primary to-primary/70 transition-all duration-700"
-            style={{ width: `${progressPct}%` }}
-          />
-        </div>
-        <div className="mt-1.5 flex justify-between text-[10px]">
-          <span className="text-white/60 font-medium">{currentStepLabel}</span>
-          <span className="text-white/40">{progressPct}%</span>
-        </div>
-      </div>
-
-      {/* Checklist */}
-      <div className="mt-5 text-left space-y-1.5">
-        {checklistLabels.map((label, i) => {
-          const done = i < generationStep;
-          const active = i === generationStep;
-          return (
-            <div
-              key={label}
-              className={cn(
-                "flex items-center gap-2.5 rounded-lg border px-3 py-2 transition",
-                done && "border-primary/30 bg-primary/[0.04] text-foreground",
-                active && "border-primary/40 bg-primary/[0.08] text-foreground",
-                !done &&
-                  !active &&
-                  "border-white/[0.08] bg-white/[0.02] text-white/35"
-              )}
+            {/* Generate button */}
+            <button
+              type="button"
+              onClick={handleGenerate}
+              disabled={!canGenerate}
+              className="w-full h-12 rounded-2xl bg-gradient-to-r from-primary via-primary to-primary/80 text-black font-bold text-sm flex items-center justify-center gap-2 hover:brightness-105 transition disabled:opacity-40 disabled:cursor-not-allowed"
             >
-              <span
-                className={cn(
-                  "flex h-5 w-5 items-center justify-center rounded-full text-[9px] font-bold",
-                  done && "bg-primary text-black",
-                  active &&
-                    "border border-primary text-primary animate-pulse",
-                  !done && !active && "border border-white/10 text-white/40"
-                )}
-              >
-                {done ? (
-                  <FontAwesomeIcon icon={faCheck} style={{ fontSize: 8 }} />
-                ) : (
-                  i + 1
-                )}
-              </span>
-              <span className="text-xs">{label}</span>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
+              {isGenerating ? (
+                <>
+                  <FontAwesomeIcon icon={faCircleNotch} className="animate-spin" style={{ fontSize: 14 }} />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <FontAwesomeIcon icon={faWandMagicSparkles} style={{ fontSize: 14 }} />
+                  Generate UGC Ad · 2 credits
+                </>
+              )}
+            </button>
 
-/* ────────────────────────────────────────────────────────────────────── */
-/*  Step 4                                                                */
-/* ────────────────────────────────────────────────────────────────────── */
-
-function Step4({
-  finalVideoUrl,
-  charData,
-  aspectRatio,
-  quality,
-  wordCount,
-  videoRef,
-  onReset,
-}: {
-  finalVideoUrl: string | null;
-  charData: { id: string; name: string; imageUrl: string } | undefined;
-  aspectRatio: "9:16" | "1:1" | "16:9";
-  quality: "1080p" | "720p";
-  wordCount: number;
-  videoRef: React.RefObject<HTMLVideoElement | null>;
-  onReset: () => void;
-}) {
-  const stageAspectClass =
-    aspectRatio === "16:9"
-      ? "aspect-video w-full"
-      : aspectRatio === "1:1"
-      ? "aspect-square max-h-[480px] max-w-[480px] w-full mx-auto"
-      : "aspect-[9/16] max-h-[480px] max-w-[270px] w-full mx-auto";
-
-  const isPortrait = aspectRatio === "9:16";
-
-  const durationSec = Math.max(1, Math.round((wordCount / 160) * 60));
-  const mm = String(Math.floor(durationSec / 60)).padStart(2, "0");
-  const ss = String(durationSec % 60).padStart(2, "0");
-
-  return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-      {/* Video player */}
-      <div className="lg:col-span-8 flex flex-col gap-3">
-        <div className="relative rounded-2xl border border-white/10 overflow-hidden bg-black shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
-          <div className="absolute top-3 left-3 z-10">
-            <span className="inline-flex items-center gap-2 rounded-full bg-black/60 backdrop-blur border border-white/10 px-3 py-1 text-[10px] font-mono text-white/70">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              Final_Render.mp4
-            </span>
+            {!selectedCharacter && (
+              <p className="text-center text-[11px] text-white/30">Select a character to continue</p>
+            )}
           </div>
-          {finalVideoUrl ? (
-            <video
-              ref={videoRef}
-              src={finalVideoUrl}
-              autoPlay
-              loop
-              muted
-              playsInline
-              controls
-              poster={charData?.imageUrl}
-              className={cn(
-                "w-full object-cover bg-black",
-                stageAspectClass,
-                isPortrait && "mx-auto"
-              )}
-            />
-          ) : (
-            <div
-              className={cn(
-                "w-full bg-black",
-                stageAspectClass,
-                isPortrait && "mx-auto"
-              )}
-            />
-          )}
-        </div>
-
-        <div className="flex flex-wrap gap-2">
-          {finalVideoUrl && (
-            <a
-              href={finalVideoUrl}
-              download
-              target="_blank"
-              rel="noopener noreferrer"
-              className="rounded-xl bg-primary text-black ring-1 ring-inset ring-black/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.45),0_1px_2px_rgba(0,0,0,0.35)] px-5 py-2.5 text-sm font-bold transition hover:brightness-105 flex items-center gap-2"
-            >
-              <FontAwesomeIcon icon={faDownload} style={{ fontSize: 12 }} />
-              Download
-            </a>
-          )}
-          <button
-            type="button"
-            className="rounded-xl border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] text-white/70 hover:text-foreground px-5 py-2.5 text-sm font-semibold transition flex items-center gap-2"
-          >
-            <FontAwesomeIcon icon={faShareNodes} style={{ fontSize: 12 }} />
-            Share
-          </button>
-          <button
-            type="button"
-            onClick={onReset}
-            className="rounded-xl border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] text-white/70 hover:text-foreground px-5 py-2.5 text-sm font-semibold transition flex items-center gap-2"
-          >
-            <FontAwesomeIcon icon={faArrowsRotate} style={{ fontSize: 12 }} />
-            Generate another
-          </button>
         </div>
       </div>
-
-      {/* Side meta panel */}
-      <aside className="lg:col-span-4 flex flex-col gap-5">
-        <div className="rounded-2xl border border-white/10 bg-white/[0.025] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
-          <h3 className="text-sm font-semibold text-foreground mb-3">
-            Generation details
-          </h3>
-          <dl>
-            <div className="flex items-center justify-between py-2 border-b border-white/5">
-              <dt className="text-[12px] text-white/45">Resolution</dt>
-              <dd>
-                <span className="rounded-full border border-primary/30 bg-primary/10 px-2.5 py-0.5 text-[11px] font-semibold text-primary">
-                  {quality}
-                </span>
-              </dd>
-            </div>
-            <div className="flex items-center justify-between py-2 border-b border-white/5">
-              <dt className="text-[12px] text-white/45">Aspect</dt>
-              <dd className="text-[12px] font-medium text-foreground">
-                {aspectRatio}
-              </dd>
-            </div>
-            <div className="flex items-center justify-between py-2 border-b border-white/5">
-              <dt className="text-[12px] text-white/45">Duration</dt>
-              <dd className="text-[12px] font-medium text-foreground">
-                {mm}:{ss}
-              </dd>
-            </div>
-            <div className="flex items-center justify-between py-2 border-b border-white/5">
-              <dt className="text-[12px] text-white/45">Format</dt>
-              <dd className="text-[12px] font-medium text-foreground">
-                MP4 / H.264
-              </dd>
-            </div>
-            <div className="flex items-center justify-between py-2 last:border-0">
-              <dt className="text-[12px] text-white/45">AI Model</dt>
-              <dd className="text-[12px] font-medium text-foreground">
-                UGC Gen v4.2
-              </dd>
-            </div>
-          </dl>
-        </div>
-
-      </aside>
-    </div>
-  );
-}
-
-function CustomAvatarTile({
-  onUploaded,
-}: {
-  onUploaded: (av: { id: string; name: string; imageUrl: string; categoryId: null }) => void;
-}) {
-  const [uploading, setUploading] = useState(false);
-
-  async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setUploading(true);
-    try {
-      const fd = new FormData();
-      fd.append("image", file);
-      const res = await fetch("/api/avatars/upload-custom", { method: "POST", body: fd });
-      const data = await res.json();
-      if (!res.ok) {
-        alert(data?.error || "Upload failed");
-        return;
-      }
-      onUploaded({
-        id: `custom-${Date.now()}`,
-        name: data.name || "Custom Avatar",
-        imageUrl: data.url,
-        categoryId: null,
-      });
-    } catch {
-      alert("Upload failed");
-    } finally {
-      setUploading(false);
-      e.target.value = "";
-    }
-  }
-
-  return (
-    <label className="relative flex aspect-[3/4] cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-white/15 bg-white/[0.02] hover:border-primary/40 hover:bg-primary/[0.03] transition text-center">
-      <input
-        type="file"
-        accept="image/*"
-        className="sr-only"
-        onChange={handleFile}
-        disabled={uploading}
-      />
-      <span className="flex size-9 items-center justify-center rounded-full bg-primary/10 border border-primary/30 text-primary">
-        <FontAwesomeIcon icon={uploading ? faCircleNotch : faPlus} className={uploading ? "animate-spin" : ""} style={{ fontSize: 12 }} />
-      </span>
-      <span className="text-[11px] font-semibold text-white/70 leading-tight px-2">
-        {uploading ? "Uploading..." : <>Upload your<br />avatar</>}
-      </span>
-    </label>
-  );
-}
-
-function ScriptEditor({
-  script,
-  setScript,
-}: {
-  script: string;
-  setScript: (s: string) => void;
-}) {
-  const [loading, setLoading] = useState(false);
-  const [notice, setNotice] = useState<{ kind: "info" | "error"; msg: string } | null>(null);
-
-  function showNotice(kind: "info" | "error", msg: string) {
-    setNotice({ kind, msg });
-    setTimeout(() => setNotice(null), 4000);
-  }
-
-  async function handleAssist() {
-    if (!script.trim()) {
-      showNotice("info", "Write a short idea first, then click AI Assist to expand it");
-      return;
-    }
-    setLoading(true);
-    try {
-      const res = await fetch("/api/ai-assist/script", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ existingScript: script }),
-      });
-      const data = await res.json();
-      if (!res.ok || !data?.script) {
-        showNotice("error", "AI Assist failed, please try again");
-        return;
-      }
-      setScript(data.script);
-    } catch {
-      showNotice("error", "AI Assist failed, please try again");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  return (
-    <div className="group relative rounded-2xl border border-white/10 bg-white/[0.025] flex flex-col h-[300px] overflow-hidden shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
-      <div className="px-5 py-3 flex items-center justify-between border-b border-white/5">
-        <div className="flex items-center gap-3">
-          <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-primary/80">
-            Script Content
-          </h2>
-        </div>
-        <button
-          type="button"
-          onClick={handleAssist}
-          disabled={loading}
-          className="rounded-lg bg-primary/10 border border-primary/25 text-primary px-3 py-1.5 text-xs font-semibold flex items-center gap-1.5 transition hover:bg-primary/15 disabled:opacity-60 disabled:cursor-not-allowed"
-        >
-          <FontAwesomeIcon
-            icon={loading ? faCircleNotch : faWandMagicSparkles}
-            className={loading ? "animate-spin" : ""}
-            style={{ fontSize: 11 }}
-          />
-          {loading ? "Writing..." : "AI Assist"}
-        </button>
-      </div>
-      {notice && (
-        <div
-          className={cn(
-            "px-5 py-2 text-[11px] border-b border-white/5",
-            notice.kind === "error"
-              ? "bg-destructive/10 text-destructive"
-              : "bg-primary/10 text-primary",
-          )}
-        >
-          {notice.msg}
-        </div>
-      )}
-      <textarea
-        value={script}
-        onChange={(e) => setScript(e.target.value)}
-        placeholder={
-          "Stop scrolling, this changed how I work.\n\nI used to spend hours on something so simple.\n\nThen I tried this, and now it takes minutes."
-        }
-        className="flex-1 px-5 py-4 bg-transparent border-0 outline-none resize-none text-[14px] leading-relaxed text-foreground placeholder:text-white/25"
-      />
-      <ScriptMeter script={script} />
-    </div>
-  );
-}
-
-function ScriptMeter({ script }: { script: string }) {
-  const words = script.trim() ? script.trim().split(/\s+/).length : 0;
-  const over = words > 42;
-  return (
-    <div className="px-5 py-2 border-t border-white/5 flex items-center justify-between text-[11px]">
-      <span className="text-white/50">
-        Keep it under ~42 words for a 15s video
-      </span>
-      <span className={cn("font-mono tabular-nums", over ? "text-amber" : "text-white/60")}>
-        {words}/42 words
-      </span>
-    </div>
-  );
-}
-
-function AudioBars() {
-  return (
-    <div className="flex items-end gap-[3px] h-5" aria-hidden>
-      {[0, 1, 2, 3].map((i) => (
-        <span
-          key={i}
-          className="w-[3px] rounded-full bg-primary animate-audio-bar"
-          style={{
-            animationDelay: `${i * 0.15}s`,
-            animationDuration: "0.9s",
-          }}
-        />
-      ))}
     </div>
   );
 }

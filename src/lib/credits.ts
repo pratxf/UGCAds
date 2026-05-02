@@ -24,10 +24,15 @@ export function formatCredits(units: number): string {
 
 /** Costs per generation type, in DISPLAY credits */
 export const COSTS = {
-  UGC_AD_SD: 20,        // 720p
-  UGC_AD_HD: 25,        // 1080p
-  PRODUCT_AD_SD: 20,    // 720p
-  PRODUCT_AD_HD: 25,    // 1080p
+  UGC_AD_5S: 20,
+  UGC_AD_10S: 25,
+  PRODUCT_AD_5S: 20,
+  PRODUCT_AD_10S: 25,
+  // Backwards-compat names for older quality-based records.
+  UGC_AD_SD: 20,
+  UGC_AD_HD: 25,
+  PRODUCT_AD_SD: 20,
+  PRODUCT_AD_HD: 25,
   MOCKUP: 1,            // Product Photoshoot (alias)
   PRODUCT_PHOTOSHOOT: 1,
   TRYON: 5,             // AI Try-On
@@ -35,6 +40,10 @@ export const COSTS = {
 
 /** Costs in DB units (tenths) */
 export const COSTS_UNITS = {
+  UGC_AD_5S: toUnits(COSTS.UGC_AD_5S),
+  UGC_AD_10S: toUnits(COSTS.UGC_AD_10S),
+  PRODUCT_AD_5S: toUnits(COSTS.PRODUCT_AD_5S),
+  PRODUCT_AD_10S: toUnits(COSTS.PRODUCT_AD_10S),
   UGC_AD_SD: toUnits(COSTS.UGC_AD_SD),
   UGC_AD_HD: toUnits(COSTS.UGC_AD_HD),
   PRODUCT_AD_SD: toUnits(COSTS.PRODUCT_AD_SD),

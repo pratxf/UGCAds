@@ -1,15 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { createPortal } from "react-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faFilm,
   faDownload,
   faPlay,
+  faPause,
   faCheck,
+  faCompress,
+  faExpand,
   faSpinner,
+  faVolumeHigh,
+  faVolumeXmark,
   faXmark,
   faWandMagicSparkles,
 } from "@fortawesome/free-solid-svg-icons";
@@ -193,13 +199,33 @@ export default function HistoryClient({ items: rawItems }: { items: Item[] }) {
           </div>
         ) : (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {filtered.map((g) => (
-              <button
+            {filtered.map((g) => {
+              const isVideo = g.type === "UGC Ad" || g.type === "Product Ad";
+              const canPreview =
+                g.status === "Complete" &&
+                Boolean(g.finalUrl);
+
+              return (
+              <article
                 key={g.id}
-                type="button"
-                onClick={() => g.status === "Complete" && g.finalUrl && setPreview(g)}
-                className="group relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl transition-all hover:border-white/20 hover:shadow-lg hover:shadow-black/30 text-left disabled:cursor-default"
-                disabled={g.status !== "Complete" || !g.finalUrl}
+                role={canPreview ? "button" : undefined}
+                tabIndex={canPreview ? 0 : undefined}
+                onClick={() => {
+                  if (canPreview) setPreview(g);
+                }}
+                onKeyDown={(e) => {
+                  if (!canPreview) return;
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    setPreview(g);
+                  }
+                }}
+                className={cn(
+                  "group relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl transition-all text-left",
+                  canPreview
+                    ? "cursor-pointer hover:border-white/20 hover:shadow-lg hover:shadow-black/30"
+                    : "cursor-default",
+                )}
               >
                 <div className="relative aspect-[4/3] bg-white/[0.03] overflow-hidden">
                   {g.characterImage || g.thumbnailUrl ? (
@@ -209,13 +235,14 @@ export default function HistoryClient({ items: rawItems }: { items: Item[] }) {
                       fill
                       className="object-cover object-top transition-transform duration-300 group-hover:scale-105"
                       sizes="300px"
+                      loading="lazy"
                     />
                   ) : (
                     <div className="flex size-full items-center justify-center">
                       <FontAwesomeIcon icon={faFilm} className="text-white/20" style={{ fontSize: 32 }} />
                     </div>
                   )}
-                  {g.finalUrl && g.status === "Complete" && g.type !== "Product Photoshoot" && g.type !== "AI Try-On" && (
+                  {g.finalUrl && g.status === "Complete" && isVideo && (
                     <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity">
                       <div className="flex size-10 items-center justify-center rounded-full bg-white/90 shadow-lg">
                         <FontAwesomeIcon icon={faPlay} className="text-black ml-0.5" style={{ fontSize: 16 }} />
@@ -256,8 +283,9 @@ export default function HistoryClient({ items: rawItems }: { items: Item[] }) {
                     <span className="text-[11px] text-white/50">{g.date}</span>
                   </div>
                 </div>
-              </button>
-            ))}
+              </article>
+              );
+            })}
           </div>
         )}
       </motion.div>
@@ -271,14 +299,19 @@ export default function HistoryClient({ items: rawItems }: { items: Item[] }) {
 
 function PreviewModal({ item, onClose }: { item: Item; onClose: () => void }) {
   const isVideo = item.type === "UGC Ad" || item.type === "Product Ad";
-  return (
+  return createPortal(
     <div
       onClick={onClose}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4"
+      className="flex items-center justify-center bg-black/90 p-4"
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 2147483647,
+      }}
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-5xl max-h-[92vh] flex flex-col rounded-3xl border border-white/10 bg-[#0c0c10] overflow-hidden"
+        className="relative flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#0c0c10] shadow-2xl"
       >
         <div className="flex items-center justify-between px-5 py-3 border-b border-white/10">
           <div>
@@ -303,15 +336,197 @@ function PreviewModal({ item, onClose }: { item: Item; onClose: () => void }) {
             </button>
           </div>
         </div>
-        <div className="flex-1 flex items-center justify-center bg-black overflow-hidden">
+        <div className="flex min-h-0 flex-1 items-center justify-center overflow-hidden bg-black">
           {isVideo ? (
-            <video src={item.finalUrl!} controls autoPlay className="max-h-[80vh] max-w-full" />
+            <CustomVideoPlayer
+              src={item.finalUrl!}
+              poster={item.thumbnailUrl || item.characterImage || undefined}
+            />
           ) : (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={item.finalUrl!} alt={item.title} className="max-h-[80vh] max-w-full object-contain" />
+            <ImagePreview src={item.finalUrl!} alt={item.title} />
           )}
+        </div>
+      </div>
+    </div>,
+    document.body,
+  );
+}
+
+function ImagePreview({ src, alt }: { src: string; alt: string }) {
+  const [loaded, setLoaded] = useState(false);
+
+  return (
+    <div className="relative flex min-h-[280px] w-full items-center justify-center">
+      {!loaded && <LoadingOverlay label="Loading image" />}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={src}
+        alt={alt}
+        decoding="async"
+        onLoad={() => setLoaded(true)}
+        className={cn(
+          "max-h-[80vh] max-w-full object-contain transition-opacity duration-200",
+          loaded ? "opacity-100" : "opacity-0",
+        )}
+      />
+    </div>
+  );
+}
+
+function CustomVideoPlayer({ src, poster }: { src: string; poster?: string }) {
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const shellRef = useRef<HTMLDivElement | null>(null);
+  const [isReady, setIsReady] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
+  const [duration, setDuration] = useState(0);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  useEffect(() => {
+    const onFullscreenChange = () => {
+      setIsFullscreen(Boolean(document.fullscreenElement));
+    };
+    document.addEventListener("fullscreenchange", onFullscreenChange);
+    return () => document.removeEventListener("fullscreenchange", onFullscreenChange);
+  }, []);
+
+  useEffect(() => {
+    setIsReady(false);
+    setIsPlaying(false);
+    setCurrentTime(0);
+  }, [src]);
+
+  const togglePlay = async () => {
+    const video = videoRef.current;
+    if (!video) return;
+    if (video.paused) {
+      await video.play().catch(() => undefined);
+    } else {
+      video.pause();
+    }
+  };
+
+  const toggleMute = () => {
+    const video = videoRef.current;
+    if (!video) return;
+    video.muted = !video.muted;
+    setIsMuted(video.muted);
+  };
+
+  const seek = (value: string) => {
+    const video = videoRef.current;
+    if (!video) return;
+    const nextTime = Number(value);
+    video.currentTime = nextTime;
+    setCurrentTime(nextTime);
+  };
+
+  const toggleFullscreen = async () => {
+    if (!shellRef.current) return;
+    if (document.fullscreenElement) {
+      await document.exitFullscreen().catch(() => undefined);
+    } else {
+      await shellRef.current.requestFullscreen().catch(() => undefined);
+    }
+  };
+
+  return (
+    <div ref={shellRef} className="relative flex max-h-[80vh] w-full items-center justify-center bg-black">
+      {!isReady && <LoadingOverlay label="Loading video" />}
+      <video
+        ref={videoRef}
+        src={src}
+        poster={poster}
+        autoPlay
+        playsInline
+        preload="metadata"
+        onLoadedMetadata={(e) => {
+          setDuration(e.currentTarget.duration || 0);
+        }}
+        onCanPlay={() => setIsReady(true)}
+        onPlay={() => setIsPlaying(true)}
+        onPause={() => setIsPlaying(false)}
+        onTimeUpdate={(e) => setCurrentTime(e.currentTarget.currentTime)}
+        onWaiting={() => setIsReady(false)}
+        onPlaying={() => setIsReady(true)}
+        onClick={togglePlay}
+        className={cn(
+          "max-h-[80vh] max-w-full cursor-pointer object-contain transition-opacity duration-200",
+          isReady ? "opacity-100" : "opacity-0",
+        )}
+      />
+
+      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/45 to-transparent px-4 pb-4 pt-10">
+        <input
+          type="range"
+          min={0}
+          max={Number.isFinite(duration) && duration > 0 ? duration : 0}
+          step={0.01}
+          value={currentTime}
+          onChange={(e) => seek(e.target.value)}
+          className="h-1 w-full accent-primary"
+          aria-label="Seek video"
+        />
+        <div className="mt-3 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <IconButton onClick={togglePlay} label={isPlaying ? "Pause" : "Play"}>
+              <FontAwesomeIcon icon={isPlaying ? faPause : faPlay} style={{ fontSize: 13 }} />
+            </IconButton>
+            <span className="min-w-[76px] text-xs font-medium text-white/80">
+              {formatTime(currentTime)} / {formatTime(duration)}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <IconButton onClick={toggleMute} label={isMuted ? "Unmute" : "Mute"}>
+              <FontAwesomeIcon icon={isMuted ? faVolumeXmark : faVolumeHigh} style={{ fontSize: 13 }} />
+            </IconButton>
+            <IconButton onClick={toggleFullscreen} label={isFullscreen ? "Exit fullscreen" : "Fullscreen"}>
+              <FontAwesomeIcon icon={isFullscreen ? faCompress : faExpand} style={{ fontSize: 13 }} />
+            </IconButton>
+          </div>
         </div>
       </div>
     </div>
   );
+}
+
+function IconButton({
+  children,
+  label,
+  onClick,
+}: {
+  children: React.ReactNode;
+  label: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={label}
+      title={label}
+      className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/18"
+    >
+      {children}
+    </button>
+  );
+}
+
+function LoadingOverlay({ label }: { label: string }) {
+  return (
+    <div className="absolute inset-0 z-10 flex items-center justify-center bg-black">
+      <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-2 text-xs font-medium text-white/70">
+        <FontAwesomeIcon icon={faSpinner} className="animate-spin text-primary" style={{ fontSize: 12 }} />
+        {label}
+      </div>
+    </div>
+  );
+}
+
+function formatTime(seconds: number) {
+  if (!Number.isFinite(seconds) || seconds <= 0) return "0:00";
+  const mins = Math.floor(seconds / 60);
+  const secs = Math.floor(seconds % 60);
+  return `${mins}:${String(secs).padStart(2, "0")}`;
 }

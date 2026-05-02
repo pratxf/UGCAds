@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import Sidebar from "@/components/app/Sidebar";
 import TopBar from "@/components/app/TopBar";
+import ActiveGenerationsPill from "@/components/app/ActiveGenerationsPill";
 import { getCurrentUser } from "@/lib/auth";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
@@ -18,6 +19,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       <div className="flex flex-1 flex-col lg:ml-[252px]">
         <TopBar credits={user.credits} />
         <main className="flex-1 p-4 sm:p-6 lg:p-8">{children}</main>
+        <ActiveGenerationsPill />
       </div>
     </div>
   );

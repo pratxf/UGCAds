@@ -18,7 +18,7 @@ export default async function HistoryPage() {
     status: statusLabel(g.status),
     date: formatDate(g.createdAt),
     characterImage: g.characterImage,
-    finalUrl: g.finalVideoUrl,
+    finalUrl: playbackUrl(g.type, g.finalVideoUrl),
     thumbnailUrl: g.thumbnailUrl,
   }));
 
@@ -41,6 +41,12 @@ function statusLabel(s: string): "Complete" | "Processing" | "Failed" {
     case "FAILED": return "Failed";
     default: return "Processing";
   }
+}
+
+function playbackUrl(type: string, finalUrl: string | null) {
+  const isVideo = type === "UGC_AD" || type === "PRODUCT_AD";
+  if (!isVideo || !finalUrl) return finalUrl;
+  return finalUrl.replace(/\/final-1080p\.mp4$/, "/synced.mp4");
 }
 
 function makeTitle(type: string, id: string) {

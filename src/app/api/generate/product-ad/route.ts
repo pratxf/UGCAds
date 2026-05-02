@@ -2,133 +2,103 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { inngest } from "@/lib/inngest";
+import { generateKieVideo, type VideoModel } from "@/lib/kie";
 import { uploadToR2 } from "@/lib/r2";
 import { COSTS_UNITS } from "@/lib/credits";
 import { rateLimitOrResponse } from "@/lib/rate-limit";
 
-const Schema = z.object({
-  characterId: z.string().optional(),
-  isCustomAvatar: z.coerce.boolean().default(false),
-  customAvatarUrl: z.string().url().optional(),
-  script: z.string().min(1).max(2000),
-  voiceId: z.string().min(1),
-  aspectRatio: z.enum(["NINE_SIXTEEN", "SIXTEEN_NINE", "ONE_ONE"]).default("NINE_SIXTEEN"),
-  quality: z.enum(["SD", "HD"]).default("HD"),
-});
+const ASPECT_MAP: Record<string, string> = {
+  NINE_SIXTEEN: "9:16",
+  SIXTEEN_NINE: "16:9",
+  ONE_ONE: "1:1",
+};
 
 export async function POST(request: Request) {
   try {
     const user = await requireUser();
     const blocked = rateLimitOrResponse(`gen-product:${user.id}`, { windowSec: 60, max: 5 });
     if (blocked) return blocked;
-    const formData = await request.formData();
 
-    const parsed = Schema.parse({
-      characterId: formData.get("characterId") || undefined,
-      isCustomAvatar: formData.get("isCustomAvatar") === "true",
-      customAvatarUrl: formData.get("customAvatarUrl") || undefined,
-      script: formData.get("script"),
-      voiceId: formData.get("voiceId"),
-      aspectRatio: formData.get("aspectRatio") || "NINE_SIXTEEN",
-      quality: formData.get("quality") || "HD",
+    const formData = await request.formData();
+    const prompt = (formData.get("prompt") as string || "").trim();
+    const videoModel = (formData.get("videoModel") as VideoModel) || "kling-3.0/video";
+    const aspectRatio = (formData.get("aspectRatio") as string) || "NINE_SIXTEEN";
+    const duration = (formData.get("duration") as string) || "5";
+
+    if (!prompt) return NextResponse.json({ error: "Prompt is required" }, { status: 400 });
+
+    const Schema = z.object({
+      videoModel: z.enum(["kling-3.0/video", "sora-2-image-to-video"]),
+      aspectRatio: z.enum(["NINE_SIXTEEN", "SIXTEEN_NINE", "ONE_ONE"]),
+      duration: z.enum(["5", "10", "15"]),
     });
+    const parsed = Schema.parse({ videoModel, aspectRatio, duration });
 
     const productFile = formData.get("productImage") as File | null;
     if (!productFile || productFile.size === 0) {
-      return NextResponse.json({ error: "Missing product image" }, { status: 400 });
+      return NextResponse.json({ error: "Product image is required" }, { status: 400 });
     }
     if (productFile.size > 10 * 1024 * 1024) {
       return NextResponse.json({ error: "Product image too large (max 10MB)" }, { status: 413 });
     }
-    if (!productFile.type.startsWith("image/")) {
-      return NextResponse.json({ error: "Invalid file type" }, { status: 400 });
-    }
 
-    let characterImageUrl: string;
-    if (parsed.isCustomAvatar) {
-      if (!parsed.customAvatarUrl) {
-        return NextResponse.json({ error: "customAvatarUrl required" }, { status: 400 });
-      }
-      characterImageUrl = parsed.customAvatarUrl;
-    } else {
-      if (!parsed.characterId) {
-        return NextResponse.json({ error: "characterId required" }, { status: 400 });
-      }
-      const character = await prisma.productAdAvatar.findUnique({
-        where: { id: parsed.characterId },
-      });
-      if (!character || !character.isActive || !character.imageUrl) {
-        return NextResponse.json({ error: "Invalid character" }, { status: 400 });
-      }
-      characterImageUrl = character.imageUrl;
-    }
-
-    const voice = await prisma.voice.findUnique({ where: { voiceId: parsed.voiceId } });
-    if (!voice) {
-      return NextResponse.json({ error: "Invalid voice" }, { status: 400 });
-    }
-
-    const CREDIT_COST = parsed.quality === "HD" ? COSTS_UNITS.PRODUCT_AD_HD : COSTS_UNITS.PRODUCT_AD_SD;
-
+    const CREDIT_COST = COSTS_UNITS.PRODUCT_AD_5S;
     if (user.credits < CREDIT_COST) {
-      return NextResponse.json(
-        { error: "Insufficient credits", needed: CREDIT_COST, have: user.credits },
-        { status: 402 }
-      );
+      return NextResponse.json({ error: "Insufficient credits" }, { status: 402 });
     }
 
     const buffer = Buffer.from(await productFile.arrayBuffer());
     const ext = productFile.type.split("/")[1] || "jpg";
-    const productKey = `product/${user.id}/${Date.now()}.${ext}`;
-    const productImageUrl = await uploadToR2(buffer, productKey, productFile.type);
+    const key = `product-ad-input/${user.id}/${Date.now()}.${ext}`;
+    const productImageUrl = await uploadToR2(buffer, key, productFile.type);
 
     const generation = await prisma.$transaction(async (tx) => {
       await tx.user.update({
         where: { id: user.id, credits: { gte: CREDIT_COST } },
         data: { credits: { decrement: CREDIT_COST } },
       });
-
       const gen = await tx.generation.create({
         data: {
           userId: user.id,
           type: "PRODUCT_AD",
-          status: "PENDING",
-          characterId: parsed.isCustomAvatar ? null : parsed.characterId,
-          characterImage: characterImageUrl,
-          isCustomAvatar: parsed.isCustomAvatar,
-          customAvatarUrl: parsed.customAvatarUrl ?? null,
+          status: "GENERATING_VIDEO",
           productImage: productImageUrl,
-          script: parsed.script,
-          voiceId: parsed.voiceId,
+          script: prompt,
           aspectRatio: parsed.aspectRatio,
-          quality: parsed.quality,
+          quality: "HD",
           creditsUsed: CREDIT_COST,
           creditCost: CREDIT_COST,
-          provider: "FAL",
+          provider: "KIE",
+          aiModel: parsed.videoModel,
         },
       });
-
       await tx.transaction.create({
         data: {
           userId: user.id,
           type: "USAGE",
           status: "COMPLETED",
           credits: -CREDIT_COST,
-          description: `Product Ad generation`,
+          description: `Product Ad (${parsed.videoModel})`,
           metadata: { generationId: gen.id },
         },
       });
-
       return gen;
     });
 
-    await inngest.send({
-      name: "video.generate",
-      data: { generationId: generation.id },
+    const kieTaskId = await generateKieVideo({
+      model: parsed.videoModel,
+      imageUrl: productImageUrl,
+      prompt,
+      aspectRatio: ASPECT_MAP[parsed.aspectRatio] || "9:16",
+      duration: parsed.duration,
     });
 
-    return NextResponse.json({ id: generation.id, status: generation.status });
+    await prisma.generation.update({
+      where: { id: generation.id },
+      data: { metadata: { kieTaskId } },
+    });
+
+    return NextResponse.json({ id: generation.id, status: "Processing" });
   } catch (err: unknown) {
     const e = err as { message?: string; name?: string; code?: string; errors?: unknown };
     if (e?.message === "Unauthorized") return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

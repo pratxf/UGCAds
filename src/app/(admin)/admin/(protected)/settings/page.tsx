@@ -39,7 +39,7 @@ export default function AdminSettingsPage() {
       name: "Basic",
       price: "$19",
       credits: "15",
-      features: ["15 credits/month", "720p resolution", "Email support", "Basic characters"],
+      features: ["15 credits/month", "5s videos", "Email support", "Basic characters"],
       highlighted: false,
     },
     {
@@ -47,7 +47,7 @@ export default function AdminSettingsPage() {
       name: "Creator",
       price: "$39",
       credits: "30",
-      features: ["30 credits/month", "1080p resolution", "Priority support", "All characters", "Custom scripts"],
+      features: ["30 credits/month", "10s videos", "Priority support", "All characters", "Custom scripts"],
       highlighted: true,
     },
     {
@@ -55,7 +55,7 @@ export default function AdminSettingsPage() {
       name: "Agency",
       price: "$99",
       credits: "100",
-      features: ["100 credits/month", "4K resolution", "Dedicated support", "All characters", "API access", "White label"],
+      features: ["100 credits/month", "10s videos", "Dedicated support", "All characters", "API access", "White label"],
       highlighted: false,
     },
   ]);

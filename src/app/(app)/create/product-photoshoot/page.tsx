@@ -16,6 +16,8 @@ import {
   faPenToSquare,
   faCheck,
   faPlus,
+  faChevronDown,
+  faChevronUp,
 } from "@fortawesome/free-solid-svg-icons";
 import { cn } from "@/lib/utils";
 import { usePhotoshootTemplates, type LibraryItem } from "@/lib/hooks/use-library";
@@ -41,7 +43,8 @@ export default function PhotoshootCreator() {
   const [bgMode, setBgMode] = useState<BgMode>("templates");
   const [customPrompt, setCustomPrompt] = useState("");
   const [libraryOpen, setLibraryOpen] = useState(false);
-  const [modelChoice, setModelChoice] = useState<"flux" | "seedream">("flux");
+  const [modelChoice, setModelChoice] = useState<string>("seedream/4.5-edit");
+  const [modelPickerOpen, setModelPickerOpen] = useState(false);
 
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationId, setGenerationId] = useState<string | null>(null);
@@ -125,12 +128,12 @@ export default function PhotoshootCreator() {
     setGenerationError(null);
     setFinalImageUrl(null);
     setGenStatus("PENDING");
-    setUsedModel(modelChoice === "seedream" ? "seedream" : "flux-kontext");
+    setUsedModel(modelChoice);
     setIsGenerating(true);
 
     const fd = new FormData();
     fd.append("productImage", productFileRef.current);
-    fd.append("modelChoice", modelChoice);
+    fd.append("imageModel", modelChoice);
     fd.append("aspectRatio", aspectRatio);
     if (bgMode === "templates" && selectedTemplate) {
       // skip synthetic custom-* IDs that come from the user-uploaded scene tile
@@ -397,33 +400,65 @@ export default function PhotoshootCreator() {
               </span>
             </div>
 
-            {/* Model toggle */}
-            <div className="flex gap-2 mb-5">
-              {([
-                { id: "flux", label: "Flux Kontext Pro", note: "Better product accuracy" },
-                { id: "seedream", label: "Seedream V4.5", note: "Better scene creativity" },
-              ] as const).map((m) => {
-                const active = modelChoice === m.id;
-                return (
+            {/* Model picker */}
+            {(() => {
+              const IMAGE_MODELS = [
+                { id: "seedream/4.5-edit", name: "Seedream 4.5", tag: "ByteDance · 4K Edit", initials: "S", color: "bg-blue-600" },
+                { id: "gpt-image-2-image-to-image", name: "GPT Image 2", tag: "OpenAI · Photoreal", initials: "G", color: "bg-[#10a37f]" },
+                { id: "qwen2/image-edit", name: "Qwen2 Image", tag: "Alibaba · 2K Native", initials: "Q", color: "bg-purple-600" },
+                { id: "seedream/5-lite-image-to-image", name: "Seedream 5 Lite", tag: "ByteDance · Fast", initials: "S5", color: "bg-blue-500" },
+                { id: "flux-2/pro-image-to-image", name: "Flux 2 Pro", tag: "BFL · Multi-reference", initials: "F", color: "bg-zinc-700" },
+              ];
+              const current = IMAGE_MODELS.find((m) => m.id === modelChoice) || IMAGE_MODELS[0];
+              return (
+                <div className="rounded-2xl border border-white/10 bg-white/[0.025] overflow-hidden mb-5">
                   <button
-                    key={m.id}
                     type="button"
-                    onClick={() => setModelChoice(m.id)}
-                    className={cn(
-                      "flex-1 rounded-xl border p-3 text-left transition",
-                      active
-                        ? "border-primary bg-primary/[0.06]"
-                        : "border-white/10 bg-white/[0.03] hover:border-white/20",
-                    )}
+                    onClick={() => setModelPickerOpen((o) => !o)}
+                    className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-white/5 transition"
                   >
-                    <div className={cn("text-[12px] font-semibold", active ? "text-primary" : "text-foreground")}>
-                      {m.label}
-                    </div>
-                    <div className="text-[10px] text-white/45 mt-0.5">{m.note}</div>
+                    <span className="text-xs font-semibold uppercase tracking-[0.12em] text-white/50">Image Model</span>
+                    <FontAwesomeIcon icon={modelPickerOpen ? faChevronUp : faChevronDown} className="text-white/40" style={{ fontSize: 11 }} />
                   </button>
-                );
-              })}
-            </div>
+                  <div className="px-4 pb-3">
+                    <div className="flex items-center justify-between rounded-xl bg-white/5 border border-white/10 px-3 py-2.5">
+                      <div className="flex items-center gap-2.5">
+                        <div className={cn("flex size-7 items-center justify-center rounded-lg text-white text-[10px] font-bold", current.color)}>{current.initials}</div>
+                        <div>
+                          <p className="text-[13px] font-semibold text-white">{current.name}</p>
+                          <p className="text-[10px] text-white/40">{current.tag}</p>
+                        </div>
+                      </div>
+                      {!modelPickerOpen && (
+                        <button type="button" onClick={(e) => { e.stopPropagation(); setModelPickerOpen(true); }} className="text-[11px] font-semibold text-primary/80 hover:text-primary transition">Switch →</button>
+                      )}
+                    </div>
+                  </div>
+                  {modelPickerOpen && (
+                    <div className="px-4 pb-4 space-y-2">
+                      {IMAGE_MODELS.map((m) => (
+                        <button
+                          key={m.id}
+                          type="button"
+                          onClick={() => { setModelChoice(m.id); setModelPickerOpen(false); }}
+                          className={cn(
+                            "w-full flex items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition",
+                            modelChoice === m.id ? "border-primary/40 bg-primary/5" : "border-white/10 bg-white/[0.02] hover:bg-white/5"
+                          )}
+                        >
+                          <div className={cn("flex size-7 items-center justify-center rounded-lg text-white text-[10px] font-bold shrink-0", m.color)}>{m.initials}</div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-[13px] font-semibold text-white">{m.name}</p>
+                            <p className="text-[10px] text-white/40">{m.tag}</p>
+                          </div>
+                          {modelChoice === m.id && <FontAwesomeIcon icon={faCheck} className="text-primary" style={{ fontSize: 11 }} />}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
 
             {/* Mode tabs */}
             <div className="flex gap-1 p-1 mb-5 rounded-xl bg-white/[0.04]">

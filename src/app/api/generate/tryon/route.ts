@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { uploadToR2, uploadToR2FromUrl } from "@/lib/r2";
+import { mirrorToR2FromUrl, uploadToR2 } from "@/lib/r2";
 import { generateTryon } from "@/lib/fal";
 import { COSTS_UNITS } from "@/lib/credits";
 import { rateLimitOrResponse } from "@/lib/rate-limit";
@@ -98,7 +98,7 @@ export async function POST(request: Request) {
         category: parsed.garmentCategory,
       });
 
-      const finalUrl = await uploadToR2FromUrl(
+      const finalUrl = await mirrorToR2FromUrl(
         rawUrl,
         `generations/${generation.id}/tryon.jpg`,
         "image/jpeg",

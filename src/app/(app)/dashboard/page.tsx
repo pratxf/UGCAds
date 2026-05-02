@@ -8,14 +8,15 @@ export default async function DashboardPage() {
   // Fetch user's real generations + stats
   const [recentGenerations, totalAds, thisMonthCount, weeklyCounts] = await Promise.all([
     prisma.generation.findMany({
-      where: { userId: user.id },
+      where: { userId: user.id, status: { not: "FAILED" } },
       orderBy: { createdAt: "desc" },
       take: 5,
     }),
-    prisma.generation.count({ where: { userId: user.id } }),
+    prisma.generation.count({ where: { userId: user.id, status: { not: "FAILED" } } }),
     prisma.generation.count({
       where: {
         userId: user.id,
+        status: { not: "FAILED" },
         createdAt: { gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1) },
       },
     }),
@@ -65,6 +66,7 @@ async function getWeeklyCounts(userId: string) {
       const count = await prisma.generation.count({
         where: {
           userId,
+          status: { not: "FAILED" },
           createdAt: { gte: start, lt: end },
         },
       });

@@ -1,4 +1,6 @@
 import { fal } from "@fal-ai/client";
+import { generateSpeech, hasElevenLabsKey } from "@/lib/api/elevenlabs";
+import { uploadToR2 } from "@/lib/r2";
 
 fal.config({ credentials: process.env.FAL_KEY });
 
@@ -116,6 +118,20 @@ export async function generateVoiceover({
   script: string;
   voiceId: string;
 }): Promise<{ audioUrl: string }> {
+  if (hasElevenLabsKey()) {
+    try {
+      const audio = await generateSpeech(script, voiceId);
+      const key = `voiceovers/${Date.now()}-${Math.random().toString(36).slice(2)}.mp3`;
+      const audioUrl = await uploadToR2(Buffer.from(audio), key, "audio/mpeg");
+      return { audioUrl };
+    } catch (error) {
+      console.warn("[tts] direct ElevenLabs failed; falling back to fal", {
+        voiceId,
+        message: error instanceof Error ? error.message : String(error),
+      });
+    }
+  }
+
   const result = await fal.subscribe("fal-ai/elevenlabs/tts/multilingual-v2", {
     input: {
       text: script,
@@ -205,20 +221,4 @@ export async function generateTryon({
   const imageUrl = data?.images?.[0]?.url || data?.image?.url;
   if (!imageUrl) throw new Error("No image URL returned from virtual try-on");
   return { imageUrl };
-}
-
-/**
- * Step 4 (HD only): Upscale to 1080p
- */
-export async function upscaleVideo({
-  videoUrl,
-}: {
-  videoUrl: string;
-}): Promise<{ videoUrl: string }> {
-  const result = await fal.subscribe("fal-ai/topaz/upscale/video", {
-    input: { video_url: videoUrl },
-  });
-  const upscaledUrl = (result.data as { video?: { url?: string } })?.video?.url;
-  if (!upscaledUrl) throw new Error("No video URL returned from upscaler");
-  return { videoUrl: upscaledUrl };
 }

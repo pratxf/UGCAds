@@ -44,6 +44,27 @@ export async function uploadToR2FromUrl(
 }
 
 /**
+ * Best-effort mirror for generated provider assets.
+ * If R2 is unavailable after a paid provider job succeeds, keep the provider URL
+ * so the generation can still complete and the user can access the output.
+ */
+export async function mirrorToR2FromUrl(
+  url: string,
+  key: string,
+  contentType?: string
+): Promise<string> {
+  try {
+    return await uploadToR2FromUrl(url, key, contentType);
+  } catch (error) {
+    console.warn("[r2] generated asset mirror failed; using source URL", {
+      key,
+      message: error instanceof Error ? error.message : String(error),
+    });
+    return url;
+  }
+}
+
+/**
  * Upload a Buffer or stream directly.
  */
 export async function uploadToR2(
