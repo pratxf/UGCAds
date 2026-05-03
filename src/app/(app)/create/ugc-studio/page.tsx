@@ -197,6 +197,7 @@ export default function UGCStudio() {
   useEffect(() => {
     heroRefs.current.forEach((v, i) => {
       if (!v) return;
+      v.muted = true;
       if (i === heroIdx) { v.currentTime = 0; v.play().catch(() => {}); }
       else { v.pause(); v.currentTime = 0; }
     });
@@ -401,9 +402,8 @@ export default function UGCStudio() {
                       transition: "transform 0.45s cubic-bezier(0.4,0,0.2,1), opacity 0.45s ease",
                     }}>
                     <video
-                      ref={el => { heroRefs.current[i] = el; }}
+                      ref={el => { heroRefs.current[i] = el; if (el) { el.muted = true; el.playsInline = true; } }}
                       src={src}
-                      muted
                       playsInline
                       onEnded={() => setHeroIdx(n => (n + 1) % 3)}
                       className="w-full h-full object-cover"
