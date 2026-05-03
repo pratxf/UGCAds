@@ -402,7 +402,15 @@ export default function UGCStudio() {
                       transition: "transform 0.45s cubic-bezier(0.4,0,0.2,1), opacity 0.45s ease",
                     }}>
                     <video
-                      ref={el => { heroRefs.current[i] = el; if (el) { el.muted = true; el.playsInline = true; } }}
+                      key={isActive ? `active-${heroIdx}` : `idle-${i}`}
+                      ref={el => {
+                        heroRefs.current[i] = el;
+                        if (el) {
+                          el.muted = true;
+                          el.playsInline = true;
+                          if (isActive) setTimeout(() => el.play().catch(() => {}), 60);
+                        }
+                      }}
                       src={src}
                       playsInline
                       onEnded={() => setHeroIdx(n => (n + 1) % 3)}
