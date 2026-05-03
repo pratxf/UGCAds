@@ -384,7 +384,7 @@ export default function UGCStudio() {
                 const offset = (i - heroIdx + 3) % 3;
                 const isActive = offset === 0;
                 const isRight = offset === 1;
-                const tx = isActive ? "translateX(-50%)" : isRight ? "translateX(calc(-50% + 148px))" : "translateX(calc(-50% - 148px))";
+                const tx = isActive ? "translateX(-50%)" : isRight ? "translateX(calc(-50% + 105px))" : "translateX(calc(-50% - 105px))";
                 const rotate = isActive ? "rotate(0deg)" : isRight ? "rotate(7deg)" : "rotate(-7deg)";
                 const scale = isActive ? "scale(1)" : "scale(0.82)";
                 return (
@@ -416,7 +416,6 @@ export default function UGCStudio() {
                       onEnded={() => setHeroIdx(n => (n + 1) % 3)}
                       className="w-full h-full object-cover"
                     />
-                    {!isActive && <div className="absolute inset-0" style={{ background: "rgba(0,0,0,0.3)" }} />}
                   </div>
                 );
               })}
