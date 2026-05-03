@@ -135,7 +135,7 @@ export async function generateKieVideo({
       sound: true,
       duration,
       aspect_ratio: aspectRatio,
-      mode: "pro",
+      mode: "std",
       multi_shots: false,
       kling_elements: [],
       multi_prompt: [],
