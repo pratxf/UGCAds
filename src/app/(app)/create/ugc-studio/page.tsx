@@ -362,13 +362,40 @@ export default function UGCStudio() {
 
         {/* ── Idle state ───────────────────────────── */}
         {!isGenerating && !finalVideoUrl && (
-          <div className="flex flex-col items-center justify-end flex-1 gap-10 pb-16">
+          <div className="flex flex-col items-center justify-end flex-1 gap-6 pb-16">
 
-            {/* Headline */}
-            <h2 className="text-[38px] font-bold text-center text-white"
-              style={{ letterSpacing: "-0.02em", lineHeight: 1.1 }}>
-              {mode === "ugc" ? "TURN ANY CHARACTER INTO A VIDEO AD" : "PAIR AN AVATAR WITH YOUR PRODUCT"}
-            </h2>
+            {/* ── Hero video columns ─────────────────── */}
+            <div className="relative w-full flex-1 flex items-start justify-center overflow-hidden" style={{ minHeight: 0 }}>
+              {/* Video grid */}
+              <div className="flex gap-3 px-4" style={{ alignItems: "flex-start" }}>
+                {[
+                  { src: "/videos/hero-1.mp4", offset: 40 },
+                  { src: "/videos/hero-2.mp4", offset: 0 },
+                  { src: "/videos/hero-3.mp4", offset: 60 },
+                ].map((v, i) => (
+                  <div key={i} className="relative rounded-2xl overflow-hidden shrink-0"
+                    style={{ width: 180, aspectRatio: "9/16", transform: `translateY(${v.offset}px)`, boxShadow: "0 8px 40px rgba(0,0,0,0.6)" }}>
+                    <video
+                      src={v.src}
+                      autoPlay muted loop playsInline
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.35))" }} />
+                  </div>
+                ))}
+              </div>
+              {/* Bottom fade to page bg */}
+              <div className="absolute inset-x-0 bottom-0 pointer-events-none" style={{ height: 160, background: "linear-gradient(to top, #000 30%, transparent)" }} />
+              {/* Top fade */}
+              <div className="absolute inset-x-0 top-0 pointer-events-none" style={{ height: 60, background: "linear-gradient(to bottom, #000 0%, transparent)" }} />
+              {/* Headline overlaid at bottom of hero */}
+              <div className="absolute inset-x-0 bottom-6 flex flex-col items-center gap-2 px-4">
+                <h2 className="text-[36px] font-bold text-center text-white"
+                  style={{ letterSpacing: "-0.02em", lineHeight: 1.1, textShadow: "0 2px 20px rgba(0,0,0,0.8)" }}>
+                  {mode === "ugc" ? "TURN ANY CHARACTER INTO A VIDEO AD" : "PAIR AN AVATAR WITH YOUR PRODUCT"}
+                </h2>
+              </div>
+            </div>
 
             {/* ── Input area ─────────────────────────── */}
             <div className="w-full" style={{ maxWidth: 1020 }}>
