@@ -494,11 +494,11 @@ function LibraryModal({
   return (
     <div
       onClick={onClose}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-md p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 lg:pl-[268px]"
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-6xl max-h-[88vh] overflow-hidden rounded-3xl border border-white/10 bg-[#050505] flex flex-col"
+        className="w-full max-w-6xl max-h-[88vh] overflow-hidden rounded-3xl border border-white/[0.08] bg-[#050505] flex flex-col"
       >
         <div className="flex items-center justify-between px-6 py-4 border-b border-white/10">
           <h3 className="text-lg font-bold tracking-tight">Choose a model</h3>
