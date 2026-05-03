@@ -109,7 +109,7 @@ export async function generateKieImage({
 
 // ─── Image-to-Video ──────────────────────────────────────────────
 
-export type VideoModel = "kling-3.0/video" | "sora-2-image-to-video";
+export type VideoModel = "kling-3.0/video" | "kling-2.6/image-to-video" | "sora-2-image-to-video";
 
 export async function generateKieVideo({
   model,
@@ -139,6 +139,16 @@ export async function generateKieVideo({
       multi_shots: false,
       kling_elements: [],
       multi_prompt: [],
+    });
+    return taskId;
+  }
+
+  if (model === "kling-2.6/image-to-video") {
+    const taskId = await createKieTask("kling-2.6/image-to-video", {
+      prompt,
+      image_urls: imageUrls,
+      sound: true,
+      duration,
     });
     return taskId;
   }
