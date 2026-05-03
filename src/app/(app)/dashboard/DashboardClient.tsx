@@ -374,9 +374,9 @@ export default function DashboardClient({
                   className="group flex items-center gap-4 rounded-2xl border border-white/5 bg-white/[0.03] p-3 transition-all hover:border-white/10 hover:bg-white/[0.06]"
                 >
                   <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-white/5">
-                    {g.characterImage ? (
+                    {(g.thumbnailUrl || g.characterImage) ? (
                       <Image
-                        src={g.characterImage}
+                        src={g.thumbnailUrl || g.characterImage!}
                         alt={g.title}
                         fill
                         className="object-cover object-top"
@@ -385,13 +385,6 @@ export default function DashboardClient({
                     ) : (
                       <div className="flex h-full w-full items-center justify-center">
                         <FontAwesomeIcon icon={faFilm} className="text-white/30" style={{ fontSize: 20 }} />
-                      </div>
-                    )}
-                    {g.thumbnailUrl && (
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
-                        <div className="flex h-7 w-7 items-center justify-center rounded-full bg-white/90">
-                          <FontAwesomeIcon icon={faPlay} className="ml-0.5 text-black" style={{ fontSize: 12 }} />
-                        </div>
                       </div>
                     )}
                   </div>
