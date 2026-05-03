@@ -289,14 +289,14 @@ export default function UGCStudio() {
 
   return (
     <div className="flex flex-col" style={{ minHeight: "calc(100vh - 2rem)" }}>
-      <div className="flex flex-col flex-1 px-8 pt-8 pb-10">
+      <div className="flex flex-col flex-1 pt-0 pb-10">
 
         {/* ── Generating shimmer view ─────────────── */}
         {isGenerating && !finalVideoUrl && (() => {
           const skeletonW = aspectRatio === "9:16" ? 220 : aspectRatio === "16:9" ? 440 : 300;
           const skeletonH = aspectRatio === "9:16" ? 390 : aspectRatio === "16:9" ? 247 : 300;
           return (
-            <div className="flex flex-col items-center justify-center flex-1 gap-8 py-10">
+            <div className="flex flex-col items-center justify-center flex-1 gap-8 py-10 px-8">
               <div className="flex flex-col items-center gap-2 text-center">
                 <p className="text-[24px] font-bold text-white" style={{ letterSpacing: "-0.02em" }}>Generating your video</p>
                 <p className="text-[13px]" style={{ color: P.muted }}>Usually takes 2 to 4 minutes</p>
@@ -342,7 +342,7 @@ export default function UGCStudio() {
 
         {/* ── Result view ──────────────────────────── */}
         {finalVideoUrl && (
-          <div className="flex flex-col items-center justify-center flex-1 gap-6">
+          <div className="flex flex-col items-center justify-center flex-1 gap-6 px-8">
             <video src={finalVideoUrl} controls autoPlay className="rounded-2xl"
               style={{ maxHeight: 420, aspectRatio: aspectRatio.replace(":", "/") }} />
             <div className="flex gap-3">
@@ -362,36 +362,32 @@ export default function UGCStudio() {
 
         {/* ── Idle state ───────────────────────────── */}
         {!isGenerating && !finalVideoUrl && (
-          <div className="flex flex-col items-center justify-end flex-1 gap-6 pb-16">
+          <div className="flex flex-col items-center justify-end flex-1 gap-6 pb-8 px-8">
 
             {/* ── Hero video columns ─────────────────── */}
-            <div className="relative w-full flex-1 flex items-start justify-center overflow-hidden" style={{ minHeight: 0 }}>
+            <div className="relative w-full rounded-2xl overflow-hidden" style={{ height: 420 }}>
               {/* Video grid */}
-              <div className="flex gap-3 px-4" style={{ alignItems: "flex-start" }}>
+              <div className="absolute inset-0 flex items-start justify-center gap-4">
                 {[
-                  { src: "/videos/hero-1.mp4", offset: 40 },
-                  { src: "/videos/hero-2.mp4", offset: 0 },
-                  { src: "/videos/hero-3.mp4", offset: 60 },
+                  { src: "/videos/hero-1.mp4", mt: 50 },
+                  { src: "/videos/hero-2.mp4", mt: 0 },
+                  { src: "/videos/hero-3.mp4", mt: 70 },
                 ].map((v, i) => (
                   <div key={i} className="relative rounded-2xl overflow-hidden shrink-0"
-                    style={{ width: 180, aspectRatio: "9/16", transform: `translateY(${v.offset}px)`, boxShadow: "0 8px 40px rgba(0,0,0,0.6)" }}>
-                    <video
-                      src={v.src}
-                      autoPlay muted loop playsInline
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.35))" }} />
+                    style={{ width: 168, height: 298, marginTop: v.mt, boxShadow: "0 8px 40px rgba(0,0,0,0.7)" }}>
+                    <video src={v.src} autoPlay muted loop playsInline className="w-full h-full object-cover" />
+                    <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, rgba(0,0,0,0.05), rgba(0,0,0,0.4))" }} />
                   </div>
                 ))}
               </div>
-              {/* Bottom fade to page bg */}
-              <div className="absolute inset-x-0 bottom-0 pointer-events-none" style={{ height: 160, background: "linear-gradient(to top, #000 30%, transparent)" }} />
+              {/* Bottom fade */}
+              <div className="absolute inset-x-0 bottom-0 pointer-events-none" style={{ height: 200, background: "linear-gradient(to top, #000 40%, transparent)" }} />
               {/* Top fade */}
-              <div className="absolute inset-x-0 top-0 pointer-events-none" style={{ height: 60, background: "linear-gradient(to bottom, #000 0%, transparent)" }} />
-              {/* Headline overlaid at bottom of hero */}
-              <div className="absolute inset-x-0 bottom-6 flex flex-col items-center gap-2 px-4">
+              <div className="absolute inset-x-0 top-0 pointer-events-none" style={{ height: 80, background: "linear-gradient(to bottom, #000, transparent)" }} />
+              {/* Headline */}
+              <div className="absolute inset-x-0 bottom-8 flex items-center justify-center px-6">
                 <h2 className="text-[36px] font-bold text-center text-white"
-                  style={{ letterSpacing: "-0.02em", lineHeight: 1.1, textShadow: "0 2px 20px rgba(0,0,0,0.8)" }}>
+                  style={{ letterSpacing: "-0.02em", lineHeight: 1.1, textShadow: "0 2px 24px rgba(0,0,0,0.9)" }}>
                   {mode === "ugc" ? "TURN ANY CHARACTER INTO A VIDEO AD" : "PAIR AN AVATAR WITH YOUR PRODUCT"}
                 </h2>
               </div>
