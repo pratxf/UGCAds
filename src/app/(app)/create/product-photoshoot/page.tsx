@@ -65,10 +65,10 @@ export default function PhotoshootCreator() {
 
   // Promote selected template to the front of the visible row
   const visibleTemplates = (() => {
-    const head = filteredTemplates.slice(0, 4);
+    const head = filteredTemplates.slice(0, 5);
     if (!selectedTemplateObj) return head;
     if (head.find((t) => t.id === selectedTemplateObj.id)) return head;
-    return [selectedTemplateObj, ...head.slice(0, 3)];
+    return [selectedTemplateObj, ...head.slice(0, 4)];
   })();
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
