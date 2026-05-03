@@ -9,19 +9,31 @@ import { rateLimitOrResponse } from "@/lib/rate-limit";
 
 export const maxDuration = 120;
 
+// Edit models receive the uploaded image directly and modify it.
+// Prompt: "keep product unchanged, only change background."
+const EDIT_MODELS = new Set([
+  "gpt-image-2-image-to-image",
+  "seedream/4.5-edit",
+  "qwen2/image-edit",
+]);
+
 const ASPECT_MAP: Record<string, string> = {
-  "1:1": "1:1",
-  "4:5": "4:5",
-  "9:16": "9:16",
-  "16:9": "16:9",
+  "1:1": "1:1", "4:5": "4:5", "9:16": "9:16", "16:9": "16:9",
 };
 
-function buildPrompt(base: string): string {
+function buildPrompt(base: string, model: string): string {
+  if (EDIT_MODELS.has(model)) {
+    return (
+      `Keep this exact product completely unchanged — every label, text, logo, color, shape, and packaging detail must remain pixel-perfect identical to the input image. ` +
+      `Only replace the background and surrounding environment with: ${base}. ` +
+      `Do not modify, recreate, or alter the product in any way. Professional product photography lighting, sharp focus on the product.`
+    );
+  }
+  // image-to-image reference models (flux-2/pro, seedream-5-lite)
   return (
-    `Place the product shown in the reference image into this scene: ${base}. ` +
-    "The product must remain exactly as it appears — preserve all text, logos, colors, " +
-    "shape and packaging details with perfect accuracy. Only the background and environment " +
-    "should change. Professional product photography style, sharp focus on product."
+    `Place the exact product shown in the reference image into this scene: ${base}. ` +
+    "Preserve every detail of the product — all text, logos, colors, shape, and packaging must remain exactly as in the reference. " +
+    "Only the background and environment should change. Professional product photography style, sharp focus on product."
   );
 }
 
@@ -127,8 +139,7 @@ export async function POST(request: Request) {
       return gen;
     });
 
-    // Start kie.ai task
-    const finalPrompt = templatePrompt ? buildPrompt(templatePrompt) : buildPrompt(parsed.customPrompt!);
+    const finalPrompt = buildPrompt(templatePrompt ?? parsed.customPrompt!, parsed.imageModel);
     const kieTaskId = await generateKieImage({
       model: parsed.imageModel as ImageModel,
       imageUrl: productImageUrl,
@@ -136,25 +147,17 @@ export async function POST(request: Request) {
       aspectRatio: ASPECT_MAP[parsed.aspectRatio] || "1:1",
     });
 
-    // Poll inline (within maxDuration)
     const deadline = Date.now() + POLL_TIMEOUT_MS;
     let finalUrl: string | null = null;
 
     while (Date.now() < deadline) {
       await new Promise((r) => setTimeout(r, POLL_INTERVAL_MS));
       const result = await pollKieTask(kieTaskId);
-
       if (result.state === "success" && result.resultUrls[0]) {
-        finalUrl = await mirrorToR2FromUrl(
-          result.resultUrls[0],
-          `generations/${generation.id}/photoshoot.jpg`,
-          "image/jpeg",
-        );
+        finalUrl = await mirrorToR2FromUrl(result.resultUrls[0], `generations/${generation.id}/photoshoot.jpg`, "image/jpeg");
         break;
       }
-      if (result.state === "fail") {
-        throw new Error(result.failMsg || "KIE generation failed");
-      }
+      if (result.state === "fail") throw new Error(result.failMsg || "KIE generation failed");
     }
 
     if (!finalUrl) throw new Error("Generation timed out");
@@ -170,7 +173,8 @@ export async function POST(request: Request) {
     if (e?.message === "Unauthorized") return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     if (e?.name === "ZodError") return NextResponse.json({ error: "Invalid input", details: e.errors }, { status: 400 });
     if (e?.code === "P2025") return NextResponse.json({ error: "Insufficient credits" }, { status: 402 });
-    console.error(err);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    const msg = e?.message || "Internal server error";
+    console.error("[mockup]", msg, err);
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

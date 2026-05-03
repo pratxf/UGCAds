@@ -398,11 +398,11 @@ export default function PhotoshootCreator() {
             {/* Model picker */}
             {(() => {
               const IMAGE_MODELS = [
-                { id: "seedream/4.5-edit", name: "Seedream 4.5", tag: "ByteDance · 4K Edit", initials: "S", color: "bg-blue-600" },
-                { id: "gpt-image-2-image-to-image", name: "GPT Image 2", tag: "OpenAI · Photoreal", initials: "G", color: "bg-[#10a37f]" },
-                { id: "qwen2/image-edit", name: "Qwen2 Image", tag: "Alibaba · 2K Native", initials: "Q", color: "bg-purple-600" },
-                { id: "seedream/5-lite-image-to-image", name: "Seedream 5 Lite", tag: "ByteDance · Fast", initials: "S5", color: "bg-blue-500" },
-                { id: "flux-2/pro-image-to-image", name: "Flux 2 Pro", tag: "BFL · Multi-reference", initials: "F", color: "bg-zinc-700" },
+                { id: "seedream/4.5-edit", name: "Seedream 4.5", tag: "ByteDance · 4K Edit", logo: "/models/seedream-4-5.jpg" },
+                { id: "gpt-image-2-image-to-image", name: "GPT Image 2", tag: "OpenAI · Photoreal", logo: "/models/gpt-image-2.png" },
+                { id: "qwen2/image-edit", name: "Qwen2 Image", tag: "Alibaba · 2K Native", logo: "/models/qwen2-image.png" },
+                { id: "seedream/5-lite-image-to-image", name: "Seedream 5 Lite", tag: "ByteDance · Fast", logo: "/models/seedream-5-lite.png" },
+                { id: "flux-2/pro-image-to-image", name: "Flux 2 Pro", tag: "BFL · Multi-reference", logo: "/models/flux-2-pro.jpg" },
               ];
               const current = IMAGE_MODELS.find((m) => m.id === modelChoice) || IMAGE_MODELS[0];
               return (
@@ -414,7 +414,10 @@ export default function PhotoshootCreator() {
                     className="w-full flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2.5 hover:bg-white/[0.07] transition"
                   >
                     <div className="flex items-center gap-2.5">
-                      <div className={cn("flex size-7 items-center justify-center rounded-lg text-white text-[10px] font-bold shrink-0", current.color)}>{current.initials}</div>
+                      {"logo" in current && current.logo
+                        ? <img src={current.logo} alt={current.name} className="size-7 rounded-lg object-cover shrink-0" />
+                        : <div className={cn("flex size-7 items-center justify-center rounded-lg text-white text-[10px] font-bold shrink-0", (current as { color?: string }).color)}>{(current as { initials?: string }).initials}</div>
+                      }
                       <div className="text-left">
                         <p className="text-[13px] font-semibold text-white">{current.name}</p>
                         <p className="text-[10px] text-white/40">{current.tag}</p>
@@ -434,7 +437,10 @@ export default function PhotoshootCreator() {
                             modelChoice === m.id ? "bg-primary/[0.06]" : ""
                           )}
                         >
-                          <div className={cn("flex size-7 items-center justify-center rounded-lg text-white text-[10px] font-bold shrink-0", m.color)}>{m.initials}</div>
+                          {"logo" in m && m.logo
+                            ? <img src={m.logo} alt={m.name} className="size-7 rounded-lg object-cover shrink-0" />
+                            : <div className={cn("flex size-7 items-center justify-center rounded-lg text-white text-[10px] font-bold shrink-0", (m as { color?: string }).color)}>{(m as { initials?: string }).initials}</div>
+                          }
                           <div className="flex-1 min-w-0">
                             <p className="text-[13px] font-semibold text-white">{m.name}</p>
                             <p className="text-[10px] text-white/40">{m.tag}</p>
@@ -555,7 +561,14 @@ export default function PhotoshootCreator() {
           {finalImageUrl ? (
             <div className="space-y-3">
               <div className="rounded-xl border border-primary/30 bg-primary/[0.06] px-3 py-2 text-[11px] text-primary">
-                Generated with {usedModel === "seedream" ? "Seedream V4.5" : "Flux Kontext Pro"}
+                Generated with {
+                  usedModel === "seedream/4.5-edit" ? "Seedream 4.5" :
+                  usedModel === "gpt-image-2-image-to-image" ? "GPT Image 2" :
+                  usedModel === "qwen2/image-edit" ? "Qwen2 Image" :
+                  usedModel === "seedream/5-lite-image-to-image" ? "Seedream 5 Lite" :
+                  usedModel === "flux-2/pro-image-to-image" ? "Flux 2 Pro" :
+                  usedModel || "AI"
+                }
               </div>
               <button
                 type="button"

@@ -80,19 +80,30 @@ export async function generateKieImage({
   prompt: string;
   aspectRatio?: string;
 }): Promise<string> {
-  const input: Record<string, unknown> = {
-    prompt,
-    image_url: imageUrl,
-    aspect_ratio: aspectRatio,
-  };
-  if (model === "gpt-image-2-image-to-image") {
-    input.size = "1024x1024";
-    delete input.aspect_ratio;
+  // KIE models don't support 4:5 — map to closest portrait ratio
+  const kieAspect = aspectRatio === "4:5" ? "3:4" : aspectRatio;
+
+  let input: Record<string, unknown>;
+
+  switch (model) {
+    case "seedream/4.5-edit":
+      input = { prompt, image_urls: [imageUrl], aspect_ratio: kieAspect, quality: "high", nsfw_checker: false };
+      break;
+    case "gpt-image-2-image-to-image":
+      input = { prompt, input_urls: [imageUrl], aspect_ratio: "auto", resolution: "1K" };
+      break;
+    case "qwen2/image-edit":
+      input = { prompt, image_url: [imageUrl], image_size: kieAspect, output_format: "jpeg", nsfw_checker: false };
+      break;
+    case "seedream/5-lite-image-to-image":
+      input = { prompt, image_urls: [imageUrl], aspect_ratio: kieAspect, quality: "high", nsfw_checker: false };
+      break;
+    case "flux-2/pro-image-to-image":
+      input = { prompt, input_urls: [imageUrl], aspect_ratio: kieAspect, resolution: "1K", nsfw_checker: false };
+      break;
   }
-  if (model === "flux-2/pro-image-to-image") {
-    input.resolution = "1K";
-  }
-  const taskId = await createKieTask(model, input);
+
+  const taskId = await createKieTask(model, input!);
   return taskId;
 }
 
@@ -125,11 +136,14 @@ export async function generateKieVideo({
       duration,
       aspect_ratio: aspectRatio,
       mode: "pro",
+      multi_shots: false,
+      kling_elements: [],
+      multi_prompt: [],
     });
     return taskId;
   }
 
-  // Sora 2
+  // Sora 2 — minimum duration is 10s, aspect_ratio is "portrait" or "landscape"
   const soraAspect = aspectRatio === "16:9" ? "landscape" : "portrait";
   const nFrames = duration === "15" ? "15" : "10";
   const taskId = await createKieTask("sora-2-image-to-video", {
@@ -137,8 +151,8 @@ export async function generateKieVideo({
     image_urls: imageUrls,
     aspect_ratio: soraAspect,
     n_frames: nFrames,
-    remove_watermark: true,
     upload_method: "s3",
+    remove_watermark: true,
   });
   return taskId;
 }

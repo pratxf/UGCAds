@@ -25,9 +25,9 @@ type VideoModel = "kling-3.0/video" | "sora-2-image-to-video";
 type AspectRatio = "9:16" | "1:1" | "16:9";
 type Duration = "5" | "10" | "15";
 
-const VIDEO_MODELS: { id: VideoModel; name: string }[] = [
-  { id: "kling-3.0/video", name: "Kling 3.0" },
-  { id: "sora-2-image-to-video", name: "Sora 2" },
+const VIDEO_MODELS: { id: VideoModel; name: string; logo: string }[] = [
+  { id: "kling-3.0/video", name: "Kling 3.0", logo: "/models/kling-3.jpg" },
+  { id: "sora-2-image-to-video", name: "Sora 2", logo: "/models/sora-2.png" },
 ];
 
 // Palette
@@ -290,39 +290,72 @@ export default function UGCStudio() {
     <div className="flex flex-col" style={{ minHeight: "calc(100vh - 2rem)" }}>
       <div className="flex flex-col flex-1 px-8 pt-8 pb-10">
 
-        {/* ── Result area (when generating / done) ─── */}
-        {(isGenerating || finalVideoUrl) && (
-          <div className="flex flex-col items-center justify-center flex-1 gap-6">
-            {isGenerating && !finalVideoUrl && (
-              <div className="flex flex-col items-center gap-5">
-                <div className="flex gap-2.5">
-                  {[0, 150, 300].map((d) => (
-                    <div key={d} className="h-2.5 w-2.5 rounded-full animate-pulse"
-                      style={{ background: "#C6FF33", animationDelay: `${d}ms` }} />
-                  ))}
-                </div>
-                <p className="text-[20px] font-semibold text-white/80">Generating your video...</p>
-                <p className="text-[13px]" style={{ color: P.muted }}>This usually takes 2 to 4 minutes</p>
+        {/* ── Generating shimmer view ─────────────── */}
+        {isGenerating && !finalVideoUrl && (() => {
+          const skeletonW = aspectRatio === "9:16" ? 220 : aspectRatio === "16:9" ? 440 : 300;
+          const skeletonH = aspectRatio === "9:16" ? 390 : aspectRatio === "16:9" ? 247 : 300;
+          return (
+            <div className="flex flex-col items-center justify-center flex-1 gap-8 py-10">
+              <div className="flex flex-col items-center gap-2 text-center">
+                <p className="text-[24px] font-bold text-white" style={{ letterSpacing: "-0.02em" }}>Generating your video</p>
+                <p className="text-[13px]" style={{ color: P.muted }}>Usually takes 2 to 4 minutes</p>
               </div>
-            )}
-            {finalVideoUrl && (
-              <>
-                <video src={finalVideoUrl} controls autoPlay className="rounded-2xl"
-                  style={{ maxHeight: 420, aspectRatio: aspectRatio.replace(":", "/") }} />
-                <div className="flex gap-3">
-                  <button onClick={() => downloadAsset(finalVideoUrl, generationId!, mode === "ugc" ? "ugc-ad" : "product-ad")}
-                    className="inline-flex items-center gap-2 h-10 px-5 rounded-xl text-[13px] font-bold transition hover:brightness-110"
-                    style={{ background: "#C6FF33", color: "#000" }}>
-                    <FontAwesomeIcon icon={faDownload} style={{ fontSize: 12 }} /> Download
-                  </button>
-                  <button onClick={() => { setFinalVideoUrl(null); setGenerationId(null); setError(null); }}
-                    className="inline-flex items-center gap-2 h-10 px-5 rounded-xl text-[13px] font-semibold transition"
-                    style={{ border: `1px solid ${P.border}`, color: P.muted }}>
-                    <FontAwesomeIcon icon={faArrowsRotate} style={{ fontSize: 12 }} /> New
-                  </button>
+
+              {/* Shimmer skeleton */}
+              <div className="relative overflow-hidden rounded-2xl shimmer-sweep"
+                style={{
+                  width: skeletonW,
+                  height: skeletonH,
+                  background: "rgba(255,255,255,0.03)",
+                  border: "1px solid rgba(125,57,235,0.25)",
+                  boxShadow: "0 0 40px rgba(125,57,235,0.12)",
+                }}>
+                {/* Violet corner glow */}
+                <div className="absolute inset-x-0 bottom-0 h-1/3 pointer-events-none"
+                  style={{ background: "linear-gradient(to top, rgba(125,57,235,0.08), transparent)" }} />
+                {/* Model badge */}
+                <div className="absolute bottom-4 left-0 right-0 flex flex-col items-center gap-2">
+                  <img src={currentModel.logo} alt={currentModel.name}
+                    className="size-8 rounded-lg object-cover opacity-50" />
+                  <span className="text-[10px] font-semibold tracking-widest uppercase opacity-30 text-white">
+                    {currentModel.name}
+                  </span>
                 </div>
-              </>
-            )}
+              </div>
+
+              {/* Pulsing progress bar */}
+              <div className="relative h-[3px] rounded-full overflow-hidden" style={{ width: skeletonW, background: "rgba(255,255,255,0.05)" }}>
+                <div className="absolute inset-y-0 left-0 rounded-full animate-pulse"
+                  style={{ width: "40%", background: "linear-gradient(90deg, #7D39EB, #C6FF33)" }} />
+              </div>
+
+              <button
+                onClick={() => { stopPolling(); setIsGenerating(false); setGenerationId(null); }}
+                className="text-[12px] transition hover:text-white/60"
+                style={{ color: "rgba(255,255,255,0.25)" }}>
+                Cancel
+              </button>
+            </div>
+          );
+        })()}
+
+        {/* ── Result view ──────────────────────────── */}
+        {finalVideoUrl && (
+          <div className="flex flex-col items-center justify-center flex-1 gap-6">
+            <video src={finalVideoUrl} controls autoPlay className="rounded-2xl"
+              style={{ maxHeight: 420, aspectRatio: aspectRatio.replace(":", "/") }} />
+            <div className="flex gap-3">
+              <button onClick={() => downloadAsset(finalVideoUrl, generationId!, mode === "ugc" ? "ugc-ad" : "product-ad")}
+                className="inline-flex items-center gap-2 h-10 px-5 rounded-xl text-[13px] font-bold transition hover:brightness-110"
+                style={{ background: "#C6FF33", color: "#000" }}>
+                <FontAwesomeIcon icon={faDownload} style={{ fontSize: 12 }} /> Download
+              </button>
+              <button onClick={() => { setFinalVideoUrl(null); setGenerationId(null); setError(null); }}
+                className="inline-flex items-center gap-2 h-10 px-5 rounded-xl text-[13px] font-semibold transition"
+                style={{ border: `1px solid ${P.border}`, color: P.muted }}>
+                <FontAwesomeIcon icon={faArrowsRotate} style={{ fontSize: 12 }} /> New
+              </button>
+            </div>
           </div>
         )}
 
@@ -381,21 +414,22 @@ export default function UGCStudio() {
 
                     {/* Model dropdown */}
                     <div className="relative">
-                      <button onClick={() => setModelOpen((o) => !o)}
+                      <button onClick={() => { setModelOpen((o) => !o); }}
                         className="flex items-center gap-2 rounded-xl px-3.5 py-2 transition-all hover:bg-white/5"
                         style={{ background: "rgba(125,57,235,0.2)", border: "1px solid rgba(125,57,235,0.5)", boxShadow: "0 0 12px rgba(125,57,235,0.35)" }}>
-                        <FontAwesomeIcon icon={faWandMagicSparkles} style={{ fontSize: 13, color: "#d4d6f0" }} />
+                        <img src={currentModel.logo} alt={currentModel.name} className="size-5 rounded object-cover shrink-0" />
                         <span className="text-[13px] font-bold tracking-wide" style={{ color: "#e2d5dc" }}>{currentModel.name}</span>
                         <FontAwesomeIcon icon={faChevronDown} style={{ fontSize: 11, color: "#9ca3af", transform: modelOpen ? "rotate(180deg)" : "none", transition: "transform 0.15s" }} />
                       </button>
                       {modelOpen && (
                         <div className="absolute bottom-full left-0 mb-1.5 rounded-xl overflow-hidden shadow-2xl z-20"
-                          style={{ background: "#080808", border: `1px solid ${P.border}`, minWidth: 150 }}>
+                          style={{ background: "#080808", border: `1px solid ${P.border}`, minWidth: 160 }}>
                           {VIDEO_MODELS.map((m) => (
-                            <button key={m.id} onClick={() => { setVideoModel(m.id); setModelOpen(false); }}
-                              className="w-full flex items-center justify-between px-4 h-10 text-[13px] transition hover:bg-white/5"
+                            <button key={m.id} onClick={() => { setVideoModel(m.id); if (m.id === "sora-2-image-to-video" && duration === "5") setDuration("10"); setModelOpen(false); }}
+                              className="w-full flex items-center gap-2.5 px-3.5 h-11 text-[13px] transition hover:bg-white/5"
                               style={{ color: videoModel === m.id ? P.ube : "#c4c6e8" }}>
-                              {m.name}
+                              <img src={m.logo} alt={m.name} className="size-6 rounded object-cover shrink-0" />
+                              <span className="flex-1 text-left">{m.name}</span>
                               {videoModel === m.id && <FontAwesomeIcon icon={faCheck} style={{ fontSize: 10, color: P.ube }} />}
                             </button>
                           ))}
@@ -416,16 +450,22 @@ export default function UGCStudio() {
                     ))}
 
                     {/* Duration */}
-                    {(["5", "10", "15"] as Duration[]).map((d) => (
-                      <button key={d} onClick={() => setDuration(d)}
-                        className="flex items-center gap-2 rounded-xl px-3.5 py-2 transition-all hover:bg-white/5"
-                        style={duration === d
-                          ? { background: "rgba(125,57,235,0.2)", border: "1px solid rgba(125,57,235,0.5)", boxShadow: "0 0 10px rgba(125,57,235,0.35)" }
-                          : { background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={duration === d ? P.ube : "#d1d5db"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6V12L16 14"/></svg>
-                        <span className="text-[13px] font-bold tracking-wide" style={{ color: duration === d ? "#fff" : "#e2d5dc" }}>{d}s</span>
-                      </button>
-                    ))}
+                    {(["5", "10", "15"] as Duration[]).map((d) => {
+                      const isLocked = d === "5" && videoModel === "sora-2-image-to-video";
+                      const isActive = duration === d && !isLocked;
+                      return (
+                        <button key={d} onClick={() => !isLocked && setDuration(d)} disabled={isLocked}
+                          className="relative flex items-center gap-2 rounded-xl px-3.5 py-2 transition-all"
+                          style={isLocked
+                            ? { background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)", cursor: "not-allowed", opacity: 0.35 }
+                            : isActive
+                              ? { background: "rgba(125,57,235,0.2)", border: "1px solid rgba(125,57,235,0.5)", boxShadow: "0 0 10px rgba(125,57,235,0.35)" }
+                              : { background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={isActive ? P.ube : "#d1d5db"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6V12L16 14"/></svg>
+                          <span className="text-[13px] font-bold tracking-wide" style={{ color: isActive ? "#fff" : "#e2d5dc" }}>{d}s</span>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
