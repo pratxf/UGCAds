@@ -184,10 +184,23 @@ function AvatarModal({
 
 // ── Main Page ─────────────────────────────────────────────────────
 
+const HERO_VIDEOS = ["/videos/hero-1.mp4", "/videos/hero-2.mp4", "/videos/hero-3.mp4"];
+
 export default function UGCStudio() {
   const [mode, setMode] = useState<Mode>("ugc");
   const [avatarModalOpen, setAvatarModalOpen] = useState(false);
   const [modelOpen, setModelOpen] = useState(false);
+
+  const [heroIdx, setHeroIdx] = useState(0);
+  const heroRefs = useRef<(HTMLVideoElement | null)[]>([null, null, null]);
+
+  useEffect(() => {
+    heroRefs.current.forEach((v, i) => {
+      if (!v) return;
+      if (i === heroIdx) { v.currentTime = 0; v.play().catch(() => {}); }
+      else { v.pause(); v.currentTime = 0; }
+    });
+  }, [heroIdx]);
 
   const [selectedCharacter, setSelectedCharacter] = useState<string | null>(null);
   const [customAvatar, setCustomAvatar] = useState<{ id: string; name: string; imageUrl: string; categoryId: null } | null>(null);
@@ -289,14 +302,14 @@ export default function UGCStudio() {
 
   return (
     <div className="flex flex-col" style={{ minHeight: "calc(100vh - 2rem)" }}>
-      <div className="flex flex-col flex-1 pt-0 pb-10">
+      <div className="flex flex-col flex-1 px-8 pt-8 pb-10">
 
         {/* ── Generating shimmer view ─────────────── */}
         {isGenerating && !finalVideoUrl && (() => {
           const skeletonW = aspectRatio === "9:16" ? 220 : aspectRatio === "16:9" ? 440 : 300;
           const skeletonH = aspectRatio === "9:16" ? 390 : aspectRatio === "16:9" ? 247 : 300;
           return (
-            <div className="flex flex-col items-center justify-center flex-1 gap-8 py-10 px-8">
+            <div className="flex flex-col items-center justify-center flex-1 gap-8 py-10">
               <div className="flex flex-col items-center gap-2 text-center">
                 <p className="text-[24px] font-bold text-white" style={{ letterSpacing: "-0.02em" }}>Generating your video</p>
                 <p className="text-[13px]" style={{ color: P.muted }}>Usually takes 2 to 4 minutes</p>
@@ -342,7 +355,7 @@ export default function UGCStudio() {
 
         {/* ── Result view ──────────────────────────── */}
         {finalVideoUrl && (
-          <div className="flex flex-col items-center justify-center flex-1 gap-6 px-8">
+          <div className="flex flex-col items-center justify-center flex-1 gap-6">
             <video src={finalVideoUrl} controls autoPlay className="rounded-2xl"
               style={{ maxHeight: 420, aspectRatio: aspectRatio.replace(":", "/") }} />
             <div className="flex gap-3">
@@ -362,36 +375,50 @@ export default function UGCStudio() {
 
         {/* ── Idle state ───────────────────────────── */}
         {!isGenerating && !finalVideoUrl && (
-          <div className="flex flex-col items-center justify-end flex-1 gap-6 pb-8 px-8">
+          <div className="flex flex-col items-center justify-center flex-1 gap-8">
 
-            {/* ── Hero video columns ─────────────────── */}
-            <div className="relative w-full rounded-2xl overflow-hidden" style={{ height: 420 }}>
-              {/* Video grid */}
-              <div className="absolute inset-0 flex items-start justify-center gap-4">
-                {[
-                  { src: "/videos/hero-1.mp4", mt: 50 },
-                  { src: "/videos/hero-2.mp4", mt: 0 },
-                  { src: "/videos/hero-3.mp4", mt: 70 },
-                ].map((v, i) => (
-                  <div key={i} className="relative rounded-2xl overflow-hidden shrink-0"
-                    style={{ width: 168, height: 298, marginTop: v.mt, boxShadow: "0 8px 40px rgba(0,0,0,0.7)" }}>
-                    <video src={v.src} autoPlay muted loop playsInline className="w-full h-full object-cover" />
-                    <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, rgba(0,0,0,0.05), rgba(0,0,0,0.4))" }} />
+            {/* ── Hero cards ─────────────────────────── */}
+            <div className="relative flex items-center justify-center" style={{ width: 520, height: 340 }}>
+              {HERO_VIDEOS.map((src, i) => {
+                const offset = (i - heroIdx + 3) % 3;
+                const isActive = offset === 0;
+                const isRight = offset === 1;
+                const tx = isActive ? "translateX(-50%)" : isRight ? "translateX(calc(-50% + 148px))" : "translateX(calc(-50% - 148px))";
+                const rotate = isActive ? "rotate(0deg)" : isRight ? "rotate(7deg)" : "rotate(-7deg)";
+                const scale = isActive ? "scale(1)" : "scale(0.82)";
+                return (
+                  <div key={i} className="absolute"
+                    style={{
+                      left: "50%", top: 0,
+                      width: 168, height: 298,
+                      borderRadius: 20,
+                      overflow: "hidden",
+                      transform: `${tx} ${rotate} ${scale}`,
+                      transformOrigin: "bottom center",
+                      zIndex: isActive ? 3 : isRight ? 2 : 1,
+                      opacity: isActive ? 1 : 0.55,
+                      boxShadow: isActive ? "0 16px 60px rgba(0,0,0,0.8)" : "0 8px 24px rgba(0,0,0,0.5)",
+                      transition: "transform 0.45s cubic-bezier(0.4,0,0.2,1), opacity 0.45s ease",
+                    }}>
+                    <video
+                      ref={el => { heroRefs.current[i] = el; }}
+                      src={src}
+                      muted
+                      playsInline
+                      onEnded={() => setHeroIdx(n => (n + 1) % 3)}
+                      className="w-full h-full object-cover"
+                    />
+                    {!isActive && <div className="absolute inset-0" style={{ background: "rgba(0,0,0,0.3)" }} />}
                   </div>
-                ))}
-              </div>
-              {/* Bottom fade */}
-              <div className="absolute inset-x-0 bottom-0 pointer-events-none" style={{ height: 200, background: "linear-gradient(to top, #000 40%, transparent)" }} />
-              {/* Top fade */}
-              <div className="absolute inset-x-0 top-0 pointer-events-none" style={{ height: 80, background: "linear-gradient(to bottom, #000, transparent)" }} />
-              {/* Headline */}
-              <div className="absolute inset-x-0 bottom-8 flex items-center justify-center px-6">
-                <h2 className="text-[36px] font-bold text-center text-white"
-                  style={{ letterSpacing: "-0.02em", lineHeight: 1.1, textShadow: "0 2px 24px rgba(0,0,0,0.9)" }}>
-                  {mode === "ugc" ? "TURN ANY CHARACTER INTO A VIDEO AD" : "PAIR AN AVATAR WITH YOUR PRODUCT"}
-                </h2>
-              </div>
+                );
+              })}
             </div>
+
+            {/* Headline */}
+            <h2 className="text-[36px] font-bold text-center text-white"
+              style={{ letterSpacing: "-0.02em", lineHeight: 1.1 }}>
+              {mode === "ugc" ? "TURN ANY CHARACTER INTO A VIDEO AD" : "PAIR AN AVATAR WITH YOUR PRODUCT"}
+            </h2>
 
             {/* ── Input area ─────────────────────────── */}
             <div className="w-full" style={{ maxWidth: 1020 }}>
