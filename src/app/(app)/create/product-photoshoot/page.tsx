@@ -209,7 +209,7 @@ export default function PhotoshootCreator() {
   };
 
   return (
-    <div className="-m-4 sm:-m-6 lg:-m-8 grid lg:h-[calc(100vh-56px)] grid-cols-1 lg:grid-cols-[minmax(0,1fr)_440px] lg:overflow-hidden">
+    <div className="-m-4 sm:-m-6 lg:-m-8 grid lg:h-screen grid-cols-1 lg:grid-cols-[minmax(0,1fr)_440px] lg:overflow-hidden">
       {/* ─────────────── CANVAS PANEL ─────────────── */}
       <div className="flex flex-col items-center justify-center gap-4 p-4 sm:p-6 lg:p-8 lg:overflow-y-auto">
         {/* Top toolbar: live + aspect */}
@@ -394,11 +394,6 @@ export default function PhotoshootCreator() {
       <aside className="flex flex-col border-t lg:border-t-0 lg:border-l border-white/10 bg-white/[0.02] lg:overflow-hidden">
         <div className="flex-1 overflow-y-auto">
           <div className="p-6 border-b border-white/10">
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-white/40">
-                Scene Setup
-              </span>
-            </div>
 
             {/* Model picker */}
             {(() => {
@@ -411,39 +406,32 @@ export default function PhotoshootCreator() {
               ];
               const current = IMAGE_MODELS.find((m) => m.id === modelChoice) || IMAGE_MODELS[0];
               return (
-                <div className="rounded-2xl border border-white/10 bg-white/[0.025] overflow-hidden mb-5">
+                <div className="mb-5">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-white/40 mb-2">Image Model</p>
                   <button
                     type="button"
                     onClick={() => setModelPickerOpen((o) => !o)}
-                    className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-white/5 transition"
+                    className="w-full flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2.5 hover:bg-white/[0.07] transition"
                   >
-                    <span className="text-xs font-semibold uppercase tracking-[0.12em] text-white/50">Image Model</span>
-                    <FontAwesomeIcon icon={modelPickerOpen ? faChevronUp : faChevronDown} className="text-white/40" style={{ fontSize: 11 }} />
-                  </button>
-                  <div className="px-4 pb-3">
-                    <div className="flex items-center justify-between rounded-xl bg-white/5 border border-white/10 px-3 py-2.5">
-                      <div className="flex items-center gap-2.5">
-                        <div className={cn("flex size-7 items-center justify-center rounded-lg text-white text-[10px] font-bold", current.color)}>{current.initials}</div>
-                        <div>
-                          <p className="text-[13px] font-semibold text-white">{current.name}</p>
-                          <p className="text-[10px] text-white/40">{current.tag}</p>
-                        </div>
+                    <div className="flex items-center gap-2.5">
+                      <div className={cn("flex size-7 items-center justify-center rounded-lg text-white text-[10px] font-bold shrink-0", current.color)}>{current.initials}</div>
+                      <div className="text-left">
+                        <p className="text-[13px] font-semibold text-white">{current.name}</p>
+                        <p className="text-[10px] text-white/40">{current.tag}</p>
                       </div>
-                      {!modelPickerOpen && (
-                        <button type="button" onClick={(e) => { e.stopPropagation(); setModelPickerOpen(true); }} className="text-[11px] font-semibold text-primary/80 hover:text-primary transition">Switch →</button>
-                      )}
                     </div>
-                  </div>
+                    <FontAwesomeIcon icon={modelPickerOpen ? faChevronUp : faChevronDown} className="text-white/40 shrink-0" style={{ fontSize: 11 }} />
+                  </button>
                   {modelPickerOpen && (
-                    <div className="px-4 pb-4 space-y-2">
+                    <div className="mt-1.5 rounded-xl border border-white/10 bg-white/[0.03] overflow-hidden">
                       {IMAGE_MODELS.map((m) => (
                         <button
                           key={m.id}
                           type="button"
                           onClick={() => { setModelChoice(m.id); setModelPickerOpen(false); }}
                           className={cn(
-                            "w-full flex items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition",
-                            modelChoice === m.id ? "border-primary/40 bg-primary/5" : "border-white/10 bg-white/[0.02] hover:bg-white/5"
+                            "w-full flex items-center gap-3 px-3 py-2.5 text-left transition hover:bg-white/[0.05]",
+                            modelChoice === m.id ? "bg-primary/[0.06]" : ""
                           )}
                         >
                           <div className={cn("flex size-7 items-center justify-center rounded-lg text-white text-[10px] font-bold shrink-0", m.color)}>{m.initials}</div>
@@ -451,7 +439,7 @@ export default function PhotoshootCreator() {
                             <p className="text-[13px] font-semibold text-white">{m.name}</p>
                             <p className="text-[10px] text-white/40">{m.tag}</p>
                           </div>
-                          {modelChoice === m.id && <FontAwesomeIcon icon={faCheck} className="text-primary" style={{ fontSize: 11 }} />}
+                          {modelChoice === m.id && <FontAwesomeIcon icon={faCheck} className="text-primary shrink-0" style={{ fontSize: 11 }} />}
                         </button>
                       ))}
                     </div>
