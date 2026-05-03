@@ -184,7 +184,7 @@ function AvatarModal({
 
 // ── Main Page ─────────────────────────────────────────────────────
 
-const HERO_VIDEOS = ["/videos/hero-1.mp4", "/videos/hero-2.mp4", "/videos/hero-3.mp4"];
+const HERO_VIDEOS = ["/videos/hero-1-h264.mp4", "/videos/hero-2-h264.mp4", "/videos/hero-3-h264.mp4"];
 
 export default function UGCStudio() {
   const [mode, setMode] = useState<Mode>("ugc");
