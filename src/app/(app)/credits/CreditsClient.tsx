@@ -158,8 +158,8 @@ export default function CreditsClient({ currentPlanId, credits, monthlyCredits, 
             <div className="relative flex flex-col gap-6">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex flex-col gap-4">
-                  <span className="inline-flex w-fit items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1 text-[11px] font-semibold text-emerald-300">
-                    <span className="size-1.5 rounded-full bg-emerald-400" />
+                  <span className="inline-flex w-fit items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-[11px] font-semibold text-primary">
+                    <span className="size-1.5 rounded-full bg-primary" />
                     Active {"\u00B7"} {currentPlan?.name || "Creator"} plan
                   </span>
                   <div>
@@ -183,9 +183,9 @@ export default function CreditsClient({ currentPlanId, credits, monthlyCredits, 
                   >
                     <defs>
                       <linearGradient id="ring" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="#39FF14" />
-                        <stop offset="50%" stopColor="#A78BFA" />
-                        <stop offset="100%" stopColor="#FCD34D" />
+                        <stop offset="0%" stopColor="#7D39EB" />
+                        <stop offset="60%" stopColor="#C6FF33" />
+                        <stop offset="100%" stopColor="#C6FF33" />
                       </linearGradient>
                     </defs>
                     <circle
@@ -224,7 +224,7 @@ export default function CreditsClient({ currentPlanId, credits, monthlyCredits, 
                     initial={{ width: 0 }}
                     animate={{ width: `${remainingPct}%` }}
                     transition={{ duration: 1, delay: 0.3, ease: "easeOut" as const }}
-                    className="h-full rounded-full bg-gradient-to-r from-primary via-violet to-amber"
+                    className="h-full rounded-full bg-gradient-to-r from-violet to-primary"
                   />
                 </div>
               </div>
@@ -233,7 +233,7 @@ export default function CreditsClient({ currentPlanId, credits, monthlyCredits, 
               <div className="flex flex-wrap items-center gap-2.5">
                 <button
                   onClick={() => setShowPlansModal(true)}
-                  className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-primary via-violet to-amber px-4 py-2.5 text-xs font-semibold text-black shadow-lg shadow-primary/20 hover:brightness-110 transition"
+                  className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-violet to-primary px-4 py-2.5 text-xs font-semibold text-black shadow-lg shadow-primary/20 hover:brightness-110 transition"
                 >
                   <FontAwesomeIcon icon={faBolt} style={{ fontSize: 14 }} />
                   Upgrade plan
@@ -307,7 +307,7 @@ export default function CreditsClient({ currentPlanId, credits, monthlyCredits, 
               >
                 {pack.popular && (
                   <div className="absolute top-4 right-4 z-10">
-                    <span className="rounded-full bg-gradient-to-r from-violet-400 to-amber-300 px-2.5 py-1 text-[9px] font-bold text-black tracking-wide">
+                    <span className="rounded-full bg-primary px-2.5 py-1 text-[9px] font-bold text-black tracking-wide">
                       BEST VALUE
                     </span>
                   </div>
@@ -330,7 +330,7 @@ export default function CreditsClient({ currentPlanId, credits, monthlyCredits, 
                     className={cn(
                       "w-full rounded-xl h-10 text-xs font-semibold transition",
                       pack.popular
-                        ? "bg-gradient-to-r from-primary via-violet to-amber text-black shadow-lg shadow-primary/20 hover:brightness-110"
+                        ? "bg-gradient-to-r from-violet to-primary text-black shadow-lg shadow-primary/20 hover:brightness-110"
                         : "bg-white/5 border border-white/10 text-foreground hover:bg-white/10"
                     )}
                   >
@@ -374,7 +374,7 @@ export default function CreditsClient({ currentPlanId, credits, monthlyCredits, 
                   <span
                     className={cn(
                       "text-sm font-semibold tabular-nums",
-                      t.credits > 0 ? "text-emerald-400" : "text-primary"
+                      t.credits > 0 ? "text-primary" : "text-destructive"
                     )}
                   >
                     {t.credits > 0 ? `+${fmt(t.credits)}` : `-${fmt(Math.abs(t.credits))}`}
@@ -393,9 +393,9 @@ export default function CreditsClient({ currentPlanId, credits, monthlyCredits, 
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowPlansModal(false)} />
 
           {/* Modal */}
-          <div className="relative w-full max-w-3xl mx-4 max-h-[90vh] overflow-y-auto rounded-3xl border border-white/10 bg-[#0C0C10] shadow-2xl">
+          <div className="relative w-full max-w-3xl mx-4 max-h-[90vh] overflow-y-auto rounded-3xl border border-white/10 bg-[#050505] shadow-2xl">
             {/* Header */}
-            <div className="sticky top-0 z-10 flex items-center justify-between px-6 py-4 border-b border-white/10 bg-[#0C0C10]/95 backdrop-blur-sm rounded-t-3xl">
+            <div className="sticky top-0 z-10 flex items-center justify-between px-6 py-4 border-b border-white/10 bg-[#050505]/95 backdrop-blur-sm rounded-t-3xl">
               <h2 className="text-base font-bold text-foreground">Change Plan</h2>
               <button
                 onClick={() => setShowPlansModal(false)}
@@ -408,7 +408,7 @@ export default function CreditsClient({ currentPlanId, credits, monthlyCredits, 
             <div className="p-6">
               {/* Billing toggle */}
               <div className="flex justify-center mb-6">
-                <div className="inline-flex items-center rounded-full bg-[#1A1A22] p-1">
+                <div className="inline-flex items-center rounded-full bg-white/[0.04] border border-white/[0.07] p-1">
                   <button
                     onClick={() => setBilling("monthly")}
                     className={cn(

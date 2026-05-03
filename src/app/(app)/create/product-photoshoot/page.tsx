@@ -266,7 +266,7 @@ export default function PhotoshootCreator() {
             className="absolute inset-0 pointer-events-none"
             style={{
               backgroundImage:
-                "radial-gradient(circle at 20% 30%, rgba(180,255,74,0.04) 0%, transparent 50%), radial-gradient(circle at 80% 70%, rgba(120,120,255,0.03) 0%, transparent 50%)",
+                "radial-gradient(circle at 20% 30%, rgba(125,57,235,0.05) 0%, transparent 50%), radial-gradient(circle at 80% 70%, rgba(198,255,51,0.03) 0%, transparent 50%)",
             }}
           />
 
@@ -336,13 +336,13 @@ export default function PhotoshootCreator() {
           )}
 
           {isGenerating && (
-            <div className="absolute inset-0 overflow-hidden bg-[#0a0a10]">
+            <div className="absolute inset-0 overflow-hidden bg-black">
               {/* Soft breathing aurora — no shimmer streak (was causing visible banding) */}
               <div
                 className="absolute inset-[-20%] animate-aurora-soft"
                 style={{
                   background:
-                    "radial-gradient(circle at 30% 20%, rgba(180,255,74,0.20), transparent 55%), radial-gradient(circle at 75% 65%, rgba(120,80,255,0.22), transparent 60%), radial-gradient(circle at 45% 90%, rgba(255,150,80,0.16), transparent 55%)",
+                    "radial-gradient(circle at 30% 20%, rgba(125,57,235,0.25), transparent 55%), radial-gradient(circle at 75% 65%, rgba(198,255,51,0.15), transparent 60%), radial-gradient(circle at 45% 90%, rgba(125,57,235,0.18), transparent 55%)",
                   filter: "blur(30px)",
                 }}
               />
@@ -602,7 +602,7 @@ export default function PhotoshootCreator() {
                 type="button"
                 onClick={handleGenerate}
                 disabled={!canGenerate}
-                className="w-full inline-flex items-center justify-center gap-2 h-12 rounded-xl bg-primary text-black text-sm font-bold ring-1 ring-inset ring-black/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.45),0_1px_2px_rgba(0,0,0,0.35)] transition-all hover:brightness-105 hover:-translate-y-0.5 hover:shadow-[0_6px_28px_rgba(180,255,74,0.3)] active:translate-y-0 disabled:bg-white/[0.04] disabled:text-white/30 disabled:cursor-not-allowed disabled:ring-0 disabled:shadow-none disabled:translate-y-0"
+                className="w-full inline-flex items-center justify-center gap-2 h-12 rounded-xl bg-primary text-black text-sm font-bold ring-1 ring-inset ring-black/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.45),0_1px_2px_rgba(0,0,0,0.35)] transition-all hover:brightness-105 hover:-translate-y-0.5 hover:shadow-[0_6px_28px_rgba(198,255,51,0.3)] active:translate-y-0 disabled:bg-white/[0.04] disabled:text-white/30 disabled:cursor-not-allowed disabled:ring-0 disabled:shadow-none disabled:translate-y-0"
               >
                 {isGenerating ? (
                   <>
@@ -699,7 +699,7 @@ function TemplateTile({
       className={cn(
         "relative aspect-square overflow-hidden rounded-xl border bg-white/[0.04] cursor-pointer transition-all",
         selected
-          ? "border-primary shadow-[0_0_0_1px_var(--color-primary),0_4px_20px_rgba(180,255,74,0.1)]"
+          ? "border-primary shadow-[0_0_0_1px_var(--color-primary),0_4px_20px_rgba(198,255,51,0.1)]"
           : "border-white/10 hover:border-white/20 hover:-translate-y-0.5 hover:shadow-[0_6px_24px_rgba(0,0,0,0.3)]",
       )}
     >
@@ -748,7 +748,7 @@ function LibraryModal({
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-5xl max-h-[85vh] overflow-hidden rounded-3xl border border-white/10 bg-[#0c0c10] flex flex-col"
+        className="w-full max-w-5xl max-h-[85vh] overflow-hidden rounded-3xl border border-white/10 bg-[#050505] flex flex-col"
       >
         <div className="flex items-center justify-between px-6 py-4 border-b border-white/10">
           <h3 className="text-lg font-bold tracking-tight">Photoshoot template library</h3>

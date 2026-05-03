@@ -182,7 +182,7 @@ export default function DashboardClient({
       >
         <div className="pointer-events-none absolute -left-20 -top-20 h-96 w-96 rounded-full bg-primary opacity-30 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-32 -right-16 h-96 w-96 rounded-full bg-violet opacity-30 blur-3xl" />
-        <div className="pointer-events-none absolute -right-24 -top-24 h-96 w-96 rounded-full bg-amber opacity-20 blur-3xl" />
+        <div className="pointer-events-none absolute -right-24 -top-24 h-96 w-96 rounded-full bg-primary opacity-10 blur-3xl" />
 
         <div className="relative grid gap-8 md:grid-cols-5">
           {/* Left: greeting + CTAs */}
@@ -302,7 +302,7 @@ export default function DashboardClient({
             title="Product Ad"
             desc="Cinematic product spots with dynamic camera work."
             icon={faBox}
-            grad="from-sky-500 via-violet to-primary"
+            grad="from-violet via-[#7D39EB] to-primary"
             credits="2 credits"
           />
           <CreationTile
@@ -352,7 +352,7 @@ export default function DashboardClient({
               <div className="relative mt-6 flex flex-wrap items-center justify-center gap-3">
                 <Link
                   href="/create/ugc"
-                  className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-primary via-violet to-amber px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-primary/20 transition-all hover:brightness-110 active:scale-[0.98]"
+                  className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-violet to-primary px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-primary/20 transition-all hover:brightness-110 active:scale-[0.98]"
                 >
                   <FontAwesomeIcon icon={faWandMagicSparkles} style={{ fontSize: 14 }} />
                   Create your first ad

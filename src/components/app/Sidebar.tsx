@@ -7,7 +7,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faGrip,
   faVideo,
-  faBox,
   faImage,
   faShirt,
   faClock,
@@ -17,9 +16,12 @@ import {
   faUser,
   faEllipsis,
   faXmark,
+  faBolt,
+  faArrowUp,
 } from "@fortawesome/free-solid-svg-icons";
 import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { cn } from "@/lib/utils";
+import { fromUnits, PLAN_CREDITS } from "@/lib/credits";
 import { Logo } from "@/components/ui/logo";
 import { useMobileNav } from "@/lib/stores/mobile-nav";
 import {
@@ -38,8 +40,7 @@ interface NavItem {
 }
 
 const createNav: NavItem[] = [
-  { label: "UGC Ad", icon: faVideo, href: "/create/ugc", cost: "20" },
-  { label: "Product Ad", icon: faBox, href: "/create/product-ad", cost: "20" },
+  { label: "UGC Studio", icon: faVideo, href: "/create/ugc-studio", cost: "20" },
   { label: "Product Photoshoot", icon: faImage, href: "/create/product-photoshoot", cost: "1" },
   { label: "AI Try-On", icon: faShirt, href: "/create/tryon", cost: "5" },
 ];
@@ -55,6 +56,7 @@ interface SidebarProps {
   userEmail?: string;
   userAvatar?: string;
   credits?: number;
+  plan?: string;
 }
 
 function NavLink({ item, isActive }: { item: NavItem; isActive: boolean }) {
@@ -64,18 +66,19 @@ function NavLink({ item, isActive }: { item: NavItem; isActive: boolean }) {
       className={cn(
         "group flex w-full items-center justify-between rounded-2xl px-3 py-2.5 text-sm transition-all",
         isActive
-          ? "bg-gradient-to-r from-primary/15 via-violet/10 to-transparent text-foreground ring-1 ring-inset ring-white/10"
-          : "text-muted-foreground hover:text-foreground hover:bg-white/10"
+          ? "text-white"
+          : "text-white/40 hover:text-white hover:bg-white/[0.04]"
       )}
+      style={isActive ? {
+        background: "rgba(125,57,235,0.12)",
+        boxShadow: "inset 0 0 0 1px rgba(125,57,235,0.25)",
+      } : {}}
     >
       <span className="flex items-center gap-3">
         <FontAwesomeIcon
           icon={item.icon}
-          className={cn(
-            "transition-colors",
-            isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
-          )}
-          style={{ fontSize: 18 }}
+          className="transition-colors"
+          style={{ fontSize: 16, color: isActive ? "#C6FF33" : undefined }}
         />
         <span className="font-medium">{item.label}</span>
       </span>
@@ -83,12 +86,14 @@ function NavLink({ item, isActive }: { item: NavItem; isActive: boolean }) {
   );
 }
 
-export default function Sidebar({ userName = "User", userEmail, userAvatar }: SidebarProps) {
+export default function Sidebar({ userName = "User", userEmail, userAvatar, credits: rawCredits = 0, plan = "BASIC" }: SidebarProps) {
+  const credits = fromUnits(rawCredits);
+  const planMax = (plan && plan in PLAN_CREDITS) ? PLAN_CREDITS[plan as keyof typeof PLAN_CREDITS] : PLAN_CREDITS.BASIC;
+  const pct = Math.min(100, Math.round((credits / planMax) * 100));
   const pathname = usePathname();
   const router = useRouter();
   const { open, setOpen } = useMobileNav();
 
-  // Close drawer on route change
   useEffect(() => {
     setOpen(false);
   }, [pathname, setOpen]);
@@ -108,28 +113,35 @@ export default function Sidebar({ userName = "User", userEmail, userAvatar }: Si
       <div
         onClick={() => setOpen(false)}
         className={cn(
-          "fixed inset-0 z-30 bg-black/60 backdrop-blur-sm transition-opacity lg:hidden",
+          "fixed inset-0 z-30 bg-black/70 backdrop-blur-sm transition-opacity lg:hidden",
           open ? "opacity-100" : "pointer-events-none opacity-0",
         )}
       />
       <aside
         className={cn(
-          "fixed left-0 top-0 z-40 flex h-screen w-[252px] flex-col border-r border-white/5 bg-[#0A0A0F] transition-transform duration-300 ease-out",
+          "fixed left-0 top-0 z-40 flex h-screen w-[252px] flex-col transition-transform duration-300 ease-out",
           "lg:translate-x-0",
           open ? "translate-x-0" : "-translate-x-full",
         )}
+        style={{
+          background: "rgba(0,0,0,0.6)",
+          backdropFilter: "blur(32px)",
+          WebkitBackdropFilter: "blur(32px)",
+          borderRight: "1px solid rgba(255,255,255,0.05)",
+        }}
       >
       {/* Mobile close button */}
       <button
         type="button"
         onClick={() => setOpen(false)}
-        className="absolute right-3 top-3 z-10 flex h-8 w-8 items-center justify-center rounded-lg text-white/60 hover:bg-white/10 hover:text-foreground transition lg:hidden"
+        className="absolute right-3 top-3 z-10 flex h-8 w-8 items-center justify-center rounded-lg text-white/40 hover:bg-white/[0.06] hover:text-white transition lg:hidden"
         aria-label="Close menu"
       >
         <FontAwesomeIcon icon={faXmark} style={{ fontSize: 14 }} />
       </button>
+
       {/* Logo */}
-      <div className="flex h-14 shrink-0 items-center gap-2 border-b border-white/5 px-5">
+      <div className="flex h-14 shrink-0 items-center gap-2 px-5">
         <Logo href="/dashboard" size="sm" />
       </div>
 
@@ -145,7 +157,7 @@ export default function Sidebar({ userName = "User", userEmail, userAvatar }: Si
 
         {/* Create */}
         <div>
-          <p className="mb-1 px-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/50">
+          <p className="mb-1 px-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-white/20">
             Create
           </p>
           <div className="space-y-0.5">
@@ -157,7 +169,7 @@ export default function Sidebar({ userName = "User", userEmail, userAvatar }: Si
 
         {/* Manage */}
         <div>
-          <p className="mb-1 px-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/50">
+          <p className="mb-1 px-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-white/20">
             Manage
           </p>
           <div className="space-y-0.5">
@@ -169,25 +181,71 @@ export default function Sidebar({ userName = "User", userEmail, userAvatar }: Si
       </nav>
 
       {/* Bottom */}
-      <div className="shrink-0 space-y-2.5 border-t border-white/5 p-3">
+      <div className="shrink-0 space-y-2 p-3">
+
+        {/* Credits widget — glass card */}
+        <div className="rounded-2xl p-3 space-y-2.5"
+          style={{
+            background: "rgba(125,57,235,0.07)",
+            border: "1px solid rgba(125,57,235,0.18)",
+            backdropFilter: "blur(12px)",
+          }}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="flex h-6 w-6 items-center justify-center rounded-lg"
+                style={{ background: "rgba(198,255,51,0.12)" }}>
+                <FontAwesomeIcon icon={faBolt} style={{ fontSize: 10, color: "#C6FF33" }} />
+              </div>
+              <span className="text-[12px] font-semibold text-white/60">Credits</span>
+            </div>
+            <span className="text-[13px] font-bold text-white">{credits}</span>
+          </div>
+
+          {/* Progress bar */}
+          <div className="h-1.5 w-full rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.06)" }}>
+            <div className="h-full rounded-full transition-all duration-500"
+              style={{
+                width: `${pct}%`,
+                background: pct > 20
+                  ? "linear-gradient(90deg, #7D39EB, #C6FF33)"
+                  : "linear-gradient(90deg, #ef4444, #f97316)",
+                boxShadow: pct > 20 ? "0 0 8px rgba(198,255,51,0.4)" : "0 0 8px rgba(239,68,68,0.5)",
+              }} />
+          </div>
+
+          {/* Upgrade button */}
+          <button
+            onClick={() => router.push("/credits")}
+            className="w-full flex items-center justify-center gap-2 rounded-xl py-2 transition-all hover:brightness-110 active:scale-[0.98]"
+            style={{
+              background: "#C6FF33",
+              boxShadow: "0 0 16px rgba(198,255,51,0.25)",
+            }}
+          >
+            <FontAwesomeIcon icon={faArrowUp} style={{ fontSize: 10, color: "#000" }} />
+            <span className="text-[12px] font-bold text-black tracking-wide">Upgrade Plan</span>
+          </button>
+        </div>
+
         {/* User */}
         <DropdownMenu>
-          <DropdownMenuTrigger className="flex w-full items-center gap-3 rounded-2xl border border-white/5 bg-white/5 p-2.5 transition-colors hover:bg-white/10">
+          <DropdownMenuTrigger className="flex w-full items-center gap-3 rounded-2xl border border-white/[0.06] bg-white/[0.03] p-2.5 transition-colors hover:bg-white/[0.06]">
             {userAvatar ? (
               <span className="h-9 w-9 overflow-hidden rounded-xl">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={userAvatar} alt={userName} className="h-full w-full object-cover" />
               </span>
             ) : (
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet to-amber text-sm font-bold text-black">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-sm font-bold text-black"
+                style={{ background: "linear-gradient(135deg, #7D39EB, #C6FF33)" }}>
                 {initial}
               </span>
             )}
             <div className="flex-1 text-left min-w-0">
-              <p className="text-[13px] font-medium text-foreground truncate">{userName}</p>
-              <p className="text-[11px] text-muted-foreground truncate">{userEmail}</p>
+              <p className="text-[13px] font-medium text-white truncate">{userName}</p>
+              <p className="text-[11px] text-white/40 truncate">{userEmail}</p>
             </div>
-            <FontAwesomeIcon icon={faEllipsis} className="shrink-0 text-white/50" style={{ fontSize: 16 }} />
+            <FontAwesomeIcon icon={faEllipsis} className="shrink-0 text-white/30" style={{ fontSize: 16 }} />
           </DropdownMenuTrigger>
           <DropdownMenuContent side="top" align="start" sideOffset={8}>
             <DropdownMenuItem onClick={() => router.push("/profile")}>

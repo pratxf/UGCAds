@@ -45,7 +45,7 @@ export async function POST(request: Request) {
       characterImageUrl = character.imageUrl;
     }
 
-    const CREDIT_COST = COSTS_UNITS.UGC_AD_5S;
+    const CREDIT_COST = body.duration === "15" ? COSTS_UNITS.UGC_AD_15S : body.duration === "10" ? COSTS_UNITS.UGC_AD_10S : COSTS_UNITS.UGC_AD_5S;
 
     if (user.credits < CREDIT_COST) {
       return NextResponse.json({ error: "Insufficient credits" }, { status: 402 });

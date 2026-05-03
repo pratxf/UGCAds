@@ -65,7 +65,7 @@ function statusStyle(s: Status) {
 function typeStyle(t: AdType) {
   if (t === "UGC Ad") return "text-primary";
   if (t === "Product Ad") return "text-violet";
-  if (t === "AI Try-On") return "text-emerald-400";
+  if (t === "AI Try-On") return "text-[#7D39EB]";
   return "text-amber";
 }
 
@@ -175,7 +175,7 @@ export default function HistoryClient({ items: rawItems }: { items: Item[] }) {
       <motion.div variants={fadeUp}>
         {filtered.length === 0 ? (
           <div className="rounded-3xl border border-dashed border-white/10 bg-white/[0.03] p-12 text-center">
-            <div className="size-14 mx-auto rounded-2xl bg-primary/10 ring-1 ring-primary/20 shadow-[0_0_40px_rgba(57,255,20,0.15)] flex items-center justify-center mb-3">
+            <div className="size-14 mx-auto rounded-2xl bg-primary/10 ring-1 ring-primary/20 shadow-[0_0_40px_rgba(198,255,51,0.12)] flex items-center justify-center mb-3">
               <FontAwesomeIcon
                 icon={total === 0 ? faWandMagicSparkles : faFilm}
                 className="text-primary"
@@ -191,7 +191,7 @@ export default function HistoryClient({ items: rawItems }: { items: Item[] }) {
             {total === 0 && (
               <Link
                 href="/create/ugc"
-                className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-primary via-violet to-amber text-background px-4 h-9 text-xs font-semibold hover:brightness-110 transition-all"
+                className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-violet to-primary text-background px-4 h-9 text-xs font-semibold hover:brightness-110 transition-all"
               >
                 <FontAwesomeIcon icon={faWandMagicSparkles} style={{ fontSize: 12 }} /> Create your first ad
               </Link>
@@ -221,7 +221,7 @@ export default function HistoryClient({ items: rawItems }: { items: Item[] }) {
                   }
                 }}
                 className={cn(
-                  "group relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl transition-all text-left",
+                  "group relative overflow-hidden rounded-3xl border border-white/[0.07] bg-white/[0.03] backdrop-blur-xl transition-all text-left",
                   canPreview
                     ? "cursor-pointer hover:border-white/20 hover:shadow-lg hover:shadow-black/30"
                     : "cursor-default",
@@ -311,7 +311,7 @@ function PreviewModal({ item, onClose }: { item: Item; onClose: () => void }) {
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="relative flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#0c0c10] shadow-2xl"
+        className="relative flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl border border-white/[0.08] bg-[#050505] shadow-2xl"
       >
         <div className="flex items-center justify-between px-5 py-3 border-b border-white/10">
           <div>

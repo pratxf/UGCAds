@@ -34,7 +34,7 @@ const fadeUp = {
 };
 
 const primaryBtn =
-  "inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-primary via-violet to-amber px-5 py-2.5 text-xs font-semibold text-background shadow-[0_0_30px_rgba(57,255,20,0.25)] hover:brightness-110 transition-all disabled:opacity-60";
+  "inline-flex items-center justify-center gap-2 rounded-full bg-primary px-5 py-2.5 text-xs font-semibold text-black shadow-[0_0_24px_rgba(198,255,51,0.3)] hover:brightness-110 transition-all disabled:opacity-60";
 
 /* ------------------------------------------------------------------ */
 /*  Field helper                                                       */
@@ -226,7 +226,7 @@ export default function SupportPage() {
           </div>
           {submitted ? (
             <div className="flex flex-col items-center justify-center py-14 text-center">
-              <div className="size-14 rounded-2xl bg-gradient-to-br from-primary to-violet flex items-center justify-center mb-3 shadow-[0_0_40px_rgba(57,255,20,0.25)]">
+              <div className="size-14 rounded-2xl bg-primary flex items-center justify-center mb-3 shadow-[0_0_32px_rgba(198,255,51,0.25)]">
                 <FontAwesomeIcon icon={faCheck} className="text-background" style={{ fontSize: 26 }} />
               </div>
               <p className="text-sm font-semibold text-white">Sent!</p>

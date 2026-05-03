@@ -188,12 +188,12 @@ export default function TryonCreator() {
           <section className="relative rounded-2xl border border-white/10 bg-white/[0.025] overflow-hidden min-h-[600px]">
             {isGenerating && (
               <>
-                <div className="absolute inset-0 bg-[#0a0a10]" />
+                <div className="absolute inset-0 bg-black" />
                 <div
                   className="absolute inset-[-20%] animate-aurora-soft"
                   style={{
                     background:
-                      "radial-gradient(circle at 30% 20%, rgba(180,255,74,0.20), transparent 55%), radial-gradient(circle at 75% 65%, rgba(120,80,255,0.22), transparent 60%), radial-gradient(circle at 45% 90%, rgba(255,150,80,0.16), transparent 55%)",
+                      "radial-gradient(circle at 30% 20%, rgba(125,57,235,0.25), transparent 55%), radial-gradient(circle at 75% 65%, rgba(198,255,51,0.15), transparent 60%), radial-gradient(circle at 45% 90%, rgba(125,57,235,0.18), transparent 55%)",
                     filter: "blur(30px)",
                   }}
                 />
@@ -210,7 +210,7 @@ export default function TryonCreator() {
               </>
             )}
             {resultUrl && !isGenerating && (
-              <div className="absolute inset-0 flex items-center justify-center p-6 bg-[#0a0a10]">
+              <div className="absolute inset-0 flex items-center justify-center p-6 bg-black">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={resultUrl}
@@ -448,7 +448,7 @@ function ModelTile({
       className={cn(
         "relative aspect-[3/4] rounded-2xl overflow-hidden border bg-white/[0.04] cursor-pointer transition",
         selected
-          ? "border-primary shadow-[0_0_0_2px_rgba(180,255,74,0.4)]"
+          ? "border-primary shadow-[0_0_0_2px_rgba(198,255,51,0.35)]"
           : "border-white/10 hover:border-white/30",
       )}
     >
@@ -498,7 +498,7 @@ function LibraryModal({
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-6xl max-h-[88vh] overflow-hidden rounded-3xl border border-white/10 bg-[#0c0c10] flex flex-col"
+        className="w-full max-w-6xl max-h-[88vh] overflow-hidden rounded-3xl border border-white/10 bg-[#050505] flex flex-col"
       >
         <div className="flex items-center justify-between px-6 py-4 border-b border-white/10">
           <h3 className="text-lg font-bold tracking-tight">Choose a model</h3>

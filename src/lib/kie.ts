@@ -103,20 +103,24 @@ export type VideoModel = "kling-3.0/video" | "sora-2-image-to-video";
 export async function generateKieVideo({
   model,
   imageUrl,
+  imageUrl2,
   prompt,
   aspectRatio = "9:16",
   duration = "5",
 }: {
   model: VideoModel;
   imageUrl: string;
+  imageUrl2?: string;
   prompt: string;
   aspectRatio?: string;
   duration?: string;
 }): Promise<string> {
+  const imageUrls = imageUrl2 ? [imageUrl, imageUrl2] : [imageUrl];
+
   if (model === "kling-3.0/video") {
     const taskId = await createKieTask("kling-3.0/video", {
       prompt,
-      image_urls: [imageUrl],
+      image_urls: imageUrls,
       sound: true,
       duration,
       aspect_ratio: aspectRatio,
@@ -130,7 +134,7 @@ export async function generateKieVideo({
   const nFrames = duration === "15" ? "15" : "10";
   const taskId = await createKieTask("sora-2-image-to-video", {
     prompt,
-    image_urls: [imageUrl],
+    image_urls: imageUrls,
     aspect_ratio: soraAspect,
     n_frames: nFrames,
     remove_watermark: true,

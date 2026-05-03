@@ -24,6 +24,9 @@ export async function POST(request: Request) {
     const videoModel = (formData.get("videoModel") as VideoModel) || "kling-3.0/video";
     const aspectRatio = (formData.get("aspectRatio") as string) || "NINE_SIXTEEN";
     const duration = (formData.get("duration") as string) || "5";
+    const characterId = (formData.get("characterId") as string | null) || undefined;
+    const isCustomAvatar = formData.get("isCustomAvatar") === "true";
+    const customAvatarUrl = (formData.get("customAvatarUrl") as string | null) || undefined;
 
     if (!prompt) return NextResponse.json({ error: "Prompt is required" }, { status: 400 });
 
@@ -42,7 +45,19 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Product image too large (max 10MB)" }, { status: 413 });
     }
 
-    const CREDIT_COST = COSTS_UNITS.PRODUCT_AD_5S;
+    // Resolve avatar image URL if provided
+    let characterImageUrl: string | undefined;
+    let resolvedCharacterId: string | undefined = characterId;
+    if (isCustomAvatar && customAvatarUrl) {
+      characterImageUrl = customAvatarUrl;
+      resolvedCharacterId = undefined;
+    } else if (characterId) {
+      const character = await prisma.avatar.findUnique({ where: { id: characterId } });
+      if (!character) return NextResponse.json({ error: "Invalid avatar" }, { status: 400 });
+      characterImageUrl = character.imageUrl;
+    }
+
+    const CREDIT_COST = parsed.duration === "15" ? COSTS_UNITS.PRODUCT_AD_15S : parsed.duration === "10" ? COSTS_UNITS.PRODUCT_AD_10S : COSTS_UNITS.PRODUCT_AD_5S;
     if (user.credits < CREDIT_COST) {
       return NextResponse.json({ error: "Insufficient credits" }, { status: 402 });
     }
@@ -62,6 +77,10 @@ export async function POST(request: Request) {
           userId: user.id,
           type: "PRODUCT_AD",
           status: "GENERATING_VIDEO",
+          characterId: resolvedCharacterId ?? null,
+          characterImage: characterImageUrl ?? null,
+          isCustomAvatar: isCustomAvatar,
+          customAvatarUrl: isCustomAvatar ? customAvatarUrl ?? null : null,
           productImage: productImageUrl,
           script: prompt,
           aspectRatio: parsed.aspectRatio,
@@ -85,9 +104,14 @@ export async function POST(request: Request) {
       return gen;
     });
 
+    // Use avatar as primary image if provided, product as second; otherwise product only
+    const primaryImageUrl = characterImageUrl ?? productImageUrl;
+    const secondaryImageUrl = characterImageUrl ? productImageUrl : undefined;
+
     const kieTaskId = await generateKieVideo({
       model: parsed.videoModel,
-      imageUrl: productImageUrl,
+      imageUrl: primaryImageUrl,
+      imageUrl2: secondaryImageUrl,
       prompt,
       aspectRatio: ASPECT_MAP[parsed.aspectRatio] || "9:16",
       duration: parsed.duration,

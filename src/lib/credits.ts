@@ -24,26 +24,30 @@ export function formatCredits(units: number): string {
 
 /** Costs per generation type, in DISPLAY credits */
 export const COSTS = {
-  UGC_AD_5S: 20,
-  UGC_AD_10S: 25,
-  PRODUCT_AD_5S: 20,
-  PRODUCT_AD_10S: 25,
+  UGC_AD_5S: 15,
+  UGC_AD_10S: 20,
+  UGC_AD_15S: 25,
+  PRODUCT_AD_5S: 15,
+  PRODUCT_AD_10S: 20,
+  PRODUCT_AD_15S: 25,
   // Backwards-compat names for older quality-based records.
-  UGC_AD_SD: 20,
-  UGC_AD_HD: 25,
-  PRODUCT_AD_SD: 20,
-  PRODUCT_AD_HD: 25,
-  MOCKUP: 1,            // Product Photoshoot (alias)
+  UGC_AD_SD: 15,
+  UGC_AD_HD: 20,
+  PRODUCT_AD_SD: 15,
+  PRODUCT_AD_HD: 20,
+  MOCKUP: 1,
   PRODUCT_PHOTOSHOOT: 1,
-  TRYON: 5,             // AI Try-On
+  TRYON: 5,
 } as const;
 
 /** Costs in DB units (tenths) */
 export const COSTS_UNITS = {
   UGC_AD_5S: toUnits(COSTS.UGC_AD_5S),
   UGC_AD_10S: toUnits(COSTS.UGC_AD_10S),
+  UGC_AD_15S: toUnits(COSTS.UGC_AD_15S),
   PRODUCT_AD_5S: toUnits(COSTS.PRODUCT_AD_5S),
   PRODUCT_AD_10S: toUnits(COSTS.PRODUCT_AD_10S),
+  PRODUCT_AD_15S: toUnits(COSTS.PRODUCT_AD_15S),
   UGC_AD_SD: toUnits(COSTS.UGC_AD_SD),
   UGC_AD_HD: toUnits(COSTS.UGC_AD_HD),
   PRODUCT_AD_SD: toUnits(COSTS.PRODUCT_AD_SD),
@@ -51,7 +55,6 @@ export const COSTS_UNITS = {
   MOCKUP: toUnits(COSTS.MOCKUP),
   PRODUCT_PHOTOSHOOT: toUnits(COSTS.PRODUCT_PHOTOSHOOT),
   TRYON: toUnits(COSTS.TRYON),
-  // Backwards-compat aliases (default to HD)
   UGC_AD: toUnits(COSTS.UGC_AD_HD),
   PRODUCT_AD: toUnits(COSTS.PRODUCT_AD_HD),
 } as const;
