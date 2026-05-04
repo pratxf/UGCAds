@@ -112,8 +112,8 @@ export default function CreditsClient({ currentPlanId, credits, monthlyCredits, 
 
   const currentPlan = plans.find((p) => p.id === currentPlanId);
   const creditsTotal = monthlyCredits || 300;
-  // pct = how much of monthly allocation has been used this cycle
-  const pct = creditsTotal > 0 ? Math.min(Math.round((monthUsed / creditsTotal) * 100), 100) : 0;
+  // monthUsed is raw DB units (×10), creditsTotal is display units — multiply creditsTotal by 10 to match
+  const pct = creditsTotal > 0 ? Math.min(Math.round((monthUsed / (creditsTotal * 10)) * 100), 100) : 0;
   const remainingPct = 100 - pct;
   const displayRemaining = fmt(credits);
   const displayTotal = fmt(creditsTotal);
@@ -264,7 +264,7 @@ export default function CreditsClient({ currentPlanId, credits, monthlyCredits, 
                 {weeklyData.map((h, i) => (
                   <motion.div
                     key={i}
-                    initial={{ height: 0 }}
+                    initial={{ height: "0%" }}
                     animate={{ height: `${h}%` }}
                     transition={{ duration: 0.6, delay: 0.3 + i * 0.05, ease: "easeOut" as const }}
                     className="w-full rounded-md bg-gradient-to-t from-primary to-violet"
