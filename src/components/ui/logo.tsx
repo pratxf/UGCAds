@@ -17,8 +17,8 @@ export function Logo({ collapsed = false, href = "/", className, size = "md" }: 
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src="/brand/logo-u.svg" alt="UGCAds" width={iconSize} height={iconSize} className="shrink-0 rounded-[6px]" />
       {!collapsed && (
-        <span className={cn("font-bold tracking-wide text-white", textSize)} style={{ fontVariant: "small-caps", letterSpacing: "0.04em" }}>
-          UGC<span style={{ fontSize: "0.8em" }}>ADS</span>
+        <span className={cn("font-bold text-white", textSize)} style={{ fontVariantCaps: "all-small-caps", letterSpacing: "0.06em" }}>
+          ugcads
         </span>
       )}
     </Link>

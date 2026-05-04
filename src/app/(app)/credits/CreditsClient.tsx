@@ -62,8 +62,6 @@ const creditPacks = [
   { credits: 250, price: "$125", perCredit: "$0.50", popular: true },
 ];
 
-// Weekly usage demo data (bar heights as percentages 0-100)
-const weeklyData = [45, 72, 38, 88, 60, 25, 52];
 const weekLabels = ["M", "T", "W", "T", "F", "S", "S"];
 
 interface Transaction {
@@ -77,6 +75,8 @@ interface CreditsClientProps {
   currentPlanId: string | null;
   credits: number;
   monthlyCredits: number;
+  monthUsed: number;
+  weeklyData: number[];
   renewal: string;
   transactions: Transaction[];
 }
@@ -106,19 +106,18 @@ function fmt(units: number) {
   return units % 10 === 0 ? String(units / 10) : (units / 10).toFixed(1);
 }
 
-export default function CreditsClient({ currentPlanId, credits, monthlyCredits, renewal, transactions }: CreditsClientProps) {
+export default function CreditsClient({ currentPlanId, credits, monthlyCredits, monthUsed, weeklyData, renewal, transactions }: CreditsClientProps) {
   const [showPlansModal, setShowPlansModal] = useState(false);
   const [billing, setBilling] = useState<"monthly" | "yearly">("monthly");
 
   const currentPlan = plans.find((p) => p.id === currentPlanId);
   const creditsTotal = monthlyCredits || 300;
-  const creditsUsed = creditsTotal > credits ? creditsTotal - credits : 0;
-  const remaining = credits;
-  const pct = creditsTotal > 0 ? Math.round((creditsUsed / creditsTotal) * 100) : 0;
+  // pct = how much of monthly allocation has been used this cycle
+  const pct = creditsTotal > 0 ? Math.min(Math.round((monthUsed / creditsTotal) * 100), 100) : 0;
   const remainingPct = 100 - pct;
-  const displayRemaining = fmt(remaining);
+  const displayRemaining = fmt(credits);
   const displayTotal = fmt(creditsTotal);
-  const displayUsed = fmt(creditsUsed);
+  const displayUsed = fmt(monthUsed);
 
   // Ring geometry
   const ringSize = 128;
@@ -349,10 +348,6 @@ export default function CreditsClient({ currentPlanId, credits, monthlyCredits, 
         >
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-base font-bold text-foreground">Transaction history</h2>
-            <button className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-muted-foreground hover:text-foreground transition">
-              <FontAwesomeIcon icon={faDownload} style={{ fontSize: 12 }} />
-              Export CSV
-            </button>
           </div>
 
           {transactions.length === 0 ? (
