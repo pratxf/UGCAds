@@ -223,11 +223,11 @@ export default function DashboardClient({
 
             <div className="flex flex-wrap items-center gap-3">
               <Link
-                href="/create/ugc"
-                className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:brightness-110 active:scale-[0.98]"
+                href="/create/ugc-studio"
+                className="inline-flex items-center gap-2 rounded-full bg-[#C6FF33] px-5 py-2.5 text-sm font-bold text-black shadow-lg shadow-[#C6FF33]/20 transition-all hover:brightness-110 active:scale-[0.98]"
               >
-                <FontAwesomeIcon icon={faWandMagicSparkles} style={{ fontSize: 16 }} />
-                Start a UGC ad
+                <FontAwesomeIcon icon={faWandMagicSparkles} style={{ fontSize: 14 }} />
+                Start creating
               </Link>
               <button
                 type="button"
