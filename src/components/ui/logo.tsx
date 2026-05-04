@@ -10,14 +10,21 @@ interface LogoProps {
 
 export function Logo({ collapsed = false, href = "/", className, size = "md" }: LogoProps) {
   const iconSize = size === "sm" ? 22 : size === "lg" ? 36 : 28;
-  const textSize = size === "sm" ? "text-lg" : size === "lg" ? "text-2xl" : "text-xl";
+  const fontSize = size === "sm" ? "0.875rem" : size === "lg" ? "1.2rem" : "1rem";
 
   return (
     <Link href={href} className={cn("flex items-center gap-2.5", className)}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src="/brand/logo-u.svg" alt="UGCAds" width={iconSize} height={iconSize} className="shrink-0 rounded-[6px]" />
       {!collapsed && (
-        <span className={cn("font-bold text-white", textSize)} style={{ fontVariantCaps: "all-small-caps", letterSpacing: "0.06em" }}>
+        <span
+          className="font-bold text-white"
+          style={{
+            fontFamily: "var(--font-jakarta), sans-serif",
+            fontSize,
+            letterSpacing: "0.06em",
+          }}
+        >
           ugcads
         </span>
       )}

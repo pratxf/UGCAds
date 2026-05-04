@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Poppins, Inter } from "next/font/google";
+import { Poppins, Inter, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 
 const poppins = Poppins({
@@ -10,6 +10,12 @@ const poppins = Poppins({
 
 const inter = Inter({
   variable: "--font-inter",
+  subsets: ["latin"],
+});
+
+const plusJakarta = Plus_Jakarta_Sans({
+  variable: "--font-jakarta",
+  weight: ["600", "700", "800"],
   subsets: ["latin"],
 });
 
@@ -27,7 +33,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${poppins.variable} ${inter.variable} dark h-full antialiased`}
+      className={`${poppins.variable} ${inter.variable} ${plusJakarta.variable} dark h-full antialiased`}
     >
       <head>
         {/* Warm DNS + TLS to R2 so image fetches don't pay first-byte penalty */}
