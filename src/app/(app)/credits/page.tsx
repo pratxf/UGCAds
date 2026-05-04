@@ -7,9 +7,10 @@ export default async function CreditsPage() {
 
   const now = new Date();
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-  const startOfWeek = new Date(now);
-  startOfWeek.setDate(now.getDate() - ((now.getDay() + 6) % 7));
-  startOfWeek.setHours(0, 0, 0, 0);
+  // Rolling last-7-days window (today + 6 days back)
+  const rollingStart = new Date(now);
+  rollingStart.setDate(now.getDate() - 6);
+  rollingStart.setHours(0, 0, 0, 0);
 
   const [subscription, transactions, monthUsageAgg, weeklyRaw] = await Promise.all([
     prisma.subscription.findUnique({ where: { userId: user.id } }),
@@ -23,11 +24,11 @@ export default async function CreditsPage() {
       where: { userId: user.id, type: "USAGE", createdAt: { gte: startOfMonth } },
       _sum: { credits: true },
     }),
-    // Per-day usage for the current week (Mon–Sun)
+    // Per-day usage for last 7 days (rolling window)
     Promise.all(
       Array.from({ length: 7 }, (_, i) => {
-        const day = new Date(startOfWeek);
-        day.setDate(startOfWeek.getDate() + i);
+        const day = new Date(rollingStart);
+        day.setDate(rollingStart.getDate() + i);
         const next = new Date(day);
         next.setDate(day.getDate() + 1);
         return prisma.transaction.aggregate({
@@ -51,6 +52,14 @@ export default async function CreditsPage() {
   const maxVal = Math.max(...weeklyValues, 1);
   const weeklyData = weeklyValues.map((v) => Math.round((v / maxVal) * 100));
 
+  // Day labels for rolling window
+  const dayLetters = ["S", "M", "T", "W", "T", "F", "S"];
+  const weeklyLabels = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(rollingStart);
+    d.setDate(rollingStart.getDate() + i);
+    return dayLetters[d.getDay()];
+  });
+
   return (
     <CreditsClient
       currentPlanId={currentPlanId}
@@ -58,6 +67,7 @@ export default async function CreditsPage() {
       monthlyCredits={monthlyCredits}
       monthUsed={monthUsed}
       weeklyData={weeklyData}
+      weeklyLabels={weeklyLabels}
       renewal={renewal}
       transactions={transactions.map((t) => ({
         id: t.id,

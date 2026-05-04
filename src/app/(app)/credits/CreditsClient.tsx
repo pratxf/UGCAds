@@ -62,7 +62,6 @@ const creditPacks = [
   { credits: 250, price: "$125", perCredit: "$0.50", popular: true },
 ];
 
-const weekLabels = ["M", "T", "W", "T", "F", "S", "S"];
 
 interface Transaction {
   id: string;
@@ -77,6 +76,7 @@ interface CreditsClientProps {
   monthlyCredits: number;
   monthUsed: number;
   weeklyData: number[];
+  weeklyLabels: string[];
   renewal: string;
   transactions: Transaction[];
 }
@@ -106,7 +106,7 @@ function fmt(units: number) {
   return units % 10 === 0 ? String(units / 10) : (units / 10).toFixed(1);
 }
 
-export default function CreditsClient({ currentPlanId, credits, monthlyCredits, monthUsed, weeklyData, renewal, transactions }: CreditsClientProps) {
+export default function CreditsClient({ currentPlanId, credits, monthlyCredits, monthUsed, weeklyData, weeklyLabels, renewal, transactions }: CreditsClientProps) {
   const [showPlansModal, setShowPlansModal] = useState(false);
   const [billing, setBilling] = useState<"monthly" | "yearly">("monthly");
 
@@ -272,7 +272,7 @@ export default function CreditsClient({ currentPlanId, credits, monthlyCredits, 
                 ))}
               </div>
               <div className="mt-2 grid grid-cols-7 gap-1.5">
-                {weekLabels.map((d, i) => (
+                {weeklyLabels.map((d, i) => (
                   <span key={i} className="text-center text-[10px] font-semibold text-muted-foreground">
                     {d}
                   </span>
