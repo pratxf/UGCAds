@@ -6,274 +6,160 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faHeadset,
   faEnvelope,
-  faBook,
-  faUpRightFromSquare,
-  faCheck,
   faChevronRight,
-  faPaperPlane,
+  faArrowRight,
 } from "@fortawesome/free-solid-svg-icons";
-import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { cn } from "@/lib/utils";
 
-/* ------------------------------------------------------------------ */
-/*  Data                                                               */
-/* ------------------------------------------------------------------ */
-
 const faqs = [
-  { q: "How do credits work?", a: "Each ad generation uses credits from your plan. UGC ads, Product ads, and Product Photoshoots all cost 2 credits each. Credits reset monthly." },
-  { q: "What formats are supported?", a: "Videos are delivered in MP4. Choose 5 or 10 seconds, with 9:16, 1:1, and 16:9 aspect ratios." },
-  { q: "Can I use ads commercially?", a: "Yes! All generated content is fully licensed for commercial use across all platforms." },
-  { q: "How long does generation take?", a: "UGC and Product ads take 2 to 3 minutes. Product Photoshoots are faster at around 30 seconds." },
-  { q: "Can I get a refund?", a: "Failed generations are automatically refunded. For other requests, contact our support team." },
+  {
+    q: "How do credits work?",
+    a: "Credits are consumed per generation. UGC Studio costs 15 to 25 credits per video depending on length. Product Photoshoot costs 1 credit per image. AI Try-On costs 5 credits per result. Credits reset monthly on your billing date.",
+  },
+  {
+    q: "What formats are supported?",
+    a: "Videos are delivered in MP4 (H.264). You can choose 5 or 10 seconds for UGC Studio, and 15 seconds for Kling 2.6. Photoshoot images are delivered as high-resolution JPGs.",
+  },
+  {
+    q: "How long does generation take?",
+    a: "UGC Studio videos take 2 to 4 minutes depending on the model. Product Photoshoots are typically done in about 30 seconds. AI Try-On results are ready in under a minute.",
+  },
+  {
+    q: "Can I use the content commercially?",
+    a: "Yes. All AI-generated content on UGCAds is fully licensed for commercial use across any platform including TikTok, Instagram, YouTube, and paid ads.",
+  },
+  {
+    q: "Can I get a refund for a failed generation?",
+    a: "Failed generations are automatically detected and refunded to your credit balance within a few minutes. For other refund requests, reach out to our support team.",
+  },
+  {
+    q: "Can I upload my own avatar or model?",
+    a: "Yes. In UGC Studio you can upload a custom avatar image. The AI will animate it with your script and selected voice.",
+  },
 ];
 
-const container = { hidden: {}, show: { transition: { staggerChildren: 0.05 } } };
+const container = { hidden: {}, show: { transition: { staggerChildren: 0.06 } } };
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.45, ease: "easeOut" as const } },
+  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" as const } },
 };
-
-const primaryBtn =
-  "inline-flex items-center justify-center gap-2 rounded-full bg-primary px-5 py-2.5 text-xs font-semibold text-black shadow-[0_0_24px_rgba(198,255,51,0.3)] hover:brightness-110 transition-all disabled:opacity-60";
-
-/* ------------------------------------------------------------------ */
-/*  Field helper                                                       */
-/* ------------------------------------------------------------------ */
-
-type FieldProps = {
-  label: string;
-  children: React.ReactNode;
-};
-
-function Field({ label, children }: FieldProps) {
-  return (
-    <label className="block">
-      <span className="text-xs text-white/50">{label}</span>
-      {children}
-    </label>
-  );
-}
-
-const inputClass =
-  "mt-1 w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all";
-
-/* ------------------------------------------------------------------ */
-/*  Contact cards                                                      */
-/* ------------------------------------------------------------------ */
-
-type ContactCard = {
-  icon: IconDefinition;
-  grad: string;
-  title: string;
-  desc: string;
-  cta: string;
-  ctaColor: string;
-};
-
-const contactCards: ContactCard[] = [
-  {
-    icon: faHeadset,
-    grad: "from-primary to-violet",
-    title: "Live chat",
-    desc: "Chat with our team in real time for immediate help.",
-    cta: "Start chat",
-    ctaColor: "text-primary",
-  },
-  {
-    icon: faEnvelope,
-    grad: "from-sky-500 to-violet",
-    title: "Email support",
-    desc: "Drop us a line at support@ugcads.com and we reply within 24 hours.",
-    cta: "Send email",
-    ctaColor: "text-violet",
-  },
-  {
-    icon: faBook,
-    grad: "from-amber to-rose-500",
-    title: "Knowledge base",
-    desc: "Browse guides, tutorials, and best practices for every workflow.",
-    cta: "View articles",
-    ctaColor: "text-amber",
-  },
-];
-
-/* ------------------------------------------------------------------ */
-/*  Component                                                          */
-/* ------------------------------------------------------------------ */
 
 export default function SupportPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [message, setMessage] = useState("");
-  const [submitted, setSubmitted] = useState(false);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitted(true);
-    setTimeout(() => {
-      setSubmitted(false);
-      setName("");
-      setEmail("");
-      setMessage("");
-    }, 3000);
-  };
 
   return (
-    <motion.div variants={container} initial="hidden" animate="show" className="space-y-5 pb-8">
-      {/* ── Contact options ── */}
-      <motion.div variants={fadeUp} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {contactCards.map((card) => (
-          <div
-            key={card.title}
-            className="group relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl p-6 transition-all hover:border-white/20 hover:shadow-lg hover:shadow-black/30 cursor-pointer"
-          >
-            <div
-              className={cn(
-                "flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br mb-4",
-                card.grad
-              )}
-            >
-              <FontAwesomeIcon icon={card.icon} className="text-background" style={{ fontSize: 20 }} />
-            </div>
-            <h3 className="text-sm font-semibold text-white">{card.title}</h3>
-            <p className="mt-1 text-xs text-white/60 leading-relaxed">{card.desc}</p>
-            <div
-              className={cn(
-                "mt-5 inline-flex items-center gap-1 text-xs font-medium",
-                card.ctaColor
-              )}
-            >
-              {card.cta}
-              <FontAwesomeIcon
-                icon={faUpRightFromSquare}
-                className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
-                style={{ fontSize: 12 }}
-              />
-            </div>
-          </div>
-        ))}
+    <motion.div variants={container} initial="hidden" animate="show" className="space-y-4 pb-8">
+
+      {/* Header */}
+      <motion.div variants={fadeUp}>
+        <h1 className="text-xl font-bold text-white">Support</h1>
+        <p className="mt-1 text-sm text-white/50">We&apos;re here to help. Reach out or browse common questions below.</p>
       </motion.div>
 
-      {/* ── FAQ + Contact Form ── */}
-      <div className="grid gap-3 lg:grid-cols-2">
-        {/* FAQ */}
-        <motion.div
-          variants={fadeUp}
-          className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl p-6"
-        >
-          <div className="flex items-center justify-between mb-5">
-            <div>
-              <h3 className="text-sm font-semibold text-white">Frequently asked</h3>
-              <p className="mt-0.5 text-xs text-white/50">Quick answers to the most common questions</p>
-            </div>
-            <button
-              type="button"
-              className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:brightness-110 transition"
-            >
-              Suggest a question
-              <FontAwesomeIcon icon={faUpRightFromSquare} style={{ fontSize: 11 }} />
-            </button>
-          </div>
-          <div className="divide-y divide-white/5">
-            {faqs.map((faq, i) => {
-              const open = openFaq === i;
-              return (
-                <div key={i} className="py-1">
-                  <button
-                    onClick={() => setOpenFaq(open ? null : i)}
-                    className="flex w-full items-center justify-between py-3 text-left group/faq"
-                  >
-                    <span className="text-[13px] font-semibold text-white pr-4 group-hover/faq:text-primary transition-colors">
-                      {faq.q}
-                    </span>
-                    <FontAwesomeIcon
-                      icon={faChevronRight}
-                      className={cn(
-                        "shrink-0 text-white/50 transition-transform duration-200",
-                        open ? "rotate-90" : "rotate-0"
-                      )}
-                      style={{ fontSize: 12 }}
-                    />
-                  </button>
-                  <AnimatePresence initial={false}>
-                    {open && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.2, ease: "easeOut" }}
-                        className="overflow-hidden"
-                      >
-                        <p className="pb-3 pr-6 text-xs text-white/60 leading-relaxed">{faq.a}</p>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              );
-            })}
-          </div>
-        </motion.div>
+      {/* Contact channels */}
+      <motion.div variants={fadeUp} className="grid gap-3 sm:grid-cols-2">
 
-        {/* Contact Form */}
-        <motion.div
-          variants={fadeUp}
-          className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl p-6"
+        {/* Live chat */}
+        <div
+          className="group relative overflow-hidden rounded-3xl p-6 cursor-pointer transition-all hover:scale-[1.01]"
+          style={{
+            background: "linear-gradient(135deg, rgba(125,57,235,0.25) 0%, rgba(125,57,235,0.08) 100%)",
+            border: "1px solid rgba(125,57,235,0.35)",
+          }}
         >
-          <div className="mb-5">
-            <h3 className="text-sm font-semibold text-white">Send us a message</h3>
-            <p className="mt-0.5 text-xs text-white/50">For anything the FAQ doesn&apos;t cover</p>
+          <div
+            className="flex h-12 w-12 items-center justify-center rounded-2xl mb-4"
+            style={{ background: "rgba(125,57,235,0.3)", border: "1px solid rgba(125,57,235,0.4)" }}
+          >
+            <FontAwesomeIcon icon={faHeadset} style={{ fontSize: 22, color: "#a67ff5" }} />
           </div>
-          {submitted ? (
-            <div className="flex flex-col items-center justify-center py-14 text-center">
-              <div className="size-14 rounded-2xl bg-primary flex items-center justify-center mb-3 shadow-[0_0_32px_rgba(198,255,51,0.25)]">
-                <FontAwesomeIcon icon={faCheck} className="text-background" style={{ fontSize: 26 }} />
-              </div>
-              <p className="text-sm font-semibold text-white">Sent!</p>
-              <p className="mt-1 text-xs text-white/60">We&apos;ll reply within 24 hours</p>
-            </div>
-          ) : (
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <Field label="Name">
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                  placeholder="Your name"
-                  className={inputClass}
-                />
-              </Field>
-              <Field label="Email">
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  placeholder="you@example.com"
-                  className={inputClass}
-                />
-              </Field>
-              <Field label="Message">
-                <textarea
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  required
-                  rows={4}
-                  placeholder="How can we help?"
-                  className={cn(inputClass, "resize-none")}
-                />
-              </Field>
-              <div className="pt-1">
-                <button type="submit" className={primaryBtn}>
-                  <FontAwesomeIcon icon={faPaperPlane} style={{ fontSize: 14 }} />
-                  Send message
+          <h3 className="text-base font-bold text-white">Live chat</h3>
+          <p className="mt-1.5 text-sm text-white/60 leading-relaxed">
+            Chat with our team in real time. We&apos;re online Monday to Friday, 9am to 6pm EST.
+          </p>
+          <div className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-[#a67ff5] group-hover:gap-2.5 transition-all">
+            Start chat
+            <FontAwesomeIcon icon={faArrowRight} style={{ fontSize: 13 }} />
+          </div>
+        </div>
+
+        {/* Email */}
+        <a
+          href="mailto:support@ugcads.com"
+          className="group relative overflow-hidden rounded-3xl p-6 transition-all hover:scale-[1.01]"
+          style={{
+            background: "linear-gradient(135deg, rgba(198,255,51,0.12) 0%, rgba(198,255,51,0.04) 100%)",
+            border: "1px solid rgba(198,255,51,0.25)",
+          }}
+        >
+          <div
+            className="flex h-12 w-12 items-center justify-center rounded-2xl mb-4"
+            style={{ background: "rgba(198,255,51,0.15)", border: "1px solid rgba(198,255,51,0.3)" }}
+          >
+            <FontAwesomeIcon icon={faEnvelope} style={{ fontSize: 22, color: "#C6FF33" }} />
+          </div>
+          <h3 className="text-base font-bold text-white">Email support</h3>
+          <p className="mt-1.5 text-sm text-white/60 leading-relaxed">
+            Send us an email at <span className="text-white/80">support@ugcads.com</span> and we&apos;ll reply within 24 hours.
+          </p>
+          <div className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-[#C6FF33] group-hover:gap-2.5 transition-all">
+            Send email
+            <FontAwesomeIcon icon={faArrowRight} style={{ fontSize: 13 }} />
+          </div>
+        </a>
+      </motion.div>
+
+      {/* FAQ */}
+      <motion.div
+        variants={fadeUp}
+        className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl p-6"
+      >
+        <div className="mb-5">
+          <h3 className="text-base font-bold text-white">Frequently asked questions</h3>
+          <p className="mt-0.5 text-xs text-white/50">Quick answers to the most common questions</p>
+        </div>
+        <div className="divide-y divide-white/5">
+          {faqs.map((faq, i) => {
+            const open = openFaq === i;
+            return (
+              <div key={i} className="py-0.5">
+                <button
+                  onClick={() => setOpenFaq(open ? null : i)}
+                  className="flex w-full items-center justify-between py-3.5 text-left group/faq"
+                >
+                  <span className={cn("text-[13px] font-semibold pr-4 transition-colors", open ? "text-white" : "text-white/80 group-hover/faq:text-white")}>
+                    {faq.q}
+                  </span>
+                  <FontAwesomeIcon
+                    icon={faChevronRight}
+                    className={cn("shrink-0 text-white/40 transition-transform duration-200", open ? "rotate-90" : "rotate-0")}
+                    style={{ fontSize: 12 }}
+                  />
                 </button>
+                <AnimatePresence initial={false}>
+                  {open && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.2, ease: "easeOut" }}
+                      className="overflow-hidden"
+                    >
+                      <p className="pb-4 pr-8 text-sm text-white/60 leading-relaxed">{faq.a}</p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
-            </form>
-          )}
-        </motion.div>
-      </div>
+            );
+          })}
+        </div>
+      </motion.div>
+
+      {/* Footer note */}
+      <motion.p variants={fadeUp} className="text-xs text-white/30 text-center pb-2">
+        Still stuck? Email us at support@ugcads.com and we&apos;ll get back to you within 24 hours.
+      </motion.p>
+
     </motion.div>
   );
 }
