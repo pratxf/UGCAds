@@ -10,7 +10,7 @@ const Body = z.object({
   characterId: z.string().optional(),
   isCustomAvatar: z.boolean().default(false),
   customAvatarUrl: z.string().url().optional(),
-  prompt: z.string().min(1).max(500),
+  prompt: z.string().min(1).max(2000),
   videoModel: z.enum(["kling-3.0/video", "kling-2.6/image-to-video", "sora-2-image-to-video"]).default("kling-3.0/video"),
   aspectRatio: z.enum(["NINE_SIXTEEN", "SIXTEEN_NINE", "ONE_ONE"]).default("NINE_SIXTEEN"),
   duration: z.enum(["5", "10", "15"]).default("5"),
@@ -104,7 +104,7 @@ export async function POST(request: Request) {
   } catch (err: unknown) {
     const e = err as { message?: string; name?: string; code?: string; errors?: unknown };
     if (e?.message === "Unauthorized") return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    if (e?.name === "ZodError") return NextResponse.json({ error: "Invalid input", details: e.errors }, { status: 400 });
+    if (e?.name === "ZodError") return NextResponse.json({ error: `Invalid input: ${JSON.stringify(e.errors)}` }, { status: 400 });
     if (e?.code === "P2025") return NextResponse.json({ error: "Insufficient credits" }, { status: 402 });
     console.error(err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
