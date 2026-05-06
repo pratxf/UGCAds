@@ -1,127 +1,261 @@
 "use client";
 
-import { useRef, useEffect, useState } from "react";
-import { cn } from "@/lib/utils";
-import { Users, Film, Download } from "lucide-react";
+import { motion } from "framer-motion";
+import { Sparkles, Mic, Film, ChevronDown } from "lucide-react";
 
-function useInView(ref: React.RefObject<HTMLElement | null>, margin = "-100px") {
-  const [inView, setInView] = useState(false);
-  useEffect(() => {
-    if (!ref.current) return;
-    const obs = new IntersectionObserver(
-      ([e]) => { if (e.isIntersecting) { setInView(true); obs.disconnect(); } },
-      { rootMargin: margin }
-    );
-    obs.observe(ref.current);
-    return () => obs.disconnect();
-  }, [ref, margin]);
-  return inView;
+/* ── Step dot indicator ─────────────────────────────────── */
+function StepDots({ active }: { active: number }) {
+  return (
+    <div className="flex items-center gap-1.5 mb-6">
+      {[0, 1, 2].map((i) =>
+        i === active ? (
+          <div key={i} className="h-2 w-5 rounded-full bg-[#2563EB]" />
+        ) : (
+          <div key={i} className="h-2 w-2 rounded-full bg-[#D1D5DB]" />
+        )
+      )}
+    </div>
+  );
 }
 
-const steps = [
-  {
-    icon: Users,
-    title: "Pick Your Character",
-    description:
-      "Choose from 117+ realistic AI-generated characters that match your brand and target audience. Filter by gender, style, or ethnicity.",
-    benefits: ["117 diverse AI characters", "Filter by gender, style, ethnicity", "Realistic human-like appearance"],
-    iconBg: "bg-blue-100",
-    iconColor: "text-[#2563EB]",
-    dotColor: "bg-[#2563EB]",
-  },
-  {
-    icon: Film,
-    title: "Write Your Script",
-    description:
-      "Write your ad script or let our AI generate one that converts. Add a natural voiceover using ElevenLabs integration.",
-    benefits: ["AI voiceover with ElevenLabs", "Script auto-generation option", "Multiple voice styles available"],
-    iconBg: "bg-cyan-100",
-    iconColor: "text-[#06B6D4]",
-    dotColor: "bg-[#06B6D4]",
-  },
-  {
-    icon: Download,
-    title: "Download Your Ad",
-    description:
-      "In under two minutes, your professional video ad is ready. Export optimized for TikTok, Instagram, YouTube, and more.",
-    benefits: ["Ready in under 2 minutes", "Optimized for all platforms", "Multiple aspect ratios"],
-    iconBg: "bg-green-100",
-    iconColor: "text-[#10B981]",
-    dotColor: "bg-[#10B981]",
-  },
+/* ── Script editor mockup ───────────────────────────────── */
+function ScriptEditorMockup() {
+  return (
+    <div className="w-full max-w-sm rounded-2xl border border-[#E5E7EB] bg-white shadow-sm overflow-hidden">
+      <div className="flex items-start justify-between gap-3 p-4 border-b border-[#F3F4F6]">
+        <span className="text-sm text-[#9CA3AF]">Write your script...</span>
+        <div className="flex items-center gap-1 rounded-full bg-indigo-50 border border-indigo-100 px-2.5 py-1 whitespace-nowrap">
+          <Sparkles className="h-3 w-3 text-indigo-500" />
+          <span className="text-[11px] font-medium text-indigo-500">AI Script writer</span>
+        </div>
+      </div>
+      <div className="h-16" />
+      <div className="px-4 py-2.5 border-t border-[#F3F4F6] flex items-center justify-between">
+        <span className="text-xs text-[#2563EB] font-medium">+ Credits <span className="text-[#6B7280]">6</span></span>
+        <span className="text-xs text-[#9CA3AF]">0/1000</span>
+      </div>
+      <div className="px-4 py-3 flex items-center gap-2">
+        <button className="inline-flex items-center gap-1.5 rounded-lg border border-[#E5E7EB] bg-white px-3 py-1.5 text-xs text-[#374151]">
+          🎬 Talking Actors
+          <ChevronDown className="h-3 w-3 text-[#9CA3AF]" />
+        </button>
+        <button className="inline-flex items-center gap-1.5 rounded-lg border border-[#E5E7EB] bg-white px-3 py-1.5 text-xs text-[#374151]">
+          + Add Actors
+        </button>
+        <button className="inline-flex items-center gap-1.5 rounded-lg border border-[#E5E7EB] bg-white px-3 py-1.5 text-xs text-[#374151]">
+          <Mic className="h-3 w-3" /> Edit Voice
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ── Actor grid mockup ──────────────────────────────────── */
+const actors = [
+  { name: "Angela", src: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&q=80&w=200", h: 108 },
+  { name: "Mike",   src: "https://images.unsplash.com/photo-1500048993953-d23a436266cf?auto=format&fit=crop&q=80&w=200", h: 108 },
+  { name: "Saman",  src: "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?auto=format&fit=crop&q=80&w=200", h: 132 },
+  { name: "Mila",   src: "https://images.unsplash.com/photo-1526510747491-58f928ec870f?auto=format&fit=crop&q=80&w=200", h: 108 },
+  { name: "Jason",  src: "https://images.unsplash.com/photo-1543610892-0b1f7e6d8ac1?auto=format&fit=crop&q=80&w=200", h: 108 },
 ];
 
-export default function HowItWorksSection() {
-  const sectionRef = useRef<HTMLDivElement>(null);
-  const inView = useInView(sectionRef);
-
+function ActorGrid() {
   return (
-    <section id="how-it-works" className="relative py-24 sm:py-32 bg-[#F7F7F5]">
-      <div
-        ref={sectionRef}
-        className={cn(
-          "mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 transition-all duration-700 ease-out",
-          inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
-        )}
-      >
-        {/* Header */}
-        <div className="text-center mb-16">
-          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-[#E5E7EB] bg-white px-4 py-1.5 text-sm font-medium text-[#6B7280]">
-            Simple 3-step process
-          </div>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-[#111111]">
-            From idea to{" "}
-            <span className="gradient-text">live ad in minutes</span>
-          </h2>
-          <p className="mt-4 text-lg text-[#6B7280] max-w-xl mx-auto">
-            No studio. No actors. No editing skills. Just a script and a click.
-          </p>
-        </div>
-
-        {/* Steps grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative">
-
-          {/* Connector lines between cards (desktop only) */}
-          <div className="hidden md:flex absolute top-8 left-0 right-0 items-center pointer-events-none px-[calc(16.67%-1rem)]">
-            <div className="flex-1 h-px bg-gradient-to-r from-[#2563EB]/20 to-[#06B6D4]/40 ml-16 mr-0" />
-            <div className="flex-1 h-px bg-gradient-to-r from-[#06B6D4]/40 to-[#10B981]/20 ml-0 mr-16" />
-          </div>
-
-          {steps.map((step, i) => (
-            <div
-              key={step.title}
-              className={cn(
-                "flex flex-col rounded-2xl border border-[#E5E7EB] bg-white p-6 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300",
-                inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
-              )}
-              style={{ transitionDelay: `${200 + i * 150}ms` }}
-            >
-              {/* Icon + step number row */}
-              <div className="flex items-center gap-3 mb-5">
-                <div className={cn("flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-2xl", step.iconBg)}>
-                  <step.icon className={cn("h-6 w-6", step.iconColor)} />
-                </div>
-                <span className="text-sm font-semibold text-[#9CA3AF] tracking-widest">
-                  STEP {i + 1}
-                </span>
-              </div>
-
-              {/* Text */}
-              <h3 className="text-base font-semibold text-[#111111] mb-2">{step.title}</h3>
-              <p className="text-sm text-[#6B7280] leading-relaxed mb-5">{step.description}</p>
-
-              {/* Benefits */}
-              <ul className="mt-auto space-y-2">
-                {step.benefits.map((b) => (
-                  <li key={b} className="flex items-center gap-2 text-sm text-[#6B7280]">
-                    <div className={cn("h-1.5 w-1.5 rounded-full flex-shrink-0", step.dotColor)} />
-                    {b}
-                  </li>
-                ))}
-              </ul>
+    <div className="flex items-end justify-center gap-2 px-6 py-4">
+      {actors.map((a) => (
+        <div key={a.name} className="flex flex-col items-center gap-1">
+          <div
+            className="relative rounded-xl overflow-hidden w-16"
+            style={{ height: a.h }}
+          >
+            <img src={a.src} alt={a.name} className="w-full h-full object-cover" />
+            <div className="absolute top-1.5 right-1.5 rounded bg-black/60 px-1 py-px text-[9px] font-bold text-white leading-none">
+              HD
             </div>
-          ))}
+          </div>
+          <span className="text-[10px] text-[#6B7280]">{a.name}</span>
         </div>
+      ))}
+    </div>
+  );
+}
+
+/* ── Video stack mockup ─────────────────────────────────── */
+const videoSrcs = [
+  "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&q=80&w=300",
+  "https://images.unsplash.com/photo-1500048993953-d23a436266cf?auto=format&fit=crop&q=80&w=300",
+  "https://images.unsplash.com/photo-1526510747491-58f928ec870f?auto=format&fit=crop&q=80&w=300",
+];
+
+function VideoStack() {
+  return (
+    <div className="relative h-48 w-full flex items-center justify-center">
+      {videoSrcs.map((src, i) => (
+        <div
+          key={i}
+          className="absolute rounded-xl overflow-hidden border-2 border-white shadow-lg"
+          style={{
+            width:  i === 1 ? 110 : 86,
+            height: i === 1 ? 150 : 120,
+            left:   `calc(50% + ${(i - 1) * 72}px)`,
+            transform: `translateX(-50%) rotate(${(i - 1) * 6}deg)`,
+            zIndex: i === 1 ? 3 : i === 0 ? 1 : 2,
+          }}
+        >
+          <img src={src} alt="" className="w-full h-full object-cover" />
+          {i === 1 && (
+            <div className="absolute top-1.5 left-1.5 rounded bg-black/70 px-1.5 py-px text-[9px] font-semibold text-white">
+              01:48
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ── Language flag strip ────────────────────────────────── */
+const FLAGS = ["🇺🇸","🇬🇧","🇩🇪","🇫🇷","🇪🇸","🇮🇹","🇯🇵","🇰🇷","🇨🇳","🇧🇷","🇵🇹","🇷🇺","🇦🇷","🇲🇽","🇮🇳","🇸🇦","🇹🇷","🇳🇱","🇸🇪","🇵🇱","🇩🇰","🇫🇮","🇨🇿","🇮🇩","🇵🇭","🇹🇭","🇻🇳","🇲🇾","🇺🇦","🇨🇱","🇷🇴","🇻🇪","🇲🇾","🇰🇪","🇯🇲","🇧🇪","🇭🇺"];
+
+/* ── Main component ─────────────────────────────────────── */
+export default function HowItWorksSection() {
+  return (
+    <section id="how-it-works" className="relative bg-[#EEF2FF] py-24 sm:py-32">
+      <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          className="text-center mb-14"
+        >
+          <div className="inline-flex items-center rounded-full border border-[#C7D2FE] bg-[#E0E7FF] px-4 py-1.5 text-sm font-medium text-[#4338CA] mb-5">
+            Never been easier
+          </div>
+          <h2
+            className="text-4xl sm:text-5xl lg:text-[3.25rem] font-bold tracking-tight text-[#111111] leading-[1.1]"
+            style={{ fontFamily: "Satoshi, sans-serif" }}
+          >
+            Create{" "}
+            <span
+              style={{
+                background: "linear-gradient(135deg, #2563EB 0%, #818CF8 100%)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+              }}
+            >
+              AI UGC
+            </span>{" "}
+            videos in minutes
+          </h2>
+          <p className="mt-4 text-[1.0625rem] text-[#6B7280]">
+            From idea to video in minutes — ready to use instantly.
+          </p>
+        </motion.div>
+
+        {/* Bento rows */}
+        <div className="space-y-3">
+
+          {/* Row 1 */}
+          <div className="grid grid-cols-2 gap-3">
+            <motion.div
+              initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.1 }}
+              className="rounded-2xl bg-white border border-[#E5E7EB] p-8 flex flex-col justify-end min-h-[240px]"
+            >
+              <StepDots active={0} />
+              <h3 className="text-xl font-bold text-[#111111] mb-2" style={{ fontFamily: "Satoshi, sans-serif" }}>
+                Write or generate your script
+              </h3>
+              <p className="text-sm text-[#6B7280] leading-relaxed">
+                Enter or automatically generate a script that aligns with your brand&apos;s message to personalize your AI-generated video.
+              </p>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.15 }}
+              className="rounded-2xl bg-white border border-[#E5E7EB] flex items-center justify-center p-6 min-h-[240px]"
+            >
+              <ScriptEditorMockup />
+            </motion.div>
+          </div>
+
+          {/* Row 2 */}
+          <div className="grid grid-cols-2 gap-3">
+            <motion.div
+              initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.1 }}
+              className="rounded-2xl bg-white border border-[#E5E7EB] flex items-center min-h-[240px] overflow-hidden"
+            >
+              <ActorGrid />
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.15 }}
+              className="rounded-2xl bg-white border border-[#E5E7EB] p-8 flex flex-col justify-end min-h-[240px]"
+            >
+              <StepDots active={1} />
+              <h3 className="text-xl font-bold text-[#111111] mb-2" style={{ fontFamily: "Satoshi, sans-serif" }}>
+                Choose from 500+ AI actors
+              </h3>
+              <p className="text-sm text-[#6B7280] leading-relaxed">
+                Select the perfect AI actor to represent your message and build visual consistency across every campaign.
+              </p>
+            </motion.div>
+          </div>
+
+          {/* Row 3 */}
+          <div className="grid grid-cols-2 gap-3">
+            <motion.div
+              initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.1 }}
+              className="rounded-2xl bg-white border border-[#E5E7EB] p-8 flex flex-col justify-end min-h-[240px]"
+            >
+              <StepDots active={2} />
+              <h3 className="text-xl font-bold text-[#111111] mb-2" style={{ fontFamily: "Satoshi, sans-serif" }}>
+                Generate your video
+              </h3>
+              <p className="text-sm text-[#6B7280] leading-relaxed">
+                Combine the selected avatar and script to quickly produce a high-quality, personalized video for your brand in minutes.
+              </p>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.15 }}
+              className="rounded-2xl bg-white border border-[#E5E7EB] flex items-center justify-center overflow-hidden min-h-[240px]"
+            >
+              <VideoStack />
+            </motion.div>
+          </div>
+        </div>
+
+        {/* Language strip */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="mt-10"
+        >
+          <div className="rounded-2xl bg-white/70 border border-white/80 px-6 py-5 mb-5 overflow-hidden">
+            <div className="flex flex-wrap gap-y-3 gap-x-4 justify-around">
+              {FLAGS.map((f, i) => (
+                <span key={i} className="text-3xl opacity-75 hover:opacity-100 transition-opacity">
+                  {f}
+                </span>
+              ))}
+            </div>
+          </div>
+          <div className="text-center">
+            <p className="text-base font-bold text-[#111111]">50+ Languages</p>
+            <p className="text-sm text-[#6B7280] mt-0.5">
+              Instantly localize your videos with native voices and perfect lip-sync.
+            </p>
+          </div>
+        </motion.div>
+
       </div>
     </section>
   );

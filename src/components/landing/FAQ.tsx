@@ -1,143 +1,117 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Plus, Minus } from "lucide-react";
-
-function useInView(ref: React.RefObject<HTMLElement | null>, margin = "-80px") {
-  const [inView, setInView] = useState(false);
-  useEffect(() => {
-    if (!ref.current) return;
-    const obs = new IntersectionObserver(
-      ([e]) => { if (e.isIntersecting) { setInView(true); obs.disconnect(); } },
-      { rootMargin: margin }
-    );
-    obs.observe(ref.current);
-    return () => obs.disconnect();
-  }, [ref, margin]);
-  return inView;
-}
 
 const faqs = [
   {
-    question: "How do credits work?",
-    answer:
-      "Each video generation costs credits based on your plan. Your monthly allowance renews on your billing date. You can purchase additional credits any time if you need more.",
-    meta: "Credits",
+    question: "How long does a video take to generate?",
+    answer: "Most videos are ready in under 2 minutes. Generation time depends on the length of your script and current platform load, but we prioritize speed so you can iterate quickly.",
   },
   {
-    question: "Can I upgrade or downgrade my plan?",
-    answer:
-      "Absolutely. Switch plans at any time from your dashboard. Upgrades take effect immediately with prorated billing, and downgrades apply at the start of your next billing cycle.",
-    meta: "Billing",
+    question: "Can AI hold my product?",
+    answer: "Yes. With our Product Ad mode you can upload your product image and the AI character will naturally hold and present it in the video ad.",
   },
   {
-    question: "Do unused credits expire?",
-    answer:
-      "No. Unused credits roll over to the next month as long as your subscription is active, so nothing ever goes to waste.",
-    meta: "Credits",
+    question: "If I edit an already generated video, will it be considered a new video/take a video credit?",
+    answer: "No. Light edits like trimming or caption changes on an existing generated video do not consume a new credit. Only generating a new video from scratch uses a credit.",
   },
   {
-    question: "What video formats are supported?",
-    answer:
-      "We export in MP4 (H.264) optimized for TikTok, Instagram Reels, YouTube Shorts, and Facebook. Choose portrait (9:16), landscape (16:9), or square (1:1) aspect ratios.",
-    meta: "Export",
+    question: "What should I do if my video is taking too long to generate?",
+    answer: "If your video has been processing for more than 10 minutes, refresh the page. If it still shows as processing, contact our support team and we'll investigate and refund the credit if needed.",
   },
   {
-    question: "Can I use my own product images?",
-    answer:
-      "Yes. Product Ad Mode lets you upload your product images and the AI builds a complete ad narrative around them, including a character presenting your product naturally.",
-    meta: "Product",
+    question: "How do I upgrade my plan?",
+    answer: "Go to Dashboard → Billing → Upgrade Plan. Upgrades take effect immediately and you're billed the prorated difference for the rest of your current billing cycle.",
   },
   {
-    question: "What is the $5 Starter plan?",
-    answer:
-      "The $5 Starter is a one-time purchase, not a subscription. It gives you 1 video generation and 20 product photos so you can try the platform risk-free before committing to a monthly plan.",
-    meta: "Pricing",
+    question: "How can I cancel?",
+    answer: "You can cancel anytime from Dashboard → Billing → Cancel Subscription. Your plan stays active until the end of the billing period and you won't be charged again.",
   },
   {
-    question: "What is your refund policy?",
-    answer:
-      "We offer a 3-day refund window on all subscription plans, provided no credits have been used. Contact support@ugcads.com within 3 days of purchase for a full refund. Failed generations are automatically refunded.",
-    meta: "Policy",
+    question: "Are there any limits on the use of ads made with ugcads?",
+    answer: "You own the ads you create. You can use them on any platform — TikTok, Instagram, Facebook, YouTube, and more — for both organic and paid campaigns with no extra licensing fees.",
   },
 ];
 
-const metaColors: Record<string, string> = {
-  Credits: "bg-blue-50 text-blue-600",
-  Billing: "bg-green-50 text-green-600",
-  Export: "bg-cyan-50 text-cyan-600",
-  Product: "bg-purple-50 text-purple-600",
-  Pricing: "bg-amber-50 text-amber-600",
-  Policy: "bg-red-50 text-red-600",
-};
-
 export default function FAQ() {
-  const sectionRef = useRef<HTMLDivElement>(null);
-  const inView = useInView(sectionRef);
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   return (
-    <section className="relative py-24 sm:py-32 bg-[#F7F7F5]">
-      <div
-        ref={sectionRef}
-        className={cn(
-          "mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 transition-all duration-700 ease-out",
-          inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
-        )}
-      >
-        {/* Header */}
-        <div className="text-center mb-12">
-          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-[#E5E7EB] bg-white px-4 py-1.5 text-sm font-medium text-[#6B7280]">
-            FAQ
-          </div>
-          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-[#111111]">
-            Frequently asked questions
-          </h2>
-          <p className="mt-4 text-base text-[#6B7280]">
-            Everything you need to know about ugcads, from credits to exports.
-          </p>
-        </div>
+    <section className="relative py-24 sm:py-32 bg-[#EEF2FF]">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 lg:grid-cols-[2fr_3fr] gap-12 lg:gap-20">
 
-        {/* Items */}
-        <div className="space-y-3">
-          {faqs.map((faq, i) => {
-            const isOpen = openIndex === i;
-            return (
-              <div
-                key={faq.question}
-                className={cn(
-                  "rounded-2xl border bg-white overflow-hidden transition-all duration-300",
-                  isOpen ? "border-[#2563EB]/30 shadow-sm shadow-blue-100" : "border-[#E5E7EB]",
-                  inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
-                )}
-                style={{ transitionDelay: `${i * 60}ms` }}
-              >
-                <button
-                  onClick={() => setOpenIndex(isOpen ? null : i)}
-                  className="w-full flex items-center justify-between gap-4 p-5 text-left"
+          {/* Left: label + heading */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className="lg:sticky lg:top-28 self-start"
+          >
+            <div className="inline-flex items-center rounded-lg border border-[#C7D2FE] bg-[#E0E7FF] px-3 py-1 text-xs font-semibold text-[#4338CA] mb-5">
+              FAQ
+            </div>
+            <h2
+              className="text-3xl sm:text-4xl font-bold tracking-tight text-[#111111] leading-[1.12]"
+              style={{ fontFamily: "Satoshi, sans-serif" }}
+            >
+              We&apos;ve covered everything
+            </h2>
+            <p className="mt-3 text-[#6B7280]">Everything you need to know.</p>
+          </motion.div>
+
+          {/* Right: accordion */}
+          <div className="space-y-3">
+            {faqs.map((faq, i) => {
+              const isOpen = openIndex === i;
+              return (
+                <motion.div
+                  key={faq.question}
+                  initial={{ opacity: 0, y: 12 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.4, delay: i * 0.05 }}
+                  className="rounded-2xl border border-[#E5E7EB] bg-white overflow-hidden"
                 >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <span className={cn("flex-shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium", metaColors[faq.meta] ?? "bg-[#F1F5F9] text-[#6B7280]")}>
-                      {faq.meta}
+                  <button
+                    onClick={() => setOpenIndex(isOpen ? null : i)}
+                    className="w-full flex items-center justify-between gap-4 px-6 py-4 text-left"
+                  >
+                    <span className="text-[0.9375rem] font-medium text-[#111111] leading-snug">
+                      {faq.question}
                     </span>
-                    <span className="text-sm font-semibold text-[#111111]">{faq.question}</span>
-                  </div>
-                  <div className={cn(
-                    "flex-shrink-0 h-6 w-6 rounded-full flex items-center justify-center transition-colors",
-                    isOpen ? "bg-[#2563EB] text-white" : "bg-[#F1F5F9] text-[#6B7280]"
-                  )}>
-                    {isOpen ? <Minus className="h-3 w-3" /> : <Plus className="h-3 w-3" />}
-                  </div>
-                </button>
-                {isOpen && (
-                  <div className="px-5 pb-5 text-sm text-[#6B7280] leading-relaxed border-t border-[#F3F4F6] pt-4">
-                    {faq.answer}
-                  </div>
-                )}
-              </div>
-            );
-          })}
+                    <ChevronRight
+                      className={cn(
+                        "h-4.5 w-4.5 flex-shrink-0 text-[#9CA3AF] transition-transform duration-200",
+                        isOpen && "rotate-90"
+                      )}
+                    />
+                  </button>
+
+                  <AnimatePresence initial={false}>
+                    {isOpen && (
+                      <motion.div
+                        key="answer"
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+                        className="overflow-hidden"
+                      >
+                        <p className="px-6 pb-5 text-sm text-[#6B7280] leading-relaxed border-t border-[#F3F4F6] pt-3">
+                          {faq.answer}
+                        </p>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
+              );
+            })}
+          </div>
         </div>
       </div>
     </section>
