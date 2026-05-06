@@ -21,7 +21,7 @@ export default function LogoStrip() {
     <section className="py-14 bg-white border-y border-[#E5E7EB]">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <p className="mb-6 text-center text-sm font-medium text-[#9CA3AF] uppercase tracking-widest">
-          Trusted by 10,000+ businesses worldwide
+          Trusted by 200+ businesses worldwide
         </p>
         <LogoCloud logos={logos} />
       </div>

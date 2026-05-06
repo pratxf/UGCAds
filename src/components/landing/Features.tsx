@@ -40,7 +40,7 @@ const cards = [
     accentBg: "#F5F3FF",
     iconBg: "#EDE9FE",
     Icon: Shirt,
-    media: { type: "image" as const, src: "/images/tryon-demo.webp" },
+    media: { type: "tryon" as const, before: "/images/tryon-before.avif", after: "/images/tryon-after.avif" },
     description: "Showcase apparel and accessories with realistic AI model try-ons in any setting.",
     tags: [
       { icon: Upload,   label: "Upload Product" },
@@ -139,7 +139,6 @@ export default function Features() {
                       muted autoPlay loop playsInline preload="metadata"
                       className="w-full h-full object-cover"
                     />
-                    {/* Play button overlay */}
                     <div className="absolute inset-0 flex items-center justify-center">
                       <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/90 shadow-md">
                         <Play className="h-4 w-4 fill-[#111111] text-[#111111] ml-0.5" />
@@ -151,6 +150,18 @@ export default function Features() {
                       </div>
                     )}
                   </>
+                ) : card.media.type === "tryon" ? (
+                  <div className="flex h-full w-full">
+                    <div className="flex-1 relative">
+                      <img src={card.media.before} alt="Before" className="w-full h-full object-cover" />
+                    </div>
+                    <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white shadow-md border border-[#E5E7EB]">
+                      <ArrowUpRight className="h-3.5 w-3.5 text-[#7D39EB]" />
+                    </div>
+                    <div className="flex-1 relative">
+                      <img src={card.media.after} alt="After" className="w-full h-full object-cover" />
+                    </div>
+                  </div>
                 ) : (
                   <img
                     src={card.media.src}

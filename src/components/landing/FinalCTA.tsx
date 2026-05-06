@@ -40,7 +40,7 @@ export default function FinalCTA() {
           )}
         >
           <Sparkles className="h-3.5 w-3.5" />
-          Join 10,000+ brands already scaling with AI
+          Join 200+ brands already scaling with AI
         </div>
 
         <h2

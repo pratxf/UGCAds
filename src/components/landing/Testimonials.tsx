@@ -154,7 +154,7 @@ export default function Testimonials() {
           </div>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-[#111111]">
             Loved by{" "}
-            <span className="gradient-text">10,000+ businesses</span>
+            <span className="gradient-text">200+ businesses</span>
           </h2>
           <p className="mt-4 text-lg text-[#6B7280] max-w-xl mx-auto">
             See why brands worldwide trust ugcads to produce scroll-stopping video ads at scale.

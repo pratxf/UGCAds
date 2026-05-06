@@ -21,7 +21,7 @@ const avatars = [
 ];
 
 const stats = [
-  { icon: Zap,    bold: "10,000+",         muted: "ads generated" },
+  { icon: Zap,    bold: "200+",         muted: "ads generated" },
   { icon: Clock,  bold: "Ready in",        muted: "under 2 minutes" },
   { icon: Shield, bold: "Cancel",          muted: "anytime" },
 ];
@@ -44,7 +44,7 @@ export default function Hero() {
             >
               <div className="inline-flex items-center gap-2 rounded-full border border-[#E5E7EB] bg-white px-4 py-1.5 text-sm font-medium text-[#374151] shadow-sm">
                 <Star className="h-3.5 w-3.5 fill-[#2563EB] text-[#2563EB]" />
-                Trusted by 10,000+ brands worldwide
+                Trusted by 200+ brands worldwide
               </div>
 
               {/* Avatar stack */}
