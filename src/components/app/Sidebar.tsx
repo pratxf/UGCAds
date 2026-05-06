@@ -70,15 +70,15 @@ function NavLink({ item, isActive }: { item: NavItem; isActive: boolean }) {
           : "text-white/40 hover:text-white hover:bg-white/[0.04]"
       )}
       style={isActive ? {
-        background: "rgba(125,57,235,0.12)",
-        boxShadow: "inset 0 0 0 1px rgba(125,57,235,0.25)",
+        background: "rgba(37,99,235,0.15)",
+        boxShadow: "inset 0 0 0 1px rgba(37,99,235,0.3)",
       } : {}}
     >
       <span className="flex items-center gap-3">
         <FontAwesomeIcon
           icon={item.icon}
           className="transition-colors"
-          style={{ fontSize: 16, color: isActive ? "#C6FF33" : undefined }}
+          style={{ fontSize: 16, color: isActive ? "#FFFFFF" : undefined }}
         />
         <span className="font-medium">{item.label}</span>
       </span>
@@ -124,10 +124,10 @@ export default function Sidebar({ userName = "User", userEmail, userAvatar, cred
           open ? "translate-x-0" : "-translate-x-full",
         )}
         style={{
-          background: "rgba(0,0,0,0.6)",
+          background: "rgba(6,10,18,0.85)",
           backdropFilter: "blur(32px)",
           WebkitBackdropFilter: "blur(32px)",
-          borderRight: "1px solid rgba(255,255,255,0.05)",
+          borderRight: "1px solid rgba(37,99,235,0.12)",
         }}
       >
       {/* Mobile close button */}
@@ -186,15 +186,15 @@ export default function Sidebar({ userName = "User", userEmail, userAvatar, cred
         {/* Credits widget — glass card */}
         <div className="rounded-2xl p-3 space-y-2.5"
           style={{
-            background: "rgba(125,57,235,0.07)",
-            border: "1px solid rgba(125,57,235,0.18)",
+            background: "rgba(37,99,235,0.08)",
+            border: "1px solid rgba(37,99,235,0.2)",
             backdropFilter: "blur(12px)",
           }}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="flex h-6 w-6 items-center justify-center rounded-lg"
-                style={{ background: "rgba(198,255,51,0.12)" }}>
-                <FontAwesomeIcon icon={faBolt} style={{ fontSize: 10, color: "#C6FF33" }} />
+                style={{ background: "rgba(37,99,235,0.18)" }}>
+                <FontAwesomeIcon icon={faBolt} style={{ fontSize: 10, color: "#60A5FA" }} />
               </div>
               <span className="text-[12px] font-semibold text-white/60">Credits</span>
             </div>
@@ -207,9 +207,9 @@ export default function Sidebar({ userName = "User", userEmail, userAvatar, cred
               style={{
                 width: `${pct}%`,
                 background: pct > 20
-                  ? "linear-gradient(90deg, #7D39EB, #C6FF33)"
+                  ? "linear-gradient(90deg, #2563EB, #06B6D4)"
                   : "linear-gradient(90deg, #ef4444, #f97316)",
-                boxShadow: pct > 20 ? "0 0 8px rgba(198,255,51,0.4)" : "0 0 8px rgba(239,68,68,0.5)",
+                boxShadow: pct > 20 ? "0 0 8px rgba(37,99,235,0.5)" : "0 0 8px rgba(239,68,68,0.5)",
               }} />
           </div>
 
@@ -218,12 +218,12 @@ export default function Sidebar({ userName = "User", userEmail, userAvatar, cred
             onClick={() => router.push("/credits")}
             className="w-full flex items-center justify-center gap-2 rounded-xl py-2 transition-all hover:brightness-110 active:scale-[0.98]"
             style={{
-              background: "#C6FF33",
-              boxShadow: "0 0 16px rgba(198,255,51,0.25)",
+              background: "#2563EB",
+              boxShadow: "0 0 16px rgba(37,99,235,0.35)",
             }}
           >
-            <FontAwesomeIcon icon={faArrowUp} style={{ fontSize: 10, color: "#000" }} />
-            <span className="text-[12px] font-bold text-black tracking-wide">Upgrade Plan</span>
+            <FontAwesomeIcon icon={faArrowUp} style={{ fontSize: 10, color: "#fff" }} />
+            <span className="text-[12px] font-bold text-white tracking-wide">Upgrade Plan</span>
           </button>
         </div>
 
@@ -236,8 +236,8 @@ export default function Sidebar({ userName = "User", userEmail, userAvatar, cred
                 <img src={userAvatar} alt={userName} className="h-full w-full object-cover" />
               </span>
             ) : (
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-sm font-bold text-black"
-                style={{ background: "linear-gradient(135deg, #7D39EB, #C6FF33)" }}>
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-sm font-bold text-white"
+                style={{ background: "linear-gradient(135deg, #2563EB, #06B6D4)" }}>
                 {initial}
               </span>
             )}

@@ -16,7 +16,7 @@ export function Logo({ collapsed = false, href = "/", className, size = "md" }: 
   return (
     <Link href={href} className={cn("inline-flex items-center select-none", className)}>
       <span
-        className={cn("font-bold tracking-tight text-[#111111] flex items-center gap-0", textSize)}
+        className={cn("font-bold tracking-tight text-[#111111] dark:text-white flex items-center gap-0", textSize)}
         style={{ fontFamily: "Satoshi, sans-serif", letterSpacing: "-0.02em" }}
       >
         <span>ugc</span>

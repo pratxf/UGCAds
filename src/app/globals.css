@@ -111,37 +111,37 @@
 
 /* ─── Dark theme (app/dashboard) ─────────────────────────────────────── */
 .dark {
-  --background: #000000;
+  --background: #060a12;
   --foreground: #FFFFFF;
-  --card: #0a0a0a;
+  --card: #0c1220;
   --card-foreground: #FFFFFF;
-  --popover: #0a0a0a;
+  --popover: #0c1220;
   --popover-foreground: #FFFFFF;
-  --primary: #C6FF33;
-  --primary-foreground: #000000;
-  --secondary: #111111;
+  --primary: #2563EB;
+  --primary-foreground: #FFFFFF;
+  --secondary: #111827;
   --secondary-foreground: #FFFFFF;
-  --muted: #111111;
+  --muted: #111827;
   --muted-foreground: #888888;
-  --accent: #7D39EB;
+  --accent: #06B6D4;
   --accent-foreground: #FFFFFF;
   --destructive: #EF4444;
-  --border: #1a1a1a;
-  --input: #1a1a1a;
-  --ring: #C6FF33;
-  --chart-1: #C6FF33;
-  --chart-2: #7D39EB;
-  --chart-3: #FCD34D;
+  --border: #1a2535;
+  --input: #1a2535;
+  --ring: #2563EB;
+  --chart-1: #2563EB;
+  --chart-2: #06B6D4;
+  --chart-3: #10B981;
   --chart-4: #F97316;
   --chart-5: #EC4899;
-  --sidebar: #050505;
+  --sidebar: #060a12;
   --sidebar-foreground: #FFFFFF;
-  --sidebar-primary: #C6FF33;
-  --sidebar-primary-foreground: #000000;
-  --sidebar-accent: #111111;
+  --sidebar-primary: #2563EB;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #111827;
   --sidebar-accent-foreground: #FFFFFF;
-  --sidebar-border: #1a1a1a;
-  --sidebar-ring: #C6FF33;
+  --sidebar-border: #1a2535;
+  --sidebar-ring: #2563EB;
 }
 
 @layer base {
@@ -170,12 +170,12 @@
     background-image: linear-gradient(135deg, #2563EB, #06B6D4);
   }
 
-  /* Dark theme gradient (violet → lime) */
+  /* Dark theme gradient (blue → cyan, same as light) */
   .dark .gradient-text {
-    background-image: linear-gradient(135deg, #7D39EB, #C6FF33);
+    background-image: linear-gradient(135deg, #2563EB, #06B6D4);
   }
   .dark .gradient-bg {
-    background-image: linear-gradient(135deg, #7D39EB, #C6FF33);
+    background-image: linear-gradient(135deg, #2563EB, #06B6D4);
   }
 
   .gradient-amber {
@@ -249,12 +249,12 @@
     box-shadow: 0 0 24px rgba(6, 182, 212, 0.2), 0 0 80px rgba(6, 182, 212, 0.06);
   }
 
-  /* Legacy glow names — dark */
-  .dark .glow-lime {
-    box-shadow: 0 0 24px rgba(198, 255, 51, 0.15), 0 0 80px rgba(198, 255, 51, 0.05);
+  /* Glow effects — dark */
+  .dark .glow-blue {
+    box-shadow: 0 0 24px rgba(37, 99, 235, 0.25), 0 0 80px rgba(37, 99, 235, 0.08);
   }
-  .dark .glow-violet {
-    box-shadow: 0 0 24px rgba(125, 57, 235, 0.2), 0 0 80px rgba(125, 57, 235, 0.06);
+  .dark .glow-cyan {
+    box-shadow: 0 0 24px rgba(6, 182, 212, 0.2), 0 0 80px rgba(6, 182, 212, 0.06);
   }
   .dark .glow-amber {
     box-shadow: 0 0 24px rgba(252, 211, 77, 0.12), 0 0 80px rgba(252, 211, 77, 0.04);
@@ -274,9 +274,9 @@
   animation: rotating-gradient 3s linear infinite;
 }
 
-/* Dark: lime → violet */
+/* Dark: blue → cyan */
 .dark .rotatingGradient {
-  background: conic-gradient(from var(--r), #C6FF33, #7D39EB, #C6FF33);
+  background: conic-gradient(from var(--r), #2563EB, #06B6D4, #2563EB);
 }
 
 @keyframes rotating-gradient {
