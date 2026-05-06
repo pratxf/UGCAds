@@ -26,17 +26,10 @@ const stats = [
   { icon: Shield, bold: "Cancel",          muted: "anytime" },
 ];
 
-const brandLogos = [
-  { name: "Verizon", suffix: "✓" },
-  { name: "Airwallex", suffix: "" },
-  { name: "HubSpot", suffix: "" },
-  { name: "sunski", suffix: "" },
-  { name: "Wilson", suffix: "" },
-];
 
 export default function Hero() {
   return (
-    <section className="relative w-full overflow-hidden bg-gradient-to-br from-white via-[#F4F7FF] to-[#EEF2FF] pt-20 pb-16 sm:pt-24 sm:pb-20">
+    <section className="relative w-full overflow-hidden bg-[#F6F8FF] pt-20 pb-16 sm:pt-24 sm:pb-20">
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
@@ -78,7 +71,11 @@ export default function Hero() {
               style={{ fontFamily: "Satoshi, sans-serif" }}
             >
               Create{" "}
-              <span className="gradient-text">Human Looking</span>{" "}
+              <span style={{
+                background: "linear-gradient(90deg, #2563EB, #4F46E5)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+              }}>Human Looking</span>{" "}
               Ads in Minutes
             </motion.h1>
 
@@ -98,16 +95,16 @@ export default function Hero() {
             >
               <Link
                 href="/signup"
-                className="inline-flex items-center gap-2 rounded-xl bg-[#2563EB] px-7 py-3.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/30 hover:bg-blue-700 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+                className="inline-flex items-center gap-2 rounded-full bg-[#2563EB] px-8 py-3.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/30 hover:bg-blue-700 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
               >
                 Start for Free
                 <span className="text-base leading-none">→</span>
               </Link>
               <Link
                 href="#how-it-works"
-                className="inline-flex items-center gap-2 rounded-xl border border-[#E5E7EB] bg-white px-7 py-3.5 text-sm font-medium text-[#374151] hover:border-[#D1D5DB] hover:bg-[#F9FAFB] transition-all duration-200"
+                className="inline-flex items-center gap-2 rounded-full border border-[#E5E7EB] bg-white px-7 py-3.5 text-sm font-medium text-[#374151] hover:border-[#D1D5DB] hover:bg-[#F9FAFB] transition-all duration-200"
               >
-                <Play className="h-3.5 w-3.5 fill-[#2563EB] text-[#2563EB]" />
+                <Play className="h-3.5 w-3.5 fill-[#111111] text-[#111111]" />
                 See How It Works
               </Link>
             </motion.div>
@@ -188,23 +185,6 @@ export default function Hero() {
               </div>
             </div>
 
-            {/* Brand logos below card */}
-            <div className="mt-5">
-              <p className="text-[10px] font-semibold tracking-widest text-[#9CA3AF] uppercase mb-3">
-                Trusted by leading brands
-              </p>
-              <div className="flex items-center gap-5 flex-wrap">
-                {brandLogos.map(({ name, suffix }) => (
-                  <span
-                    key={name}
-                    className="text-sm font-bold text-[#9CA3AF] hover:text-[#6B7280] transition-colors tracking-tight"
-                    style={{ fontFamily: "Satoshi, sans-serif" }}
-                  >
-                    {name}{suffix}
-                  </span>
-                ))}
-              </div>
-            </div>
           </motion.div>
         </div>
       </div>
