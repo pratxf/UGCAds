@@ -214,7 +214,7 @@ export default function PhotoshootCreator() {
       <div className="flex flex-col items-center justify-center gap-4 p-4 sm:p-6 lg:p-8 lg:overflow-y-auto">
         {/* Top toolbar: live + aspect */}
         <div className="flex items-center gap-2 flex-wrap justify-center">
-          <span className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.025] px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-primary">
+          <span className="inline-flex items-center gap-1.5 rounded-lg border border-[#E5E7EB] bg-[#F9FAFB] px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-primary">
             <span className="relative flex h-1.5 w-1.5">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
               <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-primary" />
@@ -232,7 +232,7 @@ export default function PhotoshootCreator() {
                   "rounded-lg border px-3 py-1.5 text-xs transition",
                   active
                     ? "border-primary bg-primary/10 text-primary"
-                    : "border-white/10 bg-white/[0.025] text-white/60 hover:border-white/20 hover:text-foreground",
+                    : "border-[#E5E7EB] bg-[#F9FAFB] text-[#6B7280] hover:border-[#D1D5DB] hover:text-foreground",
                 )}
               >
                 {a}
@@ -245,20 +245,20 @@ export default function PhotoshootCreator() {
         <div
           {...(productImage ? {} : getRootProps())}
           className={cn(
-            "relative w-full mx-auto rounded-3xl border bg-white/[0.025] overflow-hidden shadow-[0_20px_60px_-20px_rgba(0,0,0,0.6)] transition-all",
+            "relative w-full mx-auto rounded-3xl border bg-[#F9FAFB] overflow-hidden shadow-[0_20px_60px_-20px_rgba(0,0,0,0.12)] transition-all",
             aspectClassMap[aspectRatio],
-            !productImage && "cursor-pointer hover:bg-white/[0.04]",
-            isDragActive ? "border-primary" : "border-white/10 hover:border-white/20",
+            !productImage && "cursor-pointer hover:bg-[#F3F4F6]",
+            isDragActive ? "border-primary" : "border-[#E5E7EB] hover:border-[#D1D5DB]",
           )}
         >
           {!productImage && <input {...getInputProps()} />}
 
           {/* Decorative grid + glow background */}
           <div
-            className="absolute inset-0 pointer-events-none opacity-30"
+            className="absolute inset-0 pointer-events-none opacity-40"
             style={{
               backgroundImage:
-                "linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px)",
+                "linear-gradient(rgba(0,0,0,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.04) 1px, transparent 1px)",
               backgroundSize: "40px 40px",
             }}
           />
@@ -266,7 +266,7 @@ export default function PhotoshootCreator() {
             className="absolute inset-0 pointer-events-none"
             style={{
               backgroundImage:
-                "radial-gradient(circle at 20% 30%, rgba(125,57,235,0.05) 0%, transparent 50%), radial-gradient(circle at 80% 70%, rgba(198,255,51,0.03) 0%, transparent 50%)",
+                "radial-gradient(circle at 20% 30%, rgba(37,99,235,0.04) 0%, transparent 50%), radial-gradient(circle at 80% 70%, rgba(6,182,212,0.03) 0%, transparent 50%)",
             }}
           />
 
@@ -278,7 +278,7 @@ export default function PhotoshootCreator() {
                   "flex h-20 w-20 items-center justify-center rounded-full border-2 border-dashed transition-all",
                   isDragActive
                     ? "border-primary/50 scale-105"
-                    : "border-white/10",
+                    : "border-[#E5E7EB]",
                 )}
               >
                 <FontAwesomeIcon
@@ -286,7 +286,7 @@ export default function PhotoshootCreator() {
                   style={{ fontSize: 26 }}
                   className={cn(
                     "transition-colors",
-                    isDragActive ? "text-primary" : "text-white/40",
+                    isDragActive ? "text-primary" : "text-[#9CA3AF]",
                   )}
                 />
               </div>
@@ -294,7 +294,7 @@ export default function PhotoshootCreator() {
                 <p className="text-[15px] font-medium text-foreground">
                   {isDragActive ? "Drop here" : "Upload a product to start"}
                 </p>
-                <p className="mt-1.5 text-xs text-white/45">
+                <p className="mt-1.5 text-xs text-[#9CA3AF]">
                   Drop an image here or pick a scene
                 </p>
               </div>
@@ -321,7 +321,7 @@ export default function PhotoshootCreator() {
               <button
                 type="button"
                 onClick={removeProduct}
-                className="absolute top-3 right-3 z-10 flex h-8 w-8 items-center justify-center rounded-lg bg-black/60 backdrop-blur border border-white/10 text-white/70 hover:text-foreground hover:bg-black/80 transition"
+                className="absolute top-3 right-3 z-10 flex h-8 w-8 items-center justify-center rounded-lg bg-black/60 backdrop-blur border border-white/10 text-white hover:text-white hover:bg-black/80 transition"
                 aria-label="Remove product"
               >
                 <FontAwesomeIcon icon={faXmark} style={{ fontSize: 13 }} />
@@ -383,7 +383,7 @@ export default function PhotoshootCreator() {
           <button
             type="button"
             onClick={openFilePicker}
-            className="text-[11px] text-white/40 hover:text-white/70 transition"
+            className="text-[11px] text-[#9CA3AF] hover:text-[#374151] transition"
           >
             or click to browse files
           </button>
@@ -391,9 +391,9 @@ export default function PhotoshootCreator() {
       </div>
 
       {/* ─────────────── RIGHT PANEL ─────────────── */}
-      <aside className="flex flex-col border-t lg:border-t-0 lg:border-l border-white/10 bg-white/[0.02] lg:overflow-hidden">
+      <aside className="flex flex-col border-t lg:border-t-0 lg:border-l border-[#E5E7EB] bg-white lg:overflow-hidden">
         <div className="flex-1 overflow-y-auto">
-          <div className="p-6 border-b border-white/10">
+          <div className="p-6 border-b border-[#E5E7EB]">
 
             {/* Model picker */}
             {(() => {
@@ -406,11 +406,11 @@ export default function PhotoshootCreator() {
               const current = IMAGE_MODELS.find((m) => m.id === modelChoice) || IMAGE_MODELS[0];
               return (
                 <div className="mb-5">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-white/40 mb-2">Image Model</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#9CA3AF] mb-2">Image Model</p>
                   <button
                     type="button"
                     onClick={() => setModelPickerOpen((o) => !o)}
-                    className="w-full flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2.5 hover:bg-white/[0.07] transition"
+                    className="w-full flex items-center justify-between rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] px-3 py-2.5 hover:bg-[#F3F4F6] transition"
                   >
                     <div className="flex items-center gap-2.5">
                       {"logo" in current && current.logo
@@ -418,21 +418,21 @@ export default function PhotoshootCreator() {
                         : <div className={cn("flex size-7 items-center justify-center rounded-lg text-white text-[10px] font-bold shrink-0", (current as { color?: string }).color)}>{(current as { initials?: string }).initials}</div>
                       }
                       <div className="text-left">
-                        <p className="text-[13px] font-semibold text-white">{current.name}</p>
-                        <p className="text-[10px] text-white/40">{current.tag}</p>
+                        <p className="text-[13px] font-semibold text-[#111111]">{current.name}</p>
+                        <p className="text-[10px] text-[#9CA3AF]">{current.tag}</p>
                       </div>
                     </div>
-                    <FontAwesomeIcon icon={modelPickerOpen ? faChevronUp : faChevronDown} className="text-white/40 shrink-0" style={{ fontSize: 11 }} />
+                    <FontAwesomeIcon icon={modelPickerOpen ? faChevronUp : faChevronDown} className="text-[#9CA3AF] shrink-0" style={{ fontSize: 11 }} />
                   </button>
                   {modelPickerOpen && (
-                    <div className="mt-1.5 rounded-xl border border-white/10 bg-white/[0.03] overflow-hidden">
+                    <div className="mt-1.5 rounded-xl border border-[#E5E7EB] bg-white overflow-hidden shadow-sm">
                       {IMAGE_MODELS.map((m) => (
                         <button
                           key={m.id}
                           type="button"
                           onClick={() => { setModelChoice(m.id); setModelPickerOpen(false); }}
                           className={cn(
-                            "w-full flex items-center gap-3 px-3 py-2.5 text-left transition hover:bg-white/[0.05]",
+                            "w-full flex items-center gap-3 px-3 py-2.5 text-left transition hover:bg-[#F9FAFB]",
                             modelChoice === m.id ? "bg-primary/[0.06]" : ""
                           )}
                         >
@@ -441,8 +441,8 @@ export default function PhotoshootCreator() {
                             : <div className={cn("flex size-7 items-center justify-center rounded-lg text-white text-[10px] font-bold shrink-0", (m as { color?: string }).color)}>{(m as { initials?: string }).initials}</div>
                           }
                           <div className="flex-1 min-w-0">
-                            <p className="text-[13px] font-semibold text-white">{m.name}</p>
-                            <p className="text-[10px] text-white/40">{m.tag}</p>
+                            <p className="text-[13px] font-semibold text-[#111111]">{m.name}</p>
+                            <p className="text-[10px] text-[#9CA3AF]">{m.tag}</p>
                           </div>
                           {modelChoice === m.id && <FontAwesomeIcon icon={faCheck} className="text-primary shrink-0" style={{ fontSize: 11 }} />}
                         </button>
@@ -454,7 +454,7 @@ export default function PhotoshootCreator() {
             })()}
 
             {/* Mode tabs */}
-            <div className="flex gap-1 p-1 mb-5 rounded-xl bg-white/[0.04]">
+            <div className="flex gap-1 p-1 mb-5 rounded-xl bg-[#F3F4F6]">
               {([
                 { id: "templates", label: "Templates", icon: faTableCellsLarge },
                 { id: "custom", label: "Custom Prompt", icon: faPenToSquare },
@@ -473,8 +473,8 @@ export default function PhotoshootCreator() {
                     className={cn(
                       "flex-1 flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-xs font-medium transition",
                       active
-                        ? "bg-background text-foreground shadow-[0_1px_3px_rgba(0,0,0,0.3)]"
-                        : "text-white/45 hover:text-white/70",
+                        ? "bg-white text-[#111111] shadow-[0_1px_3px_rgba(0,0,0,0.1)]"
+                        : "text-[#9CA3AF] hover:text-[#374151]",
                     )}
                   >
                     <FontAwesomeIcon
@@ -523,12 +523,12 @@ export default function PhotoshootCreator() {
                     <button
                       type="button"
                       onClick={() => setLibraryOpen(true)}
-                      className="aspect-square flex flex-col items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] hover:border-primary/30 hover:bg-primary/[0.04] hover:-translate-y-0.5 transition-all text-center"
+                      className="aspect-square flex flex-col items-center justify-center gap-2 rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] hover:border-primary/30 hover:bg-primary/[0.04] hover:-translate-y-0.5 transition-all text-center"
                     >
                       <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 border border-primary/30 text-primary">
                         <FontAwesomeIcon icon={faTableCellsLarge} style={{ fontSize: 13 }} />
                       </span>
-                      <span className="text-xs font-semibold text-white/70 leading-tight px-2">
+                      <span className="text-xs font-semibold text-[#374151] leading-tight px-2">
                         View {filteredTemplates.length - visibleTemplates.length} more
                       </span>
                     </button>
@@ -542,10 +542,10 @@ export default function PhotoshootCreator() {
                   onChange={(e) => setCustomPrompt(e.target.value)}
                   placeholder="Describe the scene for your product..."
                   rows={5}
-                  className="w-full resize-y rounded-xl border border-white/10 bg-white/[0.04] p-3.5 text-[13px] leading-relaxed text-foreground placeholder:text-white/30 outline-none focus:border-primary/40 transition"
+                  className="w-full resize-y rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] p-3.5 text-[13px] leading-relaxed text-[#111111] placeholder:text-[#9CA3AF] outline-none focus:border-primary/40 transition"
                 />
-                <p className="text-[10px] text-white/30">Examples:</p>
-                <ul className="space-y-1 text-[11px] text-white/45 leading-relaxed">
+                <p className="text-[10px] text-[#9CA3AF]">Examples:</p>
+                <ul className="space-y-1 text-[11px] text-[#6B7280] leading-relaxed">
                   <li>&quot;On a marble kitchen counter with soft morning light&quot;</li>
                   <li>&quot;Floating on water with tropical leaves around it&quot;</li>
                   <li>&quot;On a gym floor next to dumbbells and a water bottle&quot;</li>
@@ -556,7 +556,7 @@ export default function PhotoshootCreator() {
         </div>
 
         {/* Sticky footer: generate or post-result actions */}
-        <div className="shrink-0 border-t border-white/10 bg-white/[0.02] p-5">
+        <div className="shrink-0 border-t border-[#E5E7EB] bg-white p-5">
           {finalImageUrl ? (
             <div className="space-y-3">
               <div className="rounded-xl border border-primary/30 bg-primary/[0.06] px-3 py-2 text-[11px] text-primary">
@@ -571,7 +571,7 @@ export default function PhotoshootCreator() {
               <button
                 type="button"
                 onClick={() => downloadAsset(finalImageUrl, "photoshoot", "jpg")}
-                className="w-full inline-flex items-center justify-center gap-2 h-11 rounded-xl bg-primary text-black text-sm font-bold ring-1 ring-inset ring-black/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.45),0_1px_2px_rgba(0,0,0,0.35)] transition hover:brightness-105"
+                className="w-full inline-flex items-center justify-center gap-2 h-11 rounded-xl bg-primary text-white text-sm font-bold ring-1 ring-inset ring-black/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.45),0_1px_2px_rgba(0,0,0,0.35)] transition hover:brightness-105"
               >
                 <FontAwesomeIcon icon={faDownload} style={{ fontSize: 13 }} />
                 Download
@@ -580,7 +580,7 @@ export default function PhotoshootCreator() {
                 <button
                   type="button"
                   onClick={regenerate}
-                  className="inline-flex items-center justify-center gap-2 h-10 rounded-xl border border-white/10 bg-white/[0.04] text-white/80 hover:text-foreground text-xs font-semibold transition hover:bg-white/[0.08]"
+                  className="inline-flex items-center justify-center gap-2 h-10 rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] text-[#374151] hover:text-[#111111] text-xs font-semibold transition hover:bg-[#F3F4F6]"
                 >
                   <FontAwesomeIcon icon={faArrowsRotate} style={{ fontSize: 11 }} />
                   Regenerate
@@ -588,7 +588,7 @@ export default function PhotoshootCreator() {
                 <button
                   type="button"
                   onClick={tryDifferentScene}
-                  className="inline-flex items-center justify-center gap-2 h-10 rounded-xl border border-white/10 bg-white/[0.04] text-white/80 hover:text-foreground text-xs font-semibold transition hover:bg-white/[0.08]"
+                  className="inline-flex items-center justify-center gap-2 h-10 rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] text-[#374151] hover:text-[#111111] text-xs font-semibold transition hover:bg-[#F3F4F6]"
                 >
                   <FontAwesomeIcon icon={faWandMagicSparkles} style={{ fontSize: 11 }} />
                   Try different scene
@@ -601,7 +601,7 @@ export default function PhotoshootCreator() {
                 type="button"
                 onClick={handleGenerate}
                 disabled={!canGenerate}
-                className="w-full inline-flex items-center justify-center gap-2 h-12 rounded-xl bg-primary text-black text-sm font-bold ring-1 ring-inset ring-black/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.45),0_1px_2px_rgba(0,0,0,0.35)] transition-all hover:brightness-105 hover:-translate-y-0.5 hover:shadow-[0_6px_28px_rgba(198,255,51,0.3)] active:translate-y-0 disabled:bg-white/[0.04] disabled:text-white/30 disabled:cursor-not-allowed disabled:ring-0 disabled:shadow-none disabled:translate-y-0"
+                className="w-full inline-flex items-center justify-center gap-2 h-12 rounded-xl bg-primary text-white text-sm font-bold ring-1 ring-inset ring-black/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.45),0_1px_2px_rgba(0,0,0,0.35)] transition-all hover:brightness-105 hover:-translate-y-0.5 hover:shadow-[0_6px_28px_rgba(37,99,235,0.25)] active:translate-y-0 disabled:bg-[#F3F4F6] disabled:text-[#9CA3AF] disabled:cursor-not-allowed disabled:ring-0 disabled:shadow-none disabled:translate-y-0"
               >
                 {isGenerating ? (
                   <>
@@ -615,7 +615,7 @@ export default function PhotoshootCreator() {
                   </>
                 )}
               </button>
-              <p className="mt-2 text-center text-[11px] text-white/40">
+              <p className="mt-2 text-center text-[11px] text-[#9CA3AF]">
                 Uses 1 credit per generation
               </p>
               {generationError && (
@@ -673,8 +673,8 @@ function CategoryChip({
       className={cn(
         "rounded-full border px-3 py-1 text-xs transition",
         active
-          ? "bg-foreground text-background border-foreground font-medium"
-          : "border-white/10 text-white/45 hover:border-white/20 hover:text-white/70",
+          ? "bg-[#111111] text-white border-[#111111] font-medium"
+          : "border-[#E5E7EB] text-[#6B7280] hover:border-[#D1D5DB] hover:text-[#374151]",
       )}
     >
       {children}
@@ -696,10 +696,10 @@ function TemplateTile({
       type="button"
       onClick={onClick}
       className={cn(
-        "relative aspect-square overflow-hidden rounded-xl border bg-white/[0.04] cursor-pointer transition-all",
+        "relative aspect-square overflow-hidden rounded-xl border bg-[#F3F4F6] cursor-pointer transition-all",
         selected
-          ? "border-primary shadow-[0_0_0_1px_var(--color-primary),0_4px_20px_rgba(198,255,51,0.1)]"
-          : "border-white/10 hover:border-white/20 hover:-translate-y-0.5 hover:shadow-[0_6px_24px_rgba(0,0,0,0.3)]",
+          ? "border-primary shadow-[0_0_0_1px_var(--color-primary),0_4px_20px_rgba(37,99,235,0.12)]"
+          : "border-[#E5E7EB] hover:border-[#D1D5DB] hover:-translate-y-0.5 hover:shadow-[0_6px_24px_rgba(0,0,0,0.08)]",
       )}
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -713,7 +713,7 @@ function TemplateTile({
       />
       {selected && (
         <span className="absolute top-1.5 right-1.5 flex h-[18px] w-[18px] items-center justify-center rounded-full bg-primary">
-          <FontAwesomeIcon icon={faCheck} className="text-black" style={{ fontSize: 8 }} />
+          <FontAwesomeIcon icon={faCheck} className="text-white" style={{ fontSize: 8 }} />
         </span>
       )}
     </button>
@@ -743,23 +743,23 @@ function LibraryModal({
   return (
     <div
       onClick={onClose}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 lg:pl-[268px]"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-md p-4 lg:pl-[268px]"
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-5xl max-h-[85vh] overflow-hidden rounded-3xl border border-white/[0.08] bg-[#050505] flex flex-col"
+        className="w-full max-w-5xl max-h-[85vh] overflow-hidden rounded-3xl border border-[#E5E7EB] bg-white flex flex-col shadow-xl"
       >
-        <div className="flex items-center justify-between px-6 py-4 border-b border-white/10">
-          <h3 className="text-lg font-bold tracking-tight">Photoshoot template library</h3>
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[#E5E7EB]">
+          <h3 className="text-lg font-bold tracking-tight text-[#111111]">Photoshoot template library</h3>
           <button
             type="button"
             onClick={onClose}
-            className="flex size-8 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-white/60 hover:text-foreground hover:bg-white/10 transition"
+            className="flex size-8 items-center justify-center rounded-lg border border-[#E5E7EB] bg-[#F9FAFB] text-[#6B7280] hover:text-[#111111] hover:bg-[#F3F4F6] transition"
           >
             <FontAwesomeIcon icon={faXmark} style={{ fontSize: 13 }} />
           </button>
         </div>
-        <div className="flex flex-wrap gap-2 px-6 py-3 border-b border-white/10">
+        <div className="flex flex-wrap gap-2 px-6 py-3 border-b border-[#E5E7EB]">
           <CategoryChip active={categoryFilter === "all"} onClick={() => setCategoryFilter("all")}>
             All
           </CategoryChip>
@@ -825,7 +825,7 @@ function CustomTemplateTile({
   }
 
   return (
-    <label className="relative aspect-square cursor-pointer flex flex-col items-center justify-center gap-1.5 rounded-xl border-2 border-dashed border-white/15 bg-white/[0.02] hover:border-primary/40 hover:bg-primary/[0.03] transition text-center">
+    <label className="relative aspect-square cursor-pointer flex flex-col items-center justify-center gap-1.5 rounded-xl border-2 border-dashed border-[#D1D5DB] bg-[#F9FAFB] hover:border-primary/40 hover:bg-primary/[0.03] transition text-center">
       <input
         type="file"
         accept="image/*"
@@ -836,7 +836,7 @@ function CustomTemplateTile({
       <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 border border-primary/30 text-primary">
         <FontAwesomeIcon icon={uploading ? faCircleNotch : faPlus} className={uploading ? "animate-spin" : ""} style={{ fontSize: 11 }} />
       </span>
-      <span className="text-[10px] font-semibold text-white/70 leading-tight px-1">
+      <span className="text-[10px] font-semibold text-[#374151] leading-tight px-1">
         {uploading ? "Uploading..." : "Upload custom"}
       </span>
     </label>

@@ -57,10 +57,10 @@ function statusIcon(s: Status) {
 }
 function statusStyle(s: Status) {
   return s === "Complete"
-    ? "text-primary bg-black/60 ring-1 ring-primary/30"
+    ? "text-primary bg-white/90 ring-1 ring-primary/30"
     : s === "Processing"
-    ? "text-amber bg-black/60 ring-1 ring-amber/30"
-    : "text-destructive bg-black/60 ring-1 ring-destructive/30";
+    ? "text-amber bg-white/90 ring-1 ring-amber/30"
+    : "text-destructive bg-white/90 ring-1 ring-destructive/30";
 }
 function typeStyle(t: AdType) {
   if (t === "UGC Ad") return "text-primary";
@@ -86,14 +86,14 @@ type StatCardProps = {
 
 function StatCard({ icon, label, value, iconClass, badgeClass, valueClass }: StatCardProps) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-4">
+    <div className="rounded-2xl border border-[#E5E7EB] bg-[#F9FAFB] backdrop-blur-xl p-4">
       <div className="flex items-center gap-2 mb-3">
         <div className={cn("flex size-7 items-center justify-center rounded-lg", badgeClass)}>
           <FontAwesomeIcon icon={icon} className={iconClass} style={{ fontSize: 14 }} />
         </div>
-        <span className="text-[11px] text-white/60">{label}</span>
+        <span className="text-[11px] text-[#4B5563]">{label}</span>
       </div>
-      <p className={cn("text-2xl font-bold", valueClass ?? "text-white")}>{value}</p>
+      <p className={cn("text-2xl font-bold", valueClass ?? "text-[#111111]")}>{value}</p>
     </div>
   );
 }
@@ -132,8 +132,8 @@ export default function HistoryClient({ items: rawItems }: { items: Item[] }) {
           icon={faFilm}
           label="Total"
           value={total}
-          iconClass="text-white/60"
-          badgeClass="bg-white/10"
+          iconClass="text-[#4B5563]"
+          badgeClass="bg-[#F3F4F6]"
         />
         <StatCard
           icon={faCheck}
@@ -162,8 +162,8 @@ export default function HistoryClient({ items: rawItems }: { items: Item[] }) {
             className={cn(
               "rounded-full px-3.5 py-1.5 text-[11px] font-medium transition-all flex items-center gap-1.5",
               tab === t.value
-                ? "bg-foreground text-background"
-                : "border border-white/10 bg-white/5 text-white/60 hover:text-white"
+                ? "bg-[#111111] text-white"
+                : "border border-[#E5E7EB] bg-[#F9FAFB] text-[#4B5563] hover:text-[#111111]"
             )}
           >
             {t.label}
@@ -174,7 +174,7 @@ export default function HistoryClient({ items: rawItems }: { items: Item[] }) {
       {/* Grid or empty */}
       <motion.div variants={fadeUp}>
         {filtered.length === 0 ? (
-          <div className="rounded-3xl border border-dashed border-white/10 bg-white/[0.03] p-12 text-center">
+          <div className="rounded-3xl border border-dashed border-[#E5E7EB] bg-white p-12 text-center">
             <div className="size-14 mx-auto rounded-2xl bg-primary/10 ring-1 ring-primary/20 shadow-[0_0_40px_rgba(198,255,51,0.12)] flex items-center justify-center mb-3">
               <FontAwesomeIcon
                 icon={total === 0 ? faWandMagicSparkles : faFilm}
@@ -182,16 +182,16 @@ export default function HistoryClient({ items: rawItems }: { items: Item[] }) {
                 style={{ fontSize: 24 }}
               />
             </div>
-            <p className="text-sm font-semibold text-white">
+            <p className="text-sm font-semibold text-[#111111]">
               {total === 0 ? "No generations yet" : "Nothing in this category"}
             </p>
-            <p className="text-xs text-white/60 mt-1 mb-4">
+            <p className="text-xs text-[#4B5563] mt-1 mb-4">
               {total === 0 ? "Create your first ad to see it here" : "Try a different filter"}
             </p>
             {total === 0 && (
               <Link
                 href="/create/ugc"
-                className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-violet to-primary text-background px-4 h-9 text-xs font-semibold hover:brightness-110 transition-all"
+                className="inline-flex items-center gap-1.5 rounded-full bg-[#2563EB] text-white px-4 h-9 text-xs font-semibold hover:brightness-110 transition-all"
               >
                 <FontAwesomeIcon icon={faWandMagicSparkles} style={{ fontSize: 12 }} /> Create your first ad
               </Link>
@@ -221,13 +221,13 @@ export default function HistoryClient({ items: rawItems }: { items: Item[] }) {
                   }
                 }}
                 className={cn(
-                  "group relative overflow-hidden rounded-3xl border border-white/[0.07] bg-white/[0.03] backdrop-blur-xl transition-all text-left",
+                  "group relative overflow-hidden rounded-3xl border border-[#E5E7EB] bg-white backdrop-blur-xl transition-all text-left",
                   canPreview
-                    ? "cursor-pointer hover:border-white/20 hover:shadow-lg hover:shadow-black/30"
+                    ? "cursor-pointer hover:border-[#D1D5DB] hover:shadow-lg hover:shadow-black/30"
                     : "cursor-default",
                 )}
               >
-                <div className="relative aspect-[4/3] bg-white/[0.03] overflow-hidden">
+                <div className="relative aspect-[4/3] bg-white overflow-hidden">
                   {g.characterImage || g.thumbnailUrl ? (
                     <Image
                       src={(g.thumbnailUrl || g.characterImage)!}
@@ -239,7 +239,7 @@ export default function HistoryClient({ items: rawItems }: { items: Item[] }) {
                     />
                   ) : (
                     <div className="flex size-full items-center justify-center">
-                      <FontAwesomeIcon icon={faFilm} className="text-white/20" style={{ fontSize: 32 }} />
+                      <FontAwesomeIcon icon={faFilm} className="text-[#9CA3AF]" style={{ fontSize: 32 }} />
                     </div>
                   )}
                   {g.finalUrl && g.status === "Complete" && isVideo && (
@@ -277,10 +277,10 @@ export default function HistoryClient({ items: rawItems }: { items: Item[] }) {
                   )}
                 </div>
                 <div className="p-4">
-                  <p className="text-[13px] font-semibold text-white truncate">{g.title}</p>
+                  <p className="text-[13px] font-semibold text-[#111111] truncate">{g.title}</p>
                   <div className="mt-1.5 flex items-center justify-between">
                     <span className={cn("text-[11px] font-medium", typeStyle(g.type))}>{g.type}</span>
-                    <span className="text-[11px] text-white/50">{g.date}</span>
+                    <span className="text-[11px] text-[#6B7280]">{g.date}</span>
                   </div>
                 </div>
               </article>
@@ -311,18 +311,18 @@ function PreviewModal({ item, onClose }: { item: Item; onClose: () => void }) {
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="relative flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl border border-white/[0.08] bg-[#050505] shadow-2xl"
+        className="relative flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl border border-[#E5E7EB] bg-white shadow-2xl"
       >
-        <div className="flex items-center justify-between px-5 py-3 border-b border-white/10">
+        <div className="flex items-center justify-between px-5 py-3 border-b border-[#E5E7EB]">
           <div>
-            <p className="text-sm font-semibold text-white">{item.title}</p>
-            <p className="text-[11px] text-white/50">{item.type} · {item.date}</p>
+            <p className="text-sm font-semibold text-[#111111]">{item.title}</p>
+            <p className="text-[11px] text-[#6B7280]">{item.type} · {item.date}</p>
           </div>
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={() => downloadAsset(item.finalUrl!, item.type, item.id)}
-              className="inline-flex items-center gap-2 rounded-lg bg-primary text-black px-3 h-9 text-xs font-bold hover:brightness-105 transition"
+              className="inline-flex items-center gap-2 rounded-lg bg-primary text-white px-3 h-9 text-xs font-bold hover:brightness-105 transition"
             >
               <FontAwesomeIcon icon={faDownload} style={{ fontSize: 12 }} />
               Download
@@ -330,7 +330,7 @@ function PreviewModal({ item, onClose }: { item: Item; onClose: () => void }) {
             <button
               type="button"
               onClick={onClose}
-              className="flex size-9 items-center justify-center rounded-lg text-white/60 hover:text-foreground hover:bg-white/5 transition"
+              className="flex size-9 items-center justify-center rounded-lg text-[#4B5563] hover:text-foreground hover:bg-[#F9FAFB] transition"
             >
               <FontAwesomeIcon icon={faXmark} style={{ fontSize: 14 }} />
             </button>

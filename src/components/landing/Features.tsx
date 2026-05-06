@@ -24,7 +24,7 @@ const cards = [
     accentBg: "#EFF6FF",
     iconBg: "#DBEAFE",
     Icon: Video,
-    media: { type: "video" as const, src: "/videos/feature-ugc.mp4", timestamp: "01:47" },
+    media: { type: "video" as const, src: "/videos/feature-ugc.mp4" },
     description: "Create realistic UGC-style videos with AI characters and authentic voiceovers in minutes.",
     tags: [
       { icon: Zap,       label: "AI Characters" },
@@ -133,18 +133,11 @@ export default function Features() {
               {/* Media */}
               <div className="relative mx-3 overflow-hidden rounded-xl bg-[#F3F4F6]" style={{ aspectRatio: "16/10" }}>
                 {card.media.type === "video" ? (
-                  <>
-                    <video
-                      src={card.media.src}
-                      muted autoPlay loop playsInline preload="metadata"
-                      className="w-full h-full object-cover"
-                    />
-                    {"timestamp" in card.media && card.media.timestamp && (
-                      <div className="absolute bottom-2 right-2 rounded-md bg-black/70 px-1.5 py-0.5 text-[11px] font-semibold text-white">
-                        {card.media.timestamp}
-                      </div>
-                    )}
-                  </>
+                  <video
+                    src={card.media.src}
+                    muted autoPlay loop playsInline preload="metadata"
+                    className="w-full h-full object-cover"
+                  />
                 ) : card.media.type === "tryon" ? (
                   <div className="flex h-full w-full">
                     <div className="flex-1 relative">

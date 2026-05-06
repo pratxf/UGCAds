@@ -2,7 +2,6 @@ import { redirect } from "next/navigation";
 import Sidebar from "@/components/app/Sidebar";
 import ActiveGenerationsPill from "@/components/app/ActiveGenerationsPill";
 import { getCurrentUser } from "@/lib/auth";
-import { GradientBackground4 } from "@/components/ui/gradient-background-4";
 import { prisma } from "@/lib/prisma";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
@@ -15,8 +14,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   });
 
   return (
-    <div className="dark relative flex min-h-screen" style={{ background: "#060a12" }}>
-      <GradientBackground4 className="fixed" />
+    <div className="relative flex min-h-screen" style={{ background: "#F7F9FC" }}>
       <Sidebar
         userName={user.name || user.email.split("@")[0]}
         userEmail={user.email}

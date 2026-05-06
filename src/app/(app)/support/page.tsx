@@ -52,8 +52,8 @@ export default function SupportPage() {
 
       {/* Header */}
       <motion.div variants={fadeUp}>
-        <h1 className="text-xl font-bold text-white">Support</h1>
-        <p className="mt-1 text-sm text-white/50">We&apos;re here to help. Reach out or browse common questions below.</p>
+        <h1 className="text-xl font-bold text-[#111111]">Support</h1>
+        <p className="mt-1 text-sm text-[#6B7280]">We&apos;re here to help. Reach out or browse common questions below.</p>
       </motion.div>
 
       {/* Contact channels */}
@@ -63,21 +63,21 @@ export default function SupportPage() {
         <div
           className="group relative overflow-hidden rounded-3xl p-6 cursor-pointer transition-all hover:scale-[1.01]"
           style={{
-            background: "linear-gradient(135deg, rgba(125,57,235,0.25) 0%, rgba(125,57,235,0.08) 100%)",
-            border: "1px solid rgba(125,57,235,0.35)",
+            background: "linear-gradient(135deg, rgba(37,99,235,0.08) 0%, rgba(37,99,235,0.03) 100%)",
+            border: "1px solid rgba(37,99,235,0.2)",
           }}
         >
           <div
             className="flex h-12 w-12 items-center justify-center rounded-2xl mb-4"
-            style={{ background: "rgba(125,57,235,0.3)", border: "1px solid rgba(125,57,235,0.4)" }}
+            style={{ background: "rgba(37,99,235,0.1)", border: "1px solid rgba(37,99,235,0.2)" }}
           >
-            <FontAwesomeIcon icon={faHeadset} style={{ fontSize: 22, color: "#a67ff5" }} />
+            <FontAwesomeIcon icon={faHeadset} style={{ fontSize: 22, color: "#2563EB" }} />
           </div>
-          <h3 className="text-base font-bold text-white">Live chat</h3>
-          <p className="mt-1.5 text-sm text-white/60 leading-relaxed">
+          <h3 className="text-base font-bold text-[#111111]">Live chat</h3>
+          <p className="mt-1.5 text-sm text-[#6B7280] leading-relaxed">
             Chat with our team in real time. We&apos;re online Monday to Friday, 9am to 6pm EST.
           </p>
-          <div className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-[#a67ff5] group-hover:gap-2.5 transition-all">
+          <div className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-[#2563EB] group-hover:gap-2.5 transition-all">
             Start chat
             <FontAwesomeIcon icon={faArrowRight} style={{ fontSize: 13 }} />
           </div>
@@ -88,21 +88,21 @@ export default function SupportPage() {
           href="mailto:support@ugcads.com"
           className="group relative overflow-hidden rounded-3xl p-6 transition-all hover:scale-[1.01]"
           style={{
-            background: "linear-gradient(135deg, rgba(198,255,51,0.12) 0%, rgba(198,255,51,0.04) 100%)",
-            border: "1px solid rgba(198,255,51,0.25)",
+            background: "linear-gradient(135deg, rgba(6,182,212,0.08) 0%, rgba(6,182,212,0.03) 100%)",
+            border: "1px solid rgba(6,182,212,0.2)",
           }}
         >
           <div
             className="flex h-12 w-12 items-center justify-center rounded-2xl mb-4"
-            style={{ background: "rgba(198,255,51,0.15)", border: "1px solid rgba(198,255,51,0.3)" }}
+            style={{ background: "rgba(6,182,212,0.1)", border: "1px solid rgba(6,182,212,0.25)" }}
           >
-            <FontAwesomeIcon icon={faEnvelope} style={{ fontSize: 22, color: "#C6FF33" }} />
+            <FontAwesomeIcon icon={faEnvelope} style={{ fontSize: 22, color: "#06B6D4" }} />
           </div>
-          <h3 className="text-base font-bold text-white">Email support</h3>
-          <p className="mt-1.5 text-sm text-white/60 leading-relaxed">
-            Send us an email at <span className="text-white/80">support@ugcads.com</span> and we&apos;ll reply within 24 hours.
+          <h3 className="text-base font-bold text-[#111111]">Email support</h3>
+          <p className="mt-1.5 text-sm text-[#6B7280] leading-relaxed">
+            Send us an email at <span className="text-[#374151] font-medium">support@ugcads.com</span> and we&apos;ll reply within 24 hours.
           </p>
-          <div className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-[#C6FF33] group-hover:gap-2.5 transition-all">
+          <div className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-[#06B6D4] group-hover:gap-2.5 transition-all">
             Send email
             <FontAwesomeIcon icon={faArrowRight} style={{ fontSize: 13 }} />
           </div>
@@ -112,13 +112,13 @@ export default function SupportPage() {
       {/* FAQ */}
       <motion.div
         variants={fadeUp}
-        className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl p-6"
+        className="rounded-3xl border border-[#E5E7EB] bg-white p-6"
       >
         <div className="mb-5">
-          <h3 className="text-base font-bold text-white">Frequently asked questions</h3>
-          <p className="mt-0.5 text-xs text-white/50">Quick answers to the most common questions</p>
+          <h3 className="text-base font-bold text-[#111111]">Frequently asked questions</h3>
+          <p className="mt-0.5 text-xs text-[#6B7280]">Quick answers to the most common questions</p>
         </div>
-        <div className="divide-y divide-white/5">
+        <div className="divide-y divide-[#F3F4F6]">
           {faqs.map((faq, i) => {
             const open = openFaq === i;
             return (
@@ -127,12 +127,12 @@ export default function SupportPage() {
                   onClick={() => setOpenFaq(open ? null : i)}
                   className="flex w-full items-center justify-between py-3.5 text-left group/faq"
                 >
-                  <span className={cn("text-[13px] font-semibold pr-4 transition-colors", open ? "text-white" : "text-white/80 group-hover/faq:text-white")}>
+                  <span className={cn("text-[13px] font-semibold pr-4 transition-colors", open ? "text-[#111111]" : "text-[#374151] group-hover/faq:text-[#111111]")}>
                     {faq.q}
                   </span>
                   <FontAwesomeIcon
                     icon={faChevronRight}
-                    className={cn("shrink-0 text-white/40 transition-transform duration-200", open ? "rotate-90" : "rotate-0")}
+                    className={cn("shrink-0 text-[#9CA3AF] transition-transform duration-200", open ? "rotate-90" : "rotate-0")}
                     style={{ fontSize: 12 }}
                   />
                 </button>
@@ -145,7 +145,7 @@ export default function SupportPage() {
                       transition={{ duration: 0.2, ease: "easeOut" }}
                       className="overflow-hidden"
                     >
-                      <p className="pb-4 pr-8 text-sm text-white/60 leading-relaxed">{faq.a}</p>
+                      <p className="pb-4 pr-8 text-sm text-[#6B7280] leading-relaxed">{faq.a}</p>
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -156,7 +156,7 @@ export default function SupportPage() {
       </motion.div>
 
       {/* Footer note */}
-      <motion.p variants={fadeUp} className="text-xs text-white/30 text-center pb-2">
+      <motion.p variants={fadeUp} className="text-xs text-[#9CA3AF] text-center pb-2">
         Still stuck? Email us at support@ugcads.com and we&apos;ll get back to you within 24 hours.
       </motion.p>
 

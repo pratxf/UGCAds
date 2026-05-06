@@ -185,10 +185,10 @@ export default function TryonCreator() {
       {/* LEFT: model picker (default) OR result canvas (when generating/done) */}
       <div className="flex flex-col gap-5">
         {isGenerating || resultUrl ? (
-          <section className="relative rounded-2xl border border-white/10 bg-white/[0.025] overflow-hidden min-h-[600px]">
+          <section className="relative rounded-2xl border border-[#E5E7EB] bg-[#F9FAFB] overflow-hidden min-h-[600px]">
             {isGenerating && (
               <>
-                <div className="absolute inset-0 bg-black" />
+                <div className="absolute inset-0 bg-white" />
                 <div
                   className="absolute inset-[-20%] animate-aurora-soft"
                   style={{
@@ -210,7 +210,7 @@ export default function TryonCreator() {
               </>
             )}
             {resultUrl && !isGenerating && (
-              <div className="absolute inset-0 flex items-center justify-center p-6 bg-black">
+              <div className="absolute inset-0 flex items-center justify-center p-6 bg-white">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={resultUrl}
@@ -221,10 +221,10 @@ export default function TryonCreator() {
             )}
           </section>
         ) : (
-          <section className="rounded-2xl border border-white/10 bg-white/[0.025] p-5">
+          <section className="rounded-2xl border border-[#E5E7EB] bg-[#F9FAFB] p-5">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-sm font-semibold text-foreground">1. Choose Model</h2>
-              <span className="text-[11px] text-white/40">
+              <span className="text-[11px] text-[#9CA3AF]">
                 {filteredModels.length} models
               </span>
             </div>
@@ -236,9 +236,9 @@ export default function TryonCreator() {
               ))}
             </div>
             {loading ? (
-              <div className="py-8 text-center text-white/40 text-sm">Loading models…</div>
+              <div className="py-8 text-center text-[#9CA3AF] text-sm">Loading models…</div>
             ) : filteredModels.length === 0 ? (
-              <div className="py-8 text-center text-white/40 text-sm">No models match this filter</div>
+              <div className="py-8 text-center text-[#9CA3AF] text-sm">No models match this filter</div>
             ) : (
               <div className="grid grid-cols-3 gap-4">
                 {ensureVisibleSelected.map((m) => (
@@ -253,12 +253,12 @@ export default function TryonCreator() {
                   <button
                     type="button"
                     onClick={() => setLibraryOpen(true)}
-                    className="aspect-[3/4] flex flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-white/15 bg-white/[0.02] hover:border-primary/30 hover:bg-primary/[0.03] transition text-center"
+                    className="aspect-[3/4] flex flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-[#D1D5DB] bg-[#F9FAFB] hover:border-primary/30 hover:bg-primary/[0.03] transition text-center"
                   >
                     <span className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 border border-primary/30 text-primary">
                       <FontAwesomeIcon icon={faChevronRight} style={{ fontSize: 16 }} />
                     </span>
-                    <span className="text-xs font-semibold text-white/70 leading-tight px-2">
+                    <span className="text-xs font-semibold text-[#374151] leading-tight px-2">
                       View {filteredModels.length - 5} more
                     </span>
                   </button>
@@ -270,19 +270,19 @@ export default function TryonCreator() {
       </div>
 
       {/* RIGHT: garment + category + actions */}
-      <aside className="rounded-2xl border border-white/10 bg-white/[0.02] flex flex-col overflow-hidden lg:sticky lg:top-20">
+      <aside className="rounded-2xl border border-[#E5E7EB] bg-[#F9FAFB] flex flex-col overflow-hidden lg:sticky lg:top-20">
         <div className="shrink-0 p-4 space-y-4">
             {/* Garment */}
             <div>
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-[12px] font-semibold uppercase tracking-wider text-white/55">
+                <h3 className="text-[12px] font-semibold uppercase tracking-wider text-[#6B7280]">
                   Garment
                 </h3>
                 {garmentPreview && (
                   <button
                     type="button"
                     onClick={tryDifferentGarment}
-                    className="text-[11px] text-white/50 hover:text-destructive transition"
+                    className="text-[11px] text-[#6B7280] hover:text-destructive transition"
                   >
                     Replace
                   </button>
@@ -299,7 +299,7 @@ export default function TryonCreator() {
                     "rounded-xl border-2 border-dashed cursor-pointer transition flex flex-col items-center justify-center gap-1.5 py-6 text-center",
                     isDragActive
                       ? "border-primary bg-primary/5"
-                      : "border-white/15 bg-white/[0.02] hover:border-white/30",
+                      : "border-[#D1D5DB] bg-[#F9FAFB] hover:border-[#9CA3AF]",
                   )}
                 >
                   <input {...getInputProps()} />
@@ -307,14 +307,14 @@ export default function TryonCreator() {
                     <FontAwesomeIcon icon={faUpload} style={{ fontSize: 14 }} />
                   </span>
                   <p className="text-[12px] font-semibold">Upload clothing item</p>
-                  <p className="text-[10px] text-white/40">JPG, PNG, WEBP up to 10MB</p>
+                  <p className="text-[10px] text-[#9CA3AF]">JPG, PNG, WEBP up to 10MB</p>
                 </div>
               )}
             </div>
 
             {/* Category */}
             <div>
-              <h3 className="text-[12px] font-semibold uppercase tracking-wider text-white/55 mb-2">
+              <h3 className="text-[12px] font-semibold uppercase tracking-wider text-[#6B7280] mb-2">
                 Category
               </h3>
               <div className="grid grid-cols-4 gap-1.5">
@@ -329,7 +329,7 @@ export default function TryonCreator() {
                         "rounded-lg border py-2 flex flex-col items-center gap-0.5 transition",
                         sel
                           ? "border-primary bg-primary/[0.06] text-primary"
-                          : "border-white/10 bg-white/[0.03] text-white/70 hover:border-white/20",
+                          : "border-[#E5E7EB] bg-[#F3F4F6] text-[#374151] hover:border-[#D1D5DB]",
                       )}
                     >
                       <span className="text-lg">{c.emoji}</span>
@@ -342,13 +342,13 @@ export default function TryonCreator() {
         </div>
 
         {/* Footer */}
-        <div className="shrink-0 border-t border-white/10 bg-white/[0.02] p-5">
+        <div className="shrink-0 border-t border-[#E5E7EB] bg-[#F9FAFB] p-5">
           {resultUrl ? (
             <div className="space-y-3">
               <button
                 type="button"
                 onClick={() => downloadAsset(resultUrl, "tryon", "jpg")}
-                className="w-full inline-flex items-center justify-center gap-2 h-11 rounded-xl bg-primary text-black text-sm font-bold transition hover:brightness-105"
+                className="w-full inline-flex items-center justify-center gap-2 h-11 rounded-xl bg-primary text-white text-sm font-bold transition hover:brightness-105"
               >
                 <FontAwesomeIcon icon={faDownload} style={{ fontSize: 13 }} />
                 Download
@@ -357,7 +357,7 @@ export default function TryonCreator() {
                 <button
                   type="button"
                   onClick={regenerate}
-                  className="inline-flex items-center justify-center gap-1.5 h-10 rounded-xl border border-white/10 bg-white/[0.04] text-white/80 text-[11px] font-semibold hover:bg-white/[0.08] transition"
+                  className="inline-flex items-center justify-center gap-1.5 h-10 rounded-xl border border-[#E5E7EB] bg-[#F3F4F6] text-[#374151] text-[11px] font-semibold hover:bg-[#E5E7EB] transition"
                 >
                   <FontAwesomeIcon icon={faArrowsRotate} style={{ fontSize: 10 }} />
                   Regenerate
@@ -365,14 +365,14 @@ export default function TryonCreator() {
                 <button
                   type="button"
                   onClick={tryDifferentModel}
-                  className="inline-flex items-center justify-center h-10 rounded-xl border border-white/10 bg-white/[0.04] text-white/80 text-[11px] font-semibold hover:bg-white/[0.08] transition"
+                  className="inline-flex items-center justify-center h-10 rounded-xl border border-[#E5E7EB] bg-[#F3F4F6] text-[#374151] text-[11px] font-semibold hover:bg-[#E5E7EB] transition"
                 >
                   Different model
                 </button>
                 <button
                   type="button"
                   onClick={tryDifferentGarment}
-                  className="inline-flex items-center justify-center h-10 rounded-xl border border-white/10 bg-white/[0.04] text-white/80 text-[11px] font-semibold hover:bg-white/[0.08] transition"
+                  className="inline-flex items-center justify-center h-10 rounded-xl border border-[#E5E7EB] bg-[#F3F4F6] text-[#374151] text-[11px] font-semibold hover:bg-[#E5E7EB] transition"
                 >
                   Different garment
                 </button>
@@ -384,7 +384,7 @@ export default function TryonCreator() {
                 type="button"
                 onClick={handleGenerate}
                 disabled={!canGenerate}
-                className="w-full inline-flex items-center justify-center gap-2 h-12 rounded-xl bg-primary text-black text-sm font-bold transition hover:brightness-105 disabled:bg-white/[0.04] disabled:text-white/30 disabled:cursor-not-allowed"
+                className="w-full inline-flex items-center justify-center gap-2 h-12 rounded-xl bg-primary text-white text-sm font-bold transition hover:brightness-105 disabled:bg-[#F3F4F6] disabled:text-[#9CA3AF] disabled:cursor-not-allowed"
               >
                 {isGenerating ? (
                   <>
@@ -446,10 +446,10 @@ function ModelTile({
       type="button"
       onClick={onClick}
       className={cn(
-        "relative aspect-[3/4] rounded-2xl overflow-hidden border bg-white/[0.04] cursor-pointer transition",
+        "relative aspect-[3/4] rounded-2xl overflow-hidden border bg-[#F3F4F6] cursor-pointer transition",
         selected
-          ? "border-primary shadow-[0_0_0_2px_rgba(198,255,51,0.35)]"
-          : "border-white/10 hover:border-white/30",
+          ? "border-primary shadow-[0_0_0_2px_rgba(125,57,235,0.25)]"
+          : "border-[#E5E7EB] hover:border-[#D1D5DB]",
       )}
     >
       {model.imageUrl ? (
@@ -463,7 +463,7 @@ function ModelTile({
           className="absolute inset-0 h-full w-full object-cover object-top"
         />
       ) : (
-        <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-b from-white/5 to-white/[0.02]">
+        <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-b from-[#F3F4F6] to-[#F9FAFB]">
           <span className="text-4xl">👤</span>
         </div>
       )}
@@ -498,19 +498,19 @@ function LibraryModal({
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-6xl max-h-[88vh] overflow-hidden rounded-3xl border border-white/[0.08] bg-[#050505] flex flex-col"
+        className="w-full max-w-6xl max-h-[88vh] overflow-hidden rounded-3xl border border-[#E5E7EB] bg-white flex flex-col"
       >
-        <div className="flex items-center justify-between px-6 py-4 border-b border-white/10">
-          <h3 className="text-lg font-bold tracking-tight">Choose a model</h3>
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[#E5E7EB]">
+          <h3 className="text-lg font-bold tracking-tight text-[#111111]">Choose a model</h3>
           <button
             type="button"
             onClick={onClose}
-            className="flex size-8 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-white/60 hover:text-foreground hover:bg-white/10 transition"
+            className="flex size-8 items-center justify-center rounded-lg border border-[#E5E7EB] bg-[#F3F4F6] text-[#6B7280] hover:text-[#111111] hover:bg-[#E5E7EB] transition"
           >
             <FontAwesomeIcon icon={faXmark} style={{ fontSize: 13 }} />
           </button>
         </div>
-        <div className="flex flex-wrap gap-2 px-6 py-3 border-b border-white/10">
+        <div className="flex flex-wrap gap-2 px-6 py-3 border-b border-[#E5E7EB]">
           {(["all", "female", "male"] as const).map((g) => (
             <Chip key={g} active={genderFilter === g} onClick={() => setGenderFilter(g)}>
               {g === "all" ? "All" : g === "female" ? "Women" : "Men"}
@@ -551,7 +551,7 @@ function Chip({
         "rounded-full border px-3 py-1 text-[11px] capitalize transition",
         active
           ? "border-primary bg-primary/10 text-primary"
-          : "border-white/10 text-white/55 hover:border-white/20 hover:text-white/80",
+          : "border-[#E5E7EB] text-[#6B7280] hover:border-[#D1D5DB] hover:text-[#374151]",
       )}
     >
       {children}

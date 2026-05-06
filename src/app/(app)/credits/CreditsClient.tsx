@@ -148,11 +148,11 @@ export default function CreditsClient({ currentPlanId, credits, monthlyCredits, 
           {/* Hero card */}
           <motion.div
             variants={fadeUp}
-            className="lg:col-span-2 relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl p-8"
+            className="lg:col-span-2 relative overflow-hidden rounded-3xl border border-[#E5E7EB] bg-[#F9FAFB] p-8"
           >
             {/* Blurred gradient circles */}
-            <div className="pointer-events-none absolute -top-32 -left-20 size-80 rounded-full bg-primary/30 blur-3xl" />
-            <div className="pointer-events-none absolute -bottom-40 -right-20 size-96 rounded-full bg-violet/30 blur-3xl" />
+            <div className="pointer-events-none absolute -top-32 -left-20 size-80 rounded-full bg-[#2563EB]/10 blur-3xl" />
+            <div className="pointer-events-none absolute -bottom-40 -right-20 size-96 rounded-full bg-[#06B6D4]/10 blur-3xl" />
 
             <div className="relative flex flex-col gap-6">
               <div className="flex items-start justify-between gap-4">
@@ -164,7 +164,7 @@ export default function CreditsClient({ currentPlanId, credits, monthlyCredits, 
                   <div>
                     <h1 className="text-4xl font-bold text-foreground leading-none">
                       {displayRemaining}
-                      <span className="text-white/30 text-2xl font-semibold ml-2">credits</span>
+                      <span className="text-[#9CA3AF] text-2xl font-semibold ml-2">credits</span>
                     </h1>
                     <p className="mt-2 text-xs text-muted-foreground">
                       {renewal ? `Renews ${renewal}` : "Upgrade to start creating"}
@@ -182,16 +182,15 @@ export default function CreditsClient({ currentPlanId, credits, monthlyCredits, 
                   >
                     <defs>
                       <linearGradient id="ring" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="#7D39EB" />
-                        <stop offset="60%" stopColor="#C6FF33" />
-                        <stop offset="100%" stopColor="#C6FF33" />
+                        <stop offset="0%" stopColor="#2563EB" />
+                        <stop offset="100%" stopColor="#06B6D4" />
                       </linearGradient>
                     </defs>
                     <circle
                       cx={ringSize / 2}
                       cy={ringSize / 2}
                       r={ringRadius}
-                      stroke="rgba(255,255,255,0.08)"
+                      stroke="rgba(0,0,0,0.08)"
                       strokeWidth={ringStroke}
                       fill="none"
                     />
@@ -218,12 +217,12 @@ export default function CreditsClient({ currentPlanId, credits, monthlyCredits, 
 
               {/* Horizontal progress bar */}
               <div>
-                <div className="h-2 w-full overflow-hidden rounded-full bg-white/10">
+                <div className="h-2 w-full overflow-hidden rounded-full bg-[#E5E7EB]">
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${remainingPct}%` }}
                     transition={{ duration: 1, delay: 0.3, ease: "easeOut" as const }}
-                    className="h-full rounded-full bg-gradient-to-r from-violet to-primary"
+                    className="h-full rounded-full bg-gradient-to-r from-[#2563EB] to-[#06B6D4]"
                   />
                 </div>
               </div>
@@ -232,14 +231,14 @@ export default function CreditsClient({ currentPlanId, credits, monthlyCredits, 
               <div className="flex flex-wrap items-center gap-2.5">
                 <button
                   onClick={() => setShowPlansModal(true)}
-                  className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-violet to-primary px-4 py-2.5 text-xs font-semibold text-black shadow-lg shadow-primary/20 hover:brightness-110 transition"
+                  className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#2563EB] to-[#06B6D4] px-4 py-2.5 text-xs font-semibold text-white shadow-lg shadow-[#2563EB]/20 hover:brightness-110 transition"
                 >
                   <FontAwesomeIcon icon={faBolt} style={{ fontSize: 14 }} />
                   Upgrade plan
                 </button>
                 <button
                   onClick={() => setShowPlansModal(true)}
-                  className="inline-flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-xs font-semibold text-foreground hover:bg-white/10 transition"
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-[#E5E7EB] bg-[#F3F4F6] px-4 py-2.5 text-xs font-semibold text-foreground hover:bg-[#E5E7EB] transition"
                 >
                   Change plan
                   <FontAwesomeIcon icon={faChevronRight} style={{ fontSize: 12 }} />
@@ -251,7 +250,7 @@ export default function CreditsClient({ currentPlanId, credits, monthlyCredits, 
           {/* This month card */}
           <motion.div
             variants={fadeUp}
-            className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl p-6 flex flex-col"
+            className="relative overflow-hidden rounded-3xl border border-[#E5E7EB] bg-[#F9FAFB] p-6 flex flex-col"
           >
             <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">This month</p>
             <div className="mt-3 flex items-end gap-2">
@@ -267,7 +266,7 @@ export default function CreditsClient({ currentPlanId, credits, monthlyCredits, 
                     initial={{ height: "0%" }}
                     animate={{ height: `${h}%` }}
                     transition={{ duration: 0.6, delay: 0.3 + i * 0.05, ease: "easeOut" as const }}
-                    className="w-full rounded-md bg-gradient-to-t from-primary to-violet"
+                    className="w-full rounded-md bg-gradient-to-t from-[#2563EB] to-[#06B6D4]"
                   />
                 ))}
               </div>
@@ -300,13 +299,13 @@ export default function CreditsClient({ currentPlanId, credits, monthlyCredits, 
                 className={cn(
                   "relative rounded-3xl border p-6 transition-all hover:-translate-y-0.5",
                   pack.popular
-                    ? "border-primary/40 bg-gradient-to-br from-primary/10 via-violet/5 to-transparent"
-                    : "border-white/10 bg-white/5 backdrop-blur-xl"
+                    ? "border-[#2563EB]/40 bg-gradient-to-br from-[#2563EB]/10 via-[#06B6D4]/5 to-transparent"
+                    : "border-[#E5E7EB] bg-[#F9FAFB]"
                 )}
               >
                 {pack.popular && (
                   <div className="absolute top-4 right-4 z-10">
-                    <span className="rounded-full bg-primary px-2.5 py-1 text-[9px] font-bold text-black tracking-wide">
+                    <span className="rounded-full bg-[#2563EB] px-2.5 py-1 text-[9px] font-bold text-white tracking-wide">
                       BEST VALUE
                     </span>
                   </div>
@@ -329,8 +328,8 @@ export default function CreditsClient({ currentPlanId, credits, monthlyCredits, 
                     className={cn(
                       "w-full rounded-xl h-10 text-xs font-semibold transition",
                       pack.popular
-                        ? "bg-gradient-to-r from-violet to-primary text-black shadow-lg shadow-primary/20 hover:brightness-110"
-                        : "bg-white/5 border border-white/10 text-foreground hover:bg-white/10"
+                        ? "bg-gradient-to-r from-[#2563EB] to-[#06B6D4] text-white shadow-lg shadow-[#2563EB]/20 hover:brightness-110"
+                        : "bg-[#F3F4F6] border border-[#E5E7EB] text-foreground hover:bg-[#E5E7EB]"
                     )}
                   >
                     Purchase
@@ -344,7 +343,7 @@ export default function CreditsClient({ currentPlanId, credits, monthlyCredits, 
         {/* ── Row 3: Transaction history ── */}
         <motion.div
           variants={fadeUp}
-          className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl p-6"
+          className="rounded-3xl border border-[#E5E7EB] bg-[#F9FAFB] p-6"
         >
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-base font-bold text-foreground">Transaction history</h2>
@@ -356,10 +355,10 @@ export default function CreditsClient({ currentPlanId, credits, monthlyCredits, 
               <p className="text-[11px] text-muted-foreground/60 mt-1">Your purchases and usage will appear here</p>
             </div>
           ) : (
-            <div className="divide-y divide-white/5">
+            <div className="divide-y divide-[#E5E7EB]">
               {transactions.map((t) => (
                 <div key={t.id} className="flex items-center gap-4 py-3 first:pt-0 last:pb-0">
-                  <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-white/5">
+                  <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[#F3F4F6]">
                     <FontAwesomeIcon icon={faCreditCard} className="text-muted-foreground" style={{ fontSize: 16 }} />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -388,13 +387,13 @@ export default function CreditsClient({ currentPlanId, credits, monthlyCredits, 
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowPlansModal(false)} />
 
           {/* Modal */}
-          <div className="relative w-full max-w-3xl mx-4 max-h-[90vh] overflow-y-auto rounded-3xl border border-white/10 bg-[#050505] shadow-2xl">
+          <div className="relative w-full max-w-3xl mx-4 max-h-[90vh] overflow-y-auto rounded-3xl border border-[#E5E7EB] bg-white shadow-2xl">
             {/* Header */}
-            <div className="sticky top-0 z-10 flex items-center justify-between px-6 py-4 border-b border-white/10 bg-[#050505]/95 backdrop-blur-sm rounded-t-3xl">
+            <div className="sticky top-0 z-10 flex items-center justify-between px-6 py-4 border-b border-[#E5E7EB] bg-white backdrop-blur-sm rounded-t-3xl">
               <h2 className="text-base font-bold text-foreground">Change Plan</h2>
               <button
                 onClick={() => setShowPlansModal(false)}
-                className="size-8 rounded-xl bg-white/5 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-white/10 transition-colors"
+                className="size-8 rounded-xl bg-[#F3F4F6] flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-[#E5E7EB] transition-colors"
               >
                 <FontAwesomeIcon icon={faXmark} style={{ fontSize: 14 }} />
               </button>
@@ -403,7 +402,7 @@ export default function CreditsClient({ currentPlanId, credits, monthlyCredits, 
             <div className="p-6">
               {/* Billing toggle */}
               <div className="flex justify-center mb-6">
-                <div className="inline-flex items-center rounded-full bg-white/[0.04] border border-white/[0.07] p-1">
+                <div className="inline-flex items-center rounded-full bg-[#F3F4F6] border border-[#E5E7EB] p-1">
                   <button
                     onClick={() => setBilling("monthly")}
                     className={cn(
@@ -437,7 +436,7 @@ export default function CreditsClient({ currentPlanId, credits, monthlyCredits, 
                       key={p.id}
                       className={cn(
                         "relative rounded-3xl border flex flex-col transition-all",
-                        isCurrent ? "border-primary/30 bg-primary/[0.03]" : "border-white/10 bg-white/5"
+                        isCurrent ? "border-[#2563EB]/30 bg-[#2563EB]/[0.03]" : "border-[#E5E7EB] bg-[#F9FAFB]"
                       )}
                     >
                       {p.popular && (
@@ -466,7 +465,7 @@ export default function CreditsClient({ currentPlanId, credits, monthlyCredits, 
                           )}
                         </div>
 
-                        <div className="my-4 h-px bg-white/10" />
+                        <div className="my-4 h-px bg-[#E5E7EB]" />
 
                         <ul className="space-y-2 flex-1">
                           {p.features.map((f) => (

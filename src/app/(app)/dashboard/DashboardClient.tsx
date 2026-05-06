@@ -83,25 +83,25 @@ function MiniStat({
   return (
     <div
       className={cn(
-        "relative rounded-2xl border border-white/10 bg-white/5 p-3",
+        "relative rounded-2xl border border-[#E5E7EB] bg-[#F9FAFB] p-3",
         highlight && "border-primary/30 bg-gradient-to-br from-primary/10 to-transparent"
       )}
     >
       <div className="flex items-start justify-between">
-        <span className="text-[10px] font-medium uppercase tracking-widest text-white/40">
+        <span className="text-[10px] font-medium uppercase tracking-widest text-[#9CA3AF]">
           {label}
         </span>
         <div
           className={cn(
-            "flex h-6 w-6 items-center justify-center rounded-md border border-white/10 bg-white/5",
+            "flex h-6 w-6 items-center justify-center rounded-md border border-[#E5E7EB] bg-[#F9FAFB]",
             highlight && "border-primary/20 bg-primary/10 text-primary"
           )}
         >
           <FontAwesomeIcon icon={icon} style={{ fontSize: 12 }} />
         </div>
       </div>
-      <p className="mt-2 text-xl font-semibold text-white">{value}</p>
-      <p className="mt-0.5 text-[11px] text-white/50">{sub}</p>
+      <p className="mt-2 text-xl font-semibold text-[#111111]">{value}</p>
+      <p className="mt-0.5 text-[11px] text-[#6B7280]">{sub}</p>
     </div>
   );
 }
@@ -126,7 +126,7 @@ function CreationTile({
   return (
     <Link
       href={href}
-      className="group relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-6 transition-all hover:border-white/20 hover:bg-white/[0.07]"
+      className="group relative overflow-hidden rounded-3xl border border-[#E5E7EB] bg-[#F9FAFB] p-6 transition-all hover:border-[#D1D5DB] hover:bg-[#F3F4F6]"
     >
       <div
         className={cn(
@@ -145,16 +145,16 @@ function CreationTile({
         </div>
         <FontAwesomeIcon
           icon={faUpRightFromSquare}
-          className="text-white/40 transition-all group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-white"
+          className="text-[#9CA3AF] transition-all group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-[#111111]"
           style={{ fontSize: 18 }}
         />
       </div>
       <div className="relative mt-5">
-        <h3 className="text-lg font-semibold text-white">{title}</h3>
-        <p className="mt-1 text-sm text-white/50">{desc}</p>
+        <h3 className="text-lg font-semibold text-[#111111]">{title}</h3>
+        <p className="mt-1 text-sm text-[#6B7280]">{desc}</p>
       </div>
       <div className="relative mt-5 flex items-center gap-2">
-        <span className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] text-white/70">
+        <span className="inline-flex items-center gap-1 rounded-full border border-[#E5E7EB] bg-[#F9FAFB] px-2.5 py-1 text-[11px] text-[#374151]">
           <FontAwesomeIcon icon={faBolt} className="text-primary" style={{ fontSize: 10 }} />
           {credits}
         </span>
@@ -178,7 +178,7 @@ export default function DashboardClient({
       {/* HERO */}
       <motion.div
         variants={fadeUp}
-        className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 to-white/5 p-8 lg:p-10"
+        className="relative overflow-hidden rounded-3xl border border-[#E5E7EB] bg-gradient-to-br from-[#F3F4F6] to-[#F9FAFB] p-8 lg:p-10"
       >
         <div className="pointer-events-none absolute -left-20 -top-20 h-96 w-96 rounded-full bg-primary opacity-30 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-32 -right-16 h-96 w-96 rounded-full bg-violet opacity-30 blur-3xl" />
@@ -188,7 +188,7 @@ export default function DashboardClient({
           {/* Left: greeting + CTAs */}
           <div className="md:col-span-3 flex flex-col justify-between gap-8">
             <div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-white/70">
+              <div className="inline-flex items-center gap-2 rounded-full border border-[#E5E7EB] bg-[#F9FAFB] px-3 py-1 text-xs text-[#374151]">
                 <span className="relative flex h-2 w-2">
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
                   <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
@@ -196,16 +196,16 @@ export default function DashboardClient({
                 All systems generating. avg 47s
               </div>
 
-              <h2 className="mt-5 text-4xl font-semibold leading-tight tracking-tight text-white lg:text-5xl">
+              <h2 className="mt-5 text-4xl font-semibold leading-tight tracking-tight text-[#111111] lg:text-5xl">
                 {getGreeting()}, {userName}. What are we{" "}
                 <span className="gradient-text">making today?</span>
               </h2>
 
-              <p className="mt-4 text-sm leading-relaxed text-white/60">
+              <p className="mt-4 text-sm leading-relaxed text-[#4B5563]">
                 {credits > 0 ? (
                   <>
                     You have{" "}
-                    <span className="font-semibold text-white">{displayCredits} credits</span>{" "}
+                    <span className="font-semibold text-[#111111]">{displayCredits} credits</span>{" "}
                     ready to go. Spin up a scroll stopping ad in under a minute.
                   </>
                 ) : (
@@ -231,7 +231,7 @@ export default function DashboardClient({
               </Link>
               <button
                 type="button"
-                className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-5 py-2.5 text-sm font-medium text-white/80 transition-all hover:border-white/20 hover:bg-white/10 hover:text-white"
+                className="inline-flex items-center gap-2 rounded-full border border-[#E5E7EB] bg-[#F9FAFB] px-5 py-2.5 text-sm font-medium text-[#1F2937] transition-all hover:border-[#D1D5DB] hover:bg-[#F3F4F6] hover:text-[#111111]"
               >
                 <FontAwesomeIcon icon={faPlay} style={{ fontSize: 14 }} />
                 Watch 90 sec tour
@@ -274,14 +274,14 @@ export default function DashboardClient({
       <motion.div variants={fadeUp} className="space-y-6">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h2 className="text-2xl font-semibold tracking-tight text-white">Start something</h2>
-            <p className="mt-1 text-sm text-white/50">
+            <h2 className="text-2xl font-semibold tracking-tight text-[#111111]">Start something</h2>
+            <p className="mt-1 text-sm text-[#6B7280]">
               Pick a format. We will handle the heavy lifting and hand you a finished asset.
             </p>
           </div>
           <Link
             href="/create/ugc-studio"
-            className="inline-flex items-center gap-1.5 text-xs font-medium text-white/60 transition-colors hover:text-white"
+            className="inline-flex items-center gap-1.5 text-xs font-medium text-[#4B5563] transition-colors hover:text-[#111111]"
           >
             Browse all formats
             <FontAwesomeIcon icon={faChevronRight} style={{ fontSize: 12 }} />
@@ -320,17 +320,17 @@ export default function DashboardClient({
       <div className="grid gap-6 lg:grid-cols-3">
         <motion.div
           variants={fadeUp}
-          className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl lg:col-span-2"
+          className="relative overflow-hidden rounded-3xl border border-[#E5E7EB] bg-[#F9FAFB] p-6 backdrop-blur-xl lg:col-span-2"
         >
           <div className="mb-5 flex items-center justify-between">
             <div>
-              <h2 className="text-lg font-semibold text-white">Recent generations</h2>
-              <p className="mt-0.5 text-xs text-white/50">Your latest work, ready to share.</p>
+              <h2 className="text-lg font-semibold text-[#111111]">Recent generations</h2>
+              <p className="mt-0.5 text-xs text-[#6B7280]">Your latest work, ready to share.</p>
             </div>
             {recentGenerations.length > 0 && (
               <Link
                 href="/history"
-                className="inline-flex items-center gap-1 text-xs font-medium text-white/60 transition-colors hover:text-white"
+                className="inline-flex items-center gap-1 text-xs font-medium text-[#4B5563] transition-colors hover:text-[#111111]"
               >
                 View all <FontAwesomeIcon icon={faChevronRight} style={{ fontSize: 12 }} />
               </Link>
@@ -340,13 +340,13 @@ export default function DashboardClient({
           {recentGenerations.length === 0 ? (
             <div className="relative flex flex-col items-center justify-center rounded-2xl px-6 py-16 text-center">
               <div className="pointer-events-none absolute inset-x-10 top-4 h-28 rounded-full bg-gradient-to-r from-primary/30 via-violet/30 to-amber/30 opacity-40 blur-3xl" />
-              <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl border border-white/10 bg-white/10 shadow-lg shadow-primary/10">
+              <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl border border-[#E5E7EB] bg-[#F3F4F6] shadow-lg shadow-primary/10">
                 <FontAwesomeIcon icon={faWandMagicSparkles} className="text-primary" style={{ fontSize: 26 }} />
               </div>
-              <p className="relative mt-5 text-base font-semibold text-white">
+              <p className="relative mt-5 text-base font-semibold text-[#111111]">
                 Your reel is empty. for now.
               </p>
-              <p className="relative mt-1 text-sm text-white/50">
+              <p className="relative mt-1 text-sm text-[#6B7280]">
                 Create your first ad and we will line it up here for you.
               </p>
               <div className="relative mt-6 flex flex-wrap items-center justify-center gap-3">
@@ -359,7 +359,7 @@ export default function DashboardClient({
                 </Link>
                 <Link
                   href="/create/ugc-studio"
-                  className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-5 py-2.5 text-sm font-medium text-white/80 transition-all hover:border-white/20 hover:bg-white/10 hover:text-white"
+                  className="inline-flex items-center gap-2 rounded-full border border-[#E5E7EB] bg-[#F9FAFB] px-5 py-2.5 text-sm font-medium text-[#1F2937] transition-all hover:border-[#D1D5DB] hover:bg-[#F3F4F6] hover:text-[#111111]"
                 >
                   <FontAwesomeIcon icon={faBookOpen} style={{ fontSize: 14 }} />
                   See examples
@@ -371,9 +371,9 @@ export default function DashboardClient({
               {recentGenerations.map((g) => (
                 <div
                   key={g.id}
-                  className="group flex items-center gap-4 rounded-2xl border border-white/5 bg-white/[0.03] p-3 transition-all hover:border-white/10 hover:bg-white/[0.06]"
+                  className="group flex items-center gap-4 rounded-2xl border border-[#E5E7EB] bg-white p-3 transition-all hover:border-[#E5E7EB] hover:bg-[#F3F4F6]"
                 >
-                  <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-white/5">
+                  <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-[#F9FAFB]">
                     {(g.thumbnailUrl || g.characterImage) ? (
                       <Image
                         src={g.thumbnailUrl || g.characterImage!}
@@ -384,17 +384,17 @@ export default function DashboardClient({
                       />
                     ) : (
                       <div className="flex h-full w-full items-center justify-center">
-                        <FontAwesomeIcon icon={faFilm} className="text-white/30" style={{ fontSize: 20 }} />
+                        <FontAwesomeIcon icon={faFilm} className="text-[#9CA3AF]" style={{ fontSize: 20 }} />
                       </div>
                     )}
                   </div>
 
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-white">{g.title}</p>
+                    <p className="truncate text-sm font-medium text-[#111111]">{g.title}</p>
                     <div className="mt-1 flex items-center gap-2">
-                      <span className="text-[11px] text-white/50">{g.type}</span>
-                      <span className="text-white/20">.</span>
-                      <span className="text-[11px] text-white/50">{g.date}</span>
+                      <span className="text-[11px] text-[#6B7280]">{g.type}</span>
+                      <span className="text-[#D1D5DB]">.</span>
+                      <span className="text-[11px] text-[#6B7280]">{g.date}</span>
                     </div>
                   </div>
 
@@ -414,7 +414,7 @@ export default function DashboardClient({
                         download
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex h-8 w-8 items-center justify-center rounded-xl text-white/60 opacity-0 transition-all hover:bg-white/5 hover:text-white group-hover:opacity-100"
+                        className="flex h-8 w-8 items-center justify-center rounded-xl text-[#4B5563] opacity-0 transition-all hover:bg-[#F9FAFB] hover:text-[#111111] group-hover:opacity-100"
                       >
                         <FontAwesomeIcon icon={faDownload} style={{ fontSize: 14 }} />
                       </a>
@@ -428,16 +428,16 @@ export default function DashboardClient({
 
         <motion.div
           variants={fadeUp}
-          className="rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl"
+          className="rounded-3xl border border-[#E5E7EB] bg-[#F9FAFB] p-6 backdrop-blur-xl"
         >
           <div className="mb-5 flex items-center justify-between">
             <div>
-              <h2 className="text-lg font-semibold text-white">Popular characters</h2>
-              <p className="mt-0.5 text-xs text-white/50">Loved by creators this week.</p>
+              <h2 className="text-lg font-semibold text-[#111111]">Popular characters</h2>
+              <p className="mt-0.5 text-xs text-[#6B7280]">Loved by creators this week.</p>
             </div>
             <Link
               href="/create/ugc"
-              className="text-xs font-medium text-white/60 transition-colors hover:text-white"
+              className="text-xs font-medium text-[#4B5563] transition-colors hover:text-[#111111]"
             >
               See all
             </Link>
@@ -448,7 +448,7 @@ export default function DashboardClient({
               <Link
                 key={char.id}
                 href="/create/ugc"
-                className="group relative aspect-[3/4] overflow-hidden rounded-xl border border-white/5 transition-all hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10"
+                className="group relative aspect-[3/4] overflow-hidden rounded-xl border border-[#E5E7EB] transition-all hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10"
               >
                 <Image
                   src={char.imageUrl}

@@ -23,17 +23,17 @@ export default function TopBar({ credits = 0 }: { credits?: number }) {
   const { toggle } = useMobileNav();
 
   return (
-    <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center justify-between gap-3 border-b border-white/5 bg-black/20 px-4 sm:px-6 backdrop-blur-xl">
+    <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center justify-between gap-3 border-b border-[#E5E7EB] bg-white px-4 sm:px-6">
       <div className="flex min-w-0 items-center gap-2">
         <button
           type="button"
           onClick={toggle}
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-white/70 hover:bg-white/10 hover:text-foreground transition lg:hidden"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-[#6B7280] hover:bg-[#F3F4F6] hover:text-[#111111] transition lg:hidden"
           aria-label="Open menu"
         >
           <FontAwesomeIcon icon={faBars} style={{ fontSize: 16 }} />
         </button>
-        <h1 className="truncate text-base sm:text-xl font-semibold tracking-tight text-foreground">
+        <h1 className="truncate text-base sm:text-xl font-semibold tracking-tight text-[#111111]">
           {title}
         </h1>
       </div>
@@ -42,7 +42,7 @@ export default function TopBar({ credits = 0 }: { credits?: number }) {
         {/* Credits */}
         <Link
           href="/credits"
-          className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold text-foreground transition-colors hover:bg-white/10"
+          className="flex items-center gap-2 rounded-full border border-[#E5E7EB] bg-[#F9FAFB] px-3 py-1.5 text-xs font-semibold text-[#111111] transition-colors hover:bg-[#F3F4F6]"
         >
           <FontAwesomeIcon icon={faWandMagicSparkles} className="text-amber" style={{ fontSize: 14 }} />
           {credits % 10 === 0 ? credits / 10 : (credits / 10).toFixed(1)}

@@ -66,19 +66,19 @@ function NavLink({ item, isActive }: { item: NavItem; isActive: boolean }) {
       className={cn(
         "group flex w-full items-center justify-between rounded-2xl px-3 py-2.5 text-sm transition-all",
         isActive
-          ? "text-white"
-          : "text-white/40 hover:text-white hover:bg-white/[0.04]"
+          ? "text-[#111111]"
+          : "text-[#6B7280] hover:text-[#111111] hover:bg-[#F3F4F6]"
       )}
       style={isActive ? {
-        background: "rgba(37,99,235,0.15)",
-        boxShadow: "inset 0 0 0 1px rgba(37,99,235,0.3)",
+        background: "rgba(37,99,235,0.08)",
+        boxShadow: "inset 0 0 0 1px rgba(37,99,235,0.2)",
       } : {}}
     >
       <span className="flex items-center gap-3">
         <FontAwesomeIcon
           icon={item.icon}
           className="transition-colors"
-          style={{ fontSize: 16, color: isActive ? "#FFFFFF" : undefined }}
+          style={{ fontSize: 16, color: isActive ? "#2563EB" : undefined }}
         />
         <span className="font-medium">{item.label}</span>
       </span>
@@ -124,17 +124,15 @@ export default function Sidebar({ userName = "User", userEmail, userAvatar, cred
           open ? "translate-x-0" : "-translate-x-full",
         )}
         style={{
-          background: "rgba(6,10,18,0.85)",
-          backdropFilter: "blur(32px)",
-          WebkitBackdropFilter: "blur(32px)",
-          borderRight: "1px solid rgba(37,99,235,0.12)",
+          background: "#FFFFFF",
+          borderRight: "1px solid #E5E7EB",
         }}
       >
       {/* Mobile close button */}
       <button
         type="button"
         onClick={() => setOpen(false)}
-        className="absolute right-3 top-3 z-10 flex h-8 w-8 items-center justify-center rounded-lg text-white/40 hover:bg-white/[0.06] hover:text-white transition lg:hidden"
+        className="absolute right-3 top-3 z-10 flex h-8 w-8 items-center justify-center rounded-lg text-[#6B7280] hover:bg-[#F3F4F6] hover:text-[#111111] transition lg:hidden"
         aria-label="Close menu"
       >
         <FontAwesomeIcon icon={faXmark} style={{ fontSize: 14 }} />
@@ -157,7 +155,7 @@ export default function Sidebar({ userName = "User", userEmail, userAvatar, cred
 
         {/* Create */}
         <div>
-          <p className="mb-1 px-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-white/20">
+          <p className="mb-1 px-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#9CA3AF]">
             Create
           </p>
           <div className="space-y-0.5">
@@ -169,7 +167,7 @@ export default function Sidebar({ userName = "User", userEmail, userAvatar, cred
 
         {/* Manage */}
         <div>
-          <p className="mb-1 px-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-white/20">
+          <p className="mb-1 px-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#9CA3AF]">
             Manage
           </p>
           <div className="space-y-0.5">
@@ -196,13 +194,13 @@ export default function Sidebar({ userName = "User", userEmail, userAvatar, cred
                 style={{ background: "rgba(37,99,235,0.18)" }}>
                 <FontAwesomeIcon icon={faBolt} style={{ fontSize: 10, color: "#60A5FA" }} />
               </div>
-              <span className="text-[12px] font-semibold text-white/60">Credits</span>
+              <span className="text-[12px] font-semibold text-[#6B7280]">Credits</span>
             </div>
-            <span className="text-[13px] font-bold text-white">{credits}</span>
+            <span className="text-[13px] font-bold text-[#111111]">{credits}</span>
           </div>
 
           {/* Progress bar */}
-          <div className="h-1.5 w-full rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.06)" }}>
+          <div className="h-1.5 w-full rounded-full overflow-hidden" style={{ background: "#E5E7EB" }}>
             <div className="h-full rounded-full transition-all duration-500"
               style={{
                 width: `${pct}%`,
@@ -229,7 +227,7 @@ export default function Sidebar({ userName = "User", userEmail, userAvatar, cred
 
         {/* User */}
         <DropdownMenu>
-          <DropdownMenuTrigger className="flex w-full items-center gap-3 rounded-2xl border border-white/[0.06] bg-white/[0.03] p-2.5 transition-colors hover:bg-white/[0.06]">
+          <DropdownMenuTrigger className="flex w-full items-center gap-3 rounded-2xl border border-[#E5E7EB] bg-[#F9FAFB] p-2.5 transition-colors hover:bg-[#F3F4F6]">
             {userAvatar ? (
               <span className="h-9 w-9 overflow-hidden rounded-xl">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -242,10 +240,10 @@ export default function Sidebar({ userName = "User", userEmail, userAvatar, cred
               </span>
             )}
             <div className="flex-1 text-left min-w-0">
-              <p className="text-[13px] font-medium text-white truncate">{userName}</p>
-              <p className="text-[11px] text-white/40 truncate">{userEmail}</p>
+              <p className="text-[13px] font-medium text-[#111111] truncate">{userName}</p>
+              <p className="text-[11px] text-[#9CA3AF] truncate">{userEmail}</p>
             </div>
-            <FontAwesomeIcon icon={faEllipsis} className="shrink-0 text-white/30" style={{ fontSize: 16 }} />
+            <FontAwesomeIcon icon={faEllipsis} className="shrink-0 text-[#9CA3AF]" style={{ fontSize: 16 }} />
           </DropdownMenuTrigger>
           <DropdownMenuContent side="top" align="start" sideOffset={8}>
             <DropdownMenuItem onClick={() => router.push("/profile")}>

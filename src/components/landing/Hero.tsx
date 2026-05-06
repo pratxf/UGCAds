@@ -135,25 +135,34 @@ export default function Hero() {
             transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1], delay: 0.25 }}
             className="relative flex flex-col"
           >
-            {/* Blob behind card */}
-            <div className="absolute -inset-6 rounded-3xl bg-gradient-to-br from-blue-200/40 to-indigo-200/30 blur-2xl -z-10" />
+            {/* Ghost card stacked behind main card */}
+            <div
+              className="absolute inset-0 rounded-2xl"
+              style={{
+                background: "linear-gradient(135deg, #DBEAFE 0%, #EDE9FE 100%)",
+                border: "1px solid rgba(37,99,235,0.18)",
+                transform: "rotate(2.5deg) translate(8px, 10px)",
+                zIndex: 0,
+              }}
+            />
 
             {/* Video card */}
-            <div className="relative rounded-2xl overflow-hidden border border-white/80 shadow-2xl shadow-blue-900/10 bg-[#1a1a2e] aspect-[4/3]">
+            <div className="relative rounded-2xl overflow-hidden border border-[#E5E7EB] shadow-2xl shadow-blue-900/10 bg-[#1a1a2e] aspect-[4/3]" style={{ zIndex: 1 }}>
               <video
                 src="/videos/hero-reel.mov"
                 autoPlay muted loop playsInline preload="auto"
                 className="w-full h-full object-cover"
               />
 
-              {/* Top-left: AI Generated badge */}
-              <div className="absolute top-3.5 left-3.5 flex items-center gap-1.5 rounded-full bg-white/95 backdrop-blur-sm px-3 py-1.5 shadow-sm border border-white/60">
+              {/* Top-left: AI Generated badge — dark charcoal */}
+              <div className="absolute top-3.5 left-3.5 flex items-center gap-1.5 rounded-full px-3 py-1.5 shadow-md"
+                style={{ background: "#1C1C2E", border: "1px solid rgba(255,255,255,0.08)" }}>
                 <div className="flex h-5 w-5 items-center justify-center rounded-full bg-[#2563EB]">
                   <svg className="h-3 w-3 text-white" viewBox="0 0 12 12" fill="none">
                     <path d="M6 1l1.5 3h3L8 6l1 3.5L6 8l-3 1.5L4 6 1.5 4h3z" fill="currentColor"/>
                   </svg>
                 </div>
-                <span className="text-xs font-semibold text-[#111111]">AI Generated</span>
+                <span className="text-xs font-semibold text-white">AI Generated</span>
               </div>
 
               {/* Top-right: ROAS card */}
@@ -165,10 +174,10 @@ export default function Hero() {
                 </div>
               </div>
 
-              {/* Bottom: caption bar */}
-              <div className="absolute bottom-0 left-0 right-0 flex items-center gap-3 bg-black/60 backdrop-blur-sm px-4 py-3">
+              {/* Bottom: floating caption bar */}
+              <div className="absolute bottom-3.5 left-3.5 right-3.5 flex items-center gap-3 rounded-xl px-3.5 py-2.5"
+                style={{ background: "rgba(10,10,18,0.82)", backdropFilter: "blur(10px)", border: "1px solid rgba(255,255,255,0.08)" }}>
                 <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-[#2563EB]">
-                  {/* Waveform icon */}
                   <svg className="h-4 w-4 text-white" viewBox="0 0 16 16" fill="currentColor">
                     <rect x="1" y="5" width="2" height="6" rx="1"/>
                     <rect x="4.5" y="2" width="2" height="12" rx="1"/>
@@ -179,23 +188,6 @@ export default function Hero() {
                 <p className="flex-1 text-xs text-white font-medium leading-snug">
                   I've tried so many products, but this one changed everything.
                 </p>
-                <span className="flex-shrink-0 rounded-md bg-black/40 px-2 py-0.5 text-[11px] font-semibold text-white">
-                  1:47
-                </span>
-              </div>
-            </div>
-
-            {/* Brand logos */}
-            <div className="mt-5">
-              <p className="text-[10px] font-semibold tracking-widest text-[#9CA3AF] uppercase mb-3">
-                Trusted by leading brands
-              </p>
-              <div className="flex items-center gap-5 flex-wrap">
-                <span className="text-sm font-bold text-[#9CA3AF]" style={{ fontFamily: "Georgia, serif" }}>verizon<span className="text-[#9CA3AF]">✓</span></span>
-                <span className="text-sm font-semibold text-[#9CA3AF]" style={{ fontFamily: "Satoshi, sans-serif", letterSpacing: "-0.02em" }}>〜Airwallex</span>
-                <span className="text-sm font-bold text-[#9CA3AF]" style={{ fontFamily: "Satoshi, sans-serif" }}>HubSpot</span>
-                <span className="text-sm text-[#9CA3AF]" style={{ fontFamily: "Georgia, serif", fontStyle: "italic" }}>sunski</span>
-                <span className="text-sm font-bold text-[#9CA3AF]" style={{ fontFamily: "Georgia, serif" }}>Wilson</span>
               </div>
             </div>
 
