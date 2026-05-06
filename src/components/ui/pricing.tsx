@@ -1,6 +1,5 @@
 'use client';
 import React from 'react';
-import { Button } from '@/components/ui/button';
 import {
 	Tooltip,
 	TooltipContent,
@@ -8,7 +7,7 @@ import {
 	TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
-import { CheckCircleIcon, StarIcon } from 'lucide-react';
+import { Check, Star, Zap } from 'lucide-react';
 import Link from 'next/link';
 import { motion, type Transition } from 'framer-motion';
 
@@ -22,6 +21,7 @@ interface Plan {
 		monthly: number;
 		yearly: number;
 	};
+	oneTime?: boolean;
 	features: {
 		text: string;
 		tooltip?: string;
@@ -50,26 +50,29 @@ export function PricingSection({
 	return (
 		<div
 			className={cn(
-				'flex w-full flex-col items-center justify-center space-y-5 p-4',
+				'flex w-full flex-col items-center justify-center space-y-8 p-4',
 				props.className,
 			)}
 			{...props}
 		>
-			<div className="mx-auto max-w-xl space-y-2">
-				<h2 className="text-center text-2xl font-bold tracking-tight md:text-3xl lg:text-4xl">
+			{/* Header */}
+			<div className="mx-auto max-w-2xl space-y-3 text-center">
+				<h2 className="text-3xl font-bold tracking-tight text-[#111111] md:text-4xl lg:text-5xl">
 					{heading}
 				</h2>
 				{description && (
-					<p className="text-muted-foreground text-center text-sm md:text-base">
+					<p className="text-[#6B7280] text-sm md:text-base">
 						{description}
 					</p>
 				)}
 			</div>
+
 			<PricingFrequencyToggle
 				frequency={frequency}
 				setFrequency={setFrequency}
 			/>
-			<div className="mx-auto grid w-full max-w-4xl grid-cols-1 gap-4 md:grid-cols-3">
+
+			<div className="mx-auto grid w-full max-w-6xl grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
 				{plans.map((plan) => (
 					<PricingCard plan={plan} key={plan.name} frequency={frequency} />
 				))}
@@ -90,35 +93,35 @@ export function PricingFrequencyToggle({
 }: PricingFrequencyToggleProps) {
 	return (
 		<div className={cn('mx-auto flex w-fit items-center gap-2', props.className)} {...props}>
-			<div className="bg-muted/30 flex w-fit rounded-full border p-1">
+			<div className="flex w-fit rounded-full border border-[#E5E7EB] bg-[#F7F7F5] p-1">
 				{frequencies.map((freq) => (
 					<button
 						key={freq}
 						onClick={() => setFrequency(freq)}
-						className="relative px-4 py-1 text-sm capitalize"
+						className="relative px-5 py-2 text-sm capitalize"
 					>
 						<span className={cn(
 							"relative z-10 flex items-center gap-1.5 transition-colors duration-300",
-							frequency === freq ? "text-background font-medium" : "text-muted-foreground"
+							frequency === freq ? "text-white font-medium" : "text-[#6B7280]"
 						)}>
 							{freq}
 							{freq === 'yearly' && (
-								<span className="rounded-full bg-primary text-primary-foreground px-1.5 py-0.5 text-[9px] font-bold leading-none uppercase">
+								<span className="rounded-full bg-[#10B981] text-white px-1.5 py-0.5 text-[9px] font-bold leading-none uppercase">
 									20% off
 								</span>
 							)}
 						</span>
-					{frequency === freq && (
-						<motion.span
-							layoutId="frequency"
-							transition={{ type: 'spring', duration: 0.4 }}
-							className="bg-foreground absolute inset-0 z-0 rounded-full"
-						/>
-					)}
-				</button>
-			))}
+						{frequency === freq && (
+							<motion.span
+								layoutId="pricing-frequency"
+								transition={{ type: 'spring', duration: 0.4 }}
+								className="absolute inset-0 z-0 rounded-full bg-[#2563EB]"
+							/>
+						)}
+					</button>
+				))}
+			</div>
 		</div>
-	</div>
 	);
 }
 
@@ -133,81 +136,93 @@ export function PricingCard({
 	frequency = frequencies[0],
 	...props
 }: PricingCardProps) {
+	const isOneTime = plan.oneTime;
+	const isHighlighted = plan.highlighted;
+
 	return (
 		<div
-			key={plan.name}
 			className={cn(
-				'relative flex w-full flex-col rounded-lg border bg-card',
+				'relative flex w-full flex-col rounded-2xl border transition-all duration-300 hover:-translate-y-1',
+				isHighlighted
+					? 'border-[#2563EB] bg-[#2563EB] text-white shadow-xl shadow-blue-500/20'
+					: 'border-[#E5E7EB] bg-white shadow-sm hover:shadow-md',
 				className,
 			)}
 			{...props}
 		>
-			{plan.highlighted && (
-				<BorderTrail
-					style={{
-						boxShadow:
-							'0px 0px 60px 30px rgb(255 255 255 / 50%), 0 0 100px 60px rgb(0 0 0 / 50%), 0 0 140px 90px rgb(0 0 0 / 50%)',
-					}}
-					size={100}
-				/>
+			{isHighlighted && (
+				<div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
+					<span className="inline-flex items-center gap-1 rounded-full bg-[#06B6D4] px-3 py-1 text-xs font-semibold text-white shadow-sm">
+						<Star className="h-3 w-3 fill-white" />
+						Most Popular
+					</span>
+				</div>
 			)}
-			<div
-				className="rounded-t-lg border-b p-4"
-			>
-				<div className="absolute top-2 right-2 z-10 flex items-center gap-2">
-					{plan.highlighted && (
-						<p className="bg-background flex items-center gap-1 rounded-md border px-2 py-0.5 text-xs">
-							<StarIcon className="h-3 w-3 fill-current" />
-							Popular
-						</p>
+
+			<div className="rounded-t-2xl p-5 border-b border-inherit">
+				<div className="flex items-center justify-between mb-1">
+					<div className={cn("text-base font-semibold", isHighlighted ? "text-white" : "text-[#111111]")}>
+						{plan.name}
+					</div>
+					{isOneTime && (
+						<span className="rounded-full bg-amber-100 text-amber-700 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide">
+							One-time
+						</span>
 					)}
-					{frequency === 'yearly' && (
-						<p className="bg-primary text-primary-foreground flex items-center gap-1 rounded-md border px-2 py-0.5 text-xs">
+					{frequency === 'yearly' && !isOneTime && (
+						<span className={cn(
+							"rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide",
+							isHighlighted ? "bg-white/20 text-white" : "bg-green-100 text-green-700"
+						)}>
 							{Math.round(
-								((plan.price.monthly * 12 - plan.price.yearly) /
-									plan.price.monthly /
-									12) *
-									100,
-							)}
-							% off
-						</p>
+								((plan.price.monthly * 12 - plan.price.yearly) / plan.price.monthly / 12) * 100,
+							)}% off
+						</span>
 					)}
 				</div>
-
-				<div className="text-lg font-medium">{plan.name}</div>
-				<p className="text-muted-foreground text-sm font-normal">{plan.info}</p>
-				<h3 className="mt-2 flex items-end gap-1">
-					{frequency === 'yearly' ? (
+				<p className={cn("text-xs mb-3", isHighlighted ? "text-blue-200" : "text-[#6B7280]")}>{plan.info}</p>
+				<div className="flex items-end gap-1">
+					{isOneTime ? (
 						<>
-							<span className="text-3xl font-bold">${Math.round(plan.price.yearly / 12)}</span>
-							<span className="text-muted-foreground">/month</span>
-							<span className="text-muted-foreground/50 ml-1 text-sm line-through">
-								${plan.price.monthly}
-							</span>
+							<span className={cn("text-3xl font-bold", isHighlighted ? "text-white" : "text-[#111111]")}>${plan.price.monthly}</span>
+							<span className={cn("mb-1 text-sm", isHighlighted ? "text-blue-200" : "text-[#6B7280]")}>one-time</span>
+						</>
+					) : frequency === 'yearly' ? (
+						<>
+							<span className={cn("text-3xl font-bold", isHighlighted ? "text-white" : "text-[#111111]")}>${Math.round(plan.price.yearly / 12)}</span>
+							<span className={cn("mb-1 text-sm", isHighlighted ? "text-blue-200" : "text-[#6B7280]")}>/month</span>
+							<span className={cn("mb-1 ml-1 text-xs line-through", isHighlighted ? "text-blue-300" : "text-[#9CA3AF]")}>${plan.price.monthly}</span>
 						</>
 					) : (
 						<>
-							<span className="text-3xl font-bold">${plan.price.monthly}</span>
-							<span className="text-muted-foreground">/month</span>
+							<span className={cn("text-3xl font-bold", isHighlighted ? "text-white" : "text-[#111111]")}>${plan.price.monthly}</span>
+							<span className={cn("mb-1 text-sm", isHighlighted ? "text-blue-200" : "text-[#6B7280]")}>/month</span>
 						</>
 					)}
-				</h3>
-				{frequency === 'yearly' && (
-					<p className="text-primary text-[11px] mt-1">Billed annually · Save 20%</p>
+				</div>
+				{frequency === 'yearly' && !isOneTime && (
+					<p className={cn("text-[11px] mt-1", isHighlighted ? "text-blue-200" : "text-[#10B981]")}>
+						Billed annually · Save ${plan.price.monthly * 12 - plan.price.yearly}
+					</p>
 				)}
 			</div>
-			<div
-				className="text-muted-foreground space-y-4 px-4 py-6 text-sm"
-			>
+
+			<div className="space-y-3 px-5 py-5 flex-1">
 				{plan.features.map((feature, index) => (
-					<div key={index} className="flex items-center gap-2">
-						<CheckCircleIcon className="text-foreground h-4 w-4 shrink-0" />
+					<div key={index} className="flex items-start gap-2.5">
+						<div className={cn(
+							"mt-0.5 flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full",
+							isHighlighted ? "bg-white/20" : "bg-blue-50"
+						)}>
+							<Check className={cn("h-2.5 w-2.5", isHighlighted ? "text-white" : "text-[#2563EB]")} strokeWidth={3} />
+						</div>
 						{feature.tooltip ? (
 							<TooltipProvider>
 								<Tooltip>
 									<TooltipTrigger
 										className={cn(
-											'cursor-pointer border-b border-dashed text-left',
+											'cursor-pointer border-b border-dashed text-left text-sm',
+											isHighlighted ? "border-blue-300 text-blue-100" : "border-[#9CA3AF] text-[#6B7280]"
 										)}
 									>
 										{feature.text}
@@ -218,26 +233,36 @@ export function PricingCard({
 								</Tooltip>
 							</TooltipProvider>
 						) : (
-							<p>{feature.text}</p>
+							<p className={cn("text-sm", isHighlighted ? "text-blue-100" : "text-[#6B7280]")}>{feature.text}</p>
 						)}
 					</div>
 				))}
 			</div>
-			<div className="mt-auto w-full border-t p-4">
-				{plan.highlighted ? (
-					<Link href={plan.btn.href} className="block w-full rounded-full p-[2px] rotatingGradient active:scale-[0.98] transition-transform">
-						<span className="flex w-full items-center justify-center rounded-full bg-background py-3 text-sm font-semibold text-foreground">
-							{plan.btn.text}
-							<span className="ml-2">&rarr;</span>
-						</span>
+
+			<div className="mt-auto w-full border-t border-inherit p-5">
+				{isHighlighted ? (
+					<Link
+						href={plan.btn.href}
+						className="flex w-full items-center justify-center rounded-full bg-white py-3 text-sm font-semibold text-[#2563EB] hover:bg-blue-50 transition-colors active:scale-[0.98]"
+					>
+						{plan.btn.text}
+						<span className="ml-2">→</span>
+					</Link>
+				) : isOneTime ? (
+					<Link
+						href={plan.btn.href}
+						className="flex w-full items-center justify-center rounded-full bg-[#2563EB] py-3 text-sm font-semibold text-white hover:bg-blue-700 transition-colors shadow-sm shadow-blue-500/20 active:scale-[0.98]"
+					>
+						{plan.btn.text}
+						<span className="ml-2">→</span>
 					</Link>
 				) : (
 					<Link
 						href={plan.btn.href}
-						className="flex w-full items-center justify-center rounded-full py-3 text-sm font-semibold transition-all duration-200 active:scale-[0.98] border border-border bg-white/5 text-foreground hover:bg-white/10 hover:border-white/20"
+						className="flex w-full items-center justify-center rounded-full py-3 text-sm font-semibold border border-[#E5E7EB] bg-[#F7F7F5] text-[#111111] hover:bg-[#E5E7EB] transition-colors active:scale-[0.98]"
 					>
 						{plan.btn.text}
-						<span className="ml-2">&rarr;</span>
+						<span className="ml-2">→</span>
 					</Link>
 				)}
 			</div>

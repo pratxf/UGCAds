@@ -15,7 +15,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   });
 
   return (
-    <div className="relative flex min-h-screen" style={{ background: "#000000" }}>
+    <div className="dark relative flex min-h-screen" style={{ background: "#000000" }}>
       <GradientBackground4 className="fixed" />
       <Sidebar
         userName={user.name || user.email.split("@")[0]}

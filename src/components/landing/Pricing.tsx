@@ -25,6 +25,26 @@ function useInView(ref: React.RefObject<HTMLElement | null>, margin = "-100px") 
 
 const PLANS = [
   {
+    name: "Starter",
+    info: "Try ugcads with one real project",
+    price: {
+      monthly: 5,
+      yearly: 5,
+    },
+    oneTime: true,
+    features: [
+      { text: "1 video generation" },
+      { text: "20 product photos" },
+      { text: "All AI characters" },
+      { text: "Full HD export" },
+      { text: "No watermark" },
+    ],
+    btn: {
+      text: "Try for $5",
+      href: "/signup",
+    },
+  },
+  {
     name: "Basic",
     info: "For individuals getting started with AI ads",
     price: {
@@ -32,15 +52,12 @@ const PLANS = [
       yearly: 374,
     },
     features: [
-      { text: "100 credits / month" },
-      { text: "5 video generations" },
+      { text: "5 video generations / month" },
+      { text: "100 product photos / month" },
+      { text: "All AI characters" },
       { text: "Standard speed rendering" },
       { text: "Basic templates" },
       { text: "Email support" },
-      {
-        text: "Watermark on videos",
-        tooltip: "Upgrade to Creator to remove watermarks",
-      },
     ],
     btn: {
       text: "Get Started",
@@ -56,15 +73,13 @@ const PLANS = [
       yearly: 758,
     },
     features: [
-      { text: "300 credits / month" },
-      { text: "15 video generations" },
+      { text: "15 video generations / month" },
+      { text: "300 product photos / month" },
+      { text: "All AI characters" },
       { text: "Faster rendering", tooltip: "2x faster than Basic plan" },
       { text: "Premium templates" },
-      { text: "NO watermark" },
-      {
-        text: "Priority email support",
-        tooltip: "Responses within 4 hours on business days",
-      },
+      { text: "No watermark" },
+      { text: "Priority email support", tooltip: "Responses within 4 hours on business days" },
     ],
     btn: {
       text: "Start Creating",
@@ -79,8 +94,9 @@ const PLANS = [
       yearly: 1238,
     },
     features: [
-      { text: "500 credits / month" },
-      { text: "25 video generations" },
+      { text: "25 video generations / month" },
+      { text: "500 product photos / month" },
+      { text: "All AI characters" },
       { text: "Priority rendering", tooltip: "Fastest rendering queue" },
       { text: "All templates" },
       { text: "No watermark" },
@@ -89,7 +105,7 @@ const PLANS = [
       { text: "Priority+ support", tooltip: "Dedicated account manager" },
     ],
     btn: {
-      text: "Go Pro",
+      text: "Go Agency",
       href: "/signup",
     },
   },
@@ -100,7 +116,7 @@ export default function Pricing() {
   const inView = useInView(sectionRef);
 
   return (
-    <section id="pricing" className="relative py-24 sm:py-32">
+    <section id="pricing" className="relative py-24 sm:py-32 bg-white">
       <div
         ref={sectionRef}
         className={cn(
@@ -111,7 +127,7 @@ export default function Pricing() {
         <PricingSection
           plans={PLANS}
           heading="Simple, Transparent Pricing"
-          description="Simple, transparent pricing. No hidden fees."
+          description="Start with a $5 trial or commit to a monthly plan. No hidden fees, cancel anytime."
         />
       </div>
     </section>

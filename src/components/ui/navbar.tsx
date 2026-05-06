@@ -111,7 +111,7 @@ export default function SiteNavbar({
     getStartedHref = '/signup',
 }: SiteNavbarProps) {
     return (
-        <header className="sticky top-0 z-50 w-full bg-background/80 backdrop-blur-xl border-b border-border/50">
+        <header className="sticky top-0 z-50 w-full bg-white/90 backdrop-blur-xl border-b border-[#E5E7EB]">
           <nav className="mx-auto max-w-7xl flex h-14 items-center justify-between gap-6 px-4 sm:px-6 lg:px-8">
             <div className="flex items-center gap-2 shrink-0">
                 <MobileNav nav={navigationLinks} />
@@ -138,14 +138,15 @@ export default function SiteNavbar({
             <div className="flex items-center gap-2 shrink-0">
                 <Link
                     href={signInHref}
-                    className="hidden sm:inline-flex items-center justify-center rounded-full text-sm font-medium h-9 px-5 border border-border bg-transparent hover:bg-white/5 transition-colors whitespace-nowrap"
+                    className="hidden sm:inline-flex items-center justify-center rounded-full text-sm font-medium h-9 px-5 border border-[#E5E7EB] bg-white text-[#111111] hover:border-blue-200 hover:bg-blue-50 transition-colors whitespace-nowrap"
                 >
                     Sign In
                 </Link>
-                <Link href={getStartedHref} className="relative rounded-full p-[2px] rotatingGradient">
-                    <span className="inline-flex items-center justify-center rounded-full bg-background text-sm font-semibold text-foreground h-8 px-4 whitespace-nowrap">
-                        Get Started
-                    </span>
+                <Link
+                    href={getStartedHref}
+                    className="inline-flex items-center justify-center rounded-full bg-[#2563EB] text-white text-sm font-semibold h-9 px-5 whitespace-nowrap shadow-sm shadow-blue-500/20 hover:bg-blue-700 transition-colors"
+                >
+                    Get Started
                 </Link>
             </div>
           </nav>

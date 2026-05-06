@@ -33,7 +33,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${poppins.variable} ${inter.variable} ${plusJakarta.variable} dark h-full antialiased`}
+      className={`${poppins.variable} ${inter.variable} ${plusJakarta.variable} h-full antialiased`}
     >
       <head>
         {/* Warm DNS + TLS to R2 so image fetches don't pay first-byte penalty */}

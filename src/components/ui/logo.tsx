@@ -18,7 +18,7 @@ export function Logo({ collapsed = false, href = "/", className, size = "md" }: 
       <img src="/brand/logo-u.svg" alt="UGCAds" width={iconSize} height={iconSize} className="shrink-0 rounded-[6px]" />
       {!collapsed && (
         <span
-          className="font-bold text-white"
+          className="font-bold text-foreground"
           style={{
             fontFamily: "var(--font-jakarta), sans-serif",
             fontSize,
