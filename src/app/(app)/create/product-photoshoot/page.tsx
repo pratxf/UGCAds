@@ -400,7 +400,6 @@ export default function PhotoshootCreator() {
               const IMAGE_MODELS = [
                 { id: "seedream/4.5-edit", name: "Seedream 4.5", tag: "ByteDance · 4K Edit", logo: "/models/seedream-4-5.jpg" },
                 { id: "gpt-image-2-image-to-image", name: "GPT Image 2", tag: "OpenAI · Photoreal", logo: "/models/gpt-image-2.png" },
-                { id: "qwen2/image-edit", name: "Qwen2 Image", tag: "Alibaba · 2K Native", logo: "/models/qwen2-image.png" },
                 { id: "seedream/5-lite-image-to-image", name: "Seedream 5 Lite", tag: "ByteDance · Fast", logo: "/models/seedream-5-lite.png" },
                 { id: "flux-2/pro-image-to-image", name: "Flux 2 Pro", tag: "BFL · Multi-reference", logo: "/models/flux-2-pro.jpg" },
               ];
@@ -564,7 +563,6 @@ export default function PhotoshootCreator() {
                 Generated with {
                   usedModel === "seedream/4.5-edit" ? "Seedream 4.5" :
                   usedModel === "gpt-image-2-image-to-image" ? "GPT Image 2" :
-                  usedModel === "qwen2/image-edit" ? "Qwen2 Image" :
                   usedModel === "seedream/5-lite-image-to-image" ? "Seedream 5 Lite" :
                   usedModel === "flux-2/pro-image-to-image" ? "Flux 2 Pro" :
                   usedModel || "AI"

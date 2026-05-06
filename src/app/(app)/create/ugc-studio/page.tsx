@@ -21,14 +21,13 @@ import { useAvatars, type LibraryItem, type LibraryCategory } from "@/lib/hooks/
 import { addActiveGeneration } from "@/lib/active-generations";
 
 type Mode = "ugc" | "product";
-type VideoModel = "kling-3.0/video" | "kling-2.6/image-to-video" | "sora-2-image-to-video";
+type VideoModel = "kling-3.0/video" | "kling-2.6/image-to-video";
 type AspectRatio = "9:16" | "1:1" | "16:9";
 type Duration = "5" | "10" | "15";
 
 const VIDEO_MODELS: { id: VideoModel; name: string; logo: string }[] = [
   { id: "kling-3.0/video", name: "Kling 3.0", logo: "/models/kling-3.jpg" },
   { id: "kling-2.6/image-to-video", name: "Kling 2.6", logo: "/models/kling-3.jpg" },
-  { id: "sora-2-image-to-video", name: "Sora 2", logo: "/models/sora-2.png" },
 ];
 
 // Palette
@@ -483,7 +482,7 @@ export default function UGCStudio() {
                         <div className="absolute bottom-full left-0 mb-1.5 rounded-xl overflow-hidden shadow-2xl z-20"
                           style={{ background: "#080808", border: `1px solid ${P.border}`, minWidth: 160 }}>
                           {VIDEO_MODELS.map((m) => (
-                            <button key={m.id} onClick={() => { setVideoModel(m.id); if (m.id === "sora-2-image-to-video" && duration === "5") setDuration("10"); if (m.id === "kling-2.6/image-to-video" && duration === "15") setDuration("10"); setModelOpen(false); }}
+                            <button key={m.id} onClick={() => { setVideoModel(m.id); if (m.id === "kling-2.6/image-to-video" && duration === "15") setDuration("10"); setModelOpen(false); }}
                               className="w-full flex items-center gap-2.5 px-3.5 h-11 text-[13px] transition hover:bg-white/5"
                               style={{ color: videoModel === m.id ? P.ube : "#c4c6e8" }}>
                               <img src={m.logo} alt={m.name} className="size-6 rounded object-cover shrink-0" />
@@ -509,7 +508,7 @@ export default function UGCStudio() {
 
                     {/* Duration */}
                     {(["5", "10", "15"] as Duration[]).map((d) => {
-                      const isLocked = (d === "5" && videoModel === "sora-2-image-to-video") || (d === "15" && videoModel === "kling-2.6/image-to-video");
+                      const isLocked = d === "15" && videoModel === "kling-2.6/image-to-video";
                       const isActive = duration === d && !isLocked;
                       return (
                         <button key={d} onClick={() => !isLocked && setDuration(d)} disabled={isLocked}

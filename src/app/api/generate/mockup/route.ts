@@ -14,7 +14,6 @@ export const maxDuration = 120;
 const EDIT_MODELS = new Set([
   "gpt-image-2-image-to-image",
   "seedream/4.5-edit",
-  "qwen2/image-edit",
 ]);
 
 const ASPECT_MAP: Record<string, string> = {
@@ -44,7 +43,6 @@ const Schema = z
     imageModel: z.enum([
       "seedream/4.5-edit",
       "gpt-image-2-image-to-image",
-      "qwen2/image-edit",
       "seedream/5-lite-image-to-image",
       "flux-2/pro-image-to-image",
     ]).default("seedream/4.5-edit"),

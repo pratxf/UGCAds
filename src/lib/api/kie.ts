@@ -6,10 +6,10 @@
 const KIE_API_KEY = process.env.KIE_AI_API_KEY;
 const KIE_BASE_URL = "https://api.kie.ai/v1";
 
-export type KieModel = "veo" | "sora-2-pro";
+export type KieModel = "veo";
 
-export function selectModel(plan: string): KieModel {
-  return plan === "AGENCY" ? "sora-2-pro" : "veo";
+export function selectModel(_plan: string): KieModel {
+  return "veo";
 }
 
 export interface GenerateUGCParams {

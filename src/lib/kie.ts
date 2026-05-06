@@ -65,7 +65,6 @@ export async function pollKieTask(taskId: string): Promise<KieTaskResult> {
 export type ImageModel =
   | "seedream/4.5-edit"
   | "gpt-image-2-image-to-image"
-  | "qwen2/image-edit"
   | "seedream/5-lite-image-to-image"
   | "flux-2/pro-image-to-image";
 
@@ -92,9 +91,6 @@ export async function generateKieImage({
     case "gpt-image-2-image-to-image":
       input = { prompt, input_urls: [imageUrl], aspect_ratio: "auto", resolution: "1K" };
       break;
-    case "qwen2/image-edit":
-      input = { prompt, image_url: [imageUrl], image_size: kieAspect, output_format: "jpeg", nsfw_checker: false };
-      break;
     case "seedream/5-lite-image-to-image":
       input = { prompt, image_urls: [imageUrl], aspect_ratio: kieAspect, quality: "high", nsfw_checker: false };
       break;
@@ -109,7 +105,7 @@ export async function generateKieImage({
 
 // ─── Image-to-Video ──────────────────────────────────────────────
 
-export type VideoModel = "kling-3.0/video" | "kling-2.6/image-to-video" | "sora-2-image-to-video";
+export type VideoModel = "kling-3.0/video" | "kling-2.6/image-to-video";
 
 export async function generateKieVideo({
   model,
@@ -143,26 +139,12 @@ export async function generateKieVideo({
     return taskId;
   }
 
-  if (model === "kling-2.6/image-to-video") {
-    const taskId = await createKieTask("kling-2.6/image-to-video", {
-      prompt,
-      image_urls: imageUrls,
-      sound: true,
-      duration,
-    });
-    return taskId;
-  }
-
-  // Sora 2 — minimum duration is 10s, aspect_ratio is "portrait" or "landscape"
-  const soraAspect = aspectRatio === "16:9" ? "landscape" : "portrait";
-  const nFrames = duration === "15" ? "15" : "10";
-  const taskId = await createKieTask("sora-2-image-to-video", {
+  // kling-2.6/image-to-video
+  const taskId = await createKieTask("kling-2.6/image-to-video", {
     prompt,
     image_urls: imageUrls,
-    aspect_ratio: soraAspect,
-    n_frames: nFrames,
-    upload_method: "s3",
-    remove_watermark: true,
+    sound: true,
+    duration,
   });
   return taskId;
 }

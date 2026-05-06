@@ -11,7 +11,7 @@ const Body = z.object({
   isCustomAvatar: z.boolean().default(false),
   customAvatarUrl: z.string().url().optional(),
   prompt: z.string().min(1).max(2000),
-  videoModel: z.enum(["kling-3.0/video", "kling-2.6/image-to-video", "sora-2-image-to-video"]).default("kling-3.0/video"),
+  videoModel: z.enum(["kling-3.0/video", "kling-2.6/image-to-video"]).default("kling-3.0/video"),
   aspectRatio: z.enum(["NINE_SIXTEEN", "SIXTEEN_NINE", "ONE_ONE"]).default("NINE_SIXTEEN"),
   duration: z.enum(["5", "10", "15"]).default("5"),
 });
