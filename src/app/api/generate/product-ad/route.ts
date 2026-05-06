@@ -31,7 +31,7 @@ export async function POST(request: Request) {
     if (!prompt) return NextResponse.json({ error: "Prompt is required" }, { status: 400 });
 
     const Schema = z.object({
-      videoModel: z.enum(["kling-3.0/video", "sora-2-image-to-video"]),
+      videoModel: z.enum(["kling-3.0/video", "kling-2.6/image-to-video", "sora-2-image-to-video"]),
       aspectRatio: z.enum(["NINE_SIXTEEN", "SIXTEEN_NINE", "ONE_ONE"]),
       duration: z.enum(["5", "10", "15"]),
     });
