@@ -60,7 +60,7 @@ export default function Hero() {
                     />
                   ))}
                 </div>
-                <span className="ml-2 text-sm font-semibold text-[#6B7280]">+10K</span>
+                <span className="ml-2 text-sm font-semibold text-[#6B7280]">+200</span>
               </div>
             </motion.div>
 
@@ -95,14 +95,14 @@ export default function Hero() {
             >
               <Link
                 href="/signup"
-                className="inline-flex items-center gap-2 rounded-full bg-[#2563EB] px-8 py-3.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/30 hover:bg-blue-700 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+                className="inline-flex items-center gap-2 rounded-2xl bg-[#2563EB] px-8 py-3.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/30 hover:bg-blue-700 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
               >
                 Start for Free
                 <span className="text-base leading-none">→</span>
               </Link>
               <Link
                 href="#how-it-works"
-                className="inline-flex items-center gap-2 rounded-full border border-[#E5E7EB] bg-white px-7 py-3.5 text-sm font-medium text-[#374151] hover:border-[#D1D5DB] hover:bg-[#F9FAFB] transition-all duration-200"
+                className="inline-flex items-center gap-2 rounded-2xl border border-[#E5E7EB] bg-white px-7 py-3.5 text-sm font-medium text-[#374151] hover:border-[#D1D5DB] hover:bg-[#F9FAFB] transition-all duration-200"
               >
                 <Play className="h-3.5 w-3.5 fill-[#111111] text-[#111111]" />
                 See How It Works
@@ -182,6 +182,20 @@ export default function Hero() {
                 <span className="flex-shrink-0 rounded-md bg-black/40 px-2 py-0.5 text-[11px] font-semibold text-white">
                   1:47
                 </span>
+              </div>
+            </div>
+
+            {/* Brand logos */}
+            <div className="mt-5">
+              <p className="text-[10px] font-semibold tracking-widest text-[#9CA3AF] uppercase mb-3">
+                Trusted by leading brands
+              </p>
+              <div className="flex items-center gap-5 flex-wrap">
+                <span className="text-sm font-bold text-[#9CA3AF]" style={{ fontFamily: "Georgia, serif" }}>verizon<span className="text-[#9CA3AF]">✓</span></span>
+                <span className="text-sm font-semibold text-[#9CA3AF]" style={{ fontFamily: "Satoshi, sans-serif", letterSpacing: "-0.02em" }}>〜Airwallex</span>
+                <span className="text-sm font-bold text-[#9CA3AF]" style={{ fontFamily: "Satoshi, sans-serif" }}>HubSpot</span>
+                <span className="text-sm text-[#9CA3AF]" style={{ fontFamily: "Georgia, serif", fontStyle: "italic" }}>sunski</span>
+                <span className="text-sm font-bold text-[#9CA3AF]" style={{ fontFamily: "Georgia, serif" }}>Wilson</span>
               </div>
             </div>
 

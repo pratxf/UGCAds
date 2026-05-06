@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import {
   Star, Zap, AlignLeft, Video, Upload, Sparkles, Download,
-  LayoutGrid, Sun, ArrowUpRight, Play, Clock, TrendingUp,
+  LayoutGrid, Sun, ArrowUpRight, Clock, TrendingUp,
   DollarSign, Shield, Camera, Shirt,
 } from "lucide-react";
 
@@ -139,11 +139,6 @@ export default function Features() {
                       muted autoPlay loop playsInline preload="metadata"
                       className="w-full h-full object-cover"
                     />
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/90 shadow-md">
-                        <Play className="h-4 w-4 fill-[#111111] text-[#111111] ml-0.5" />
-                      </div>
-                    </div>
                     {"timestamp" in card.media && card.media.timestamp && (
                       <div className="absolute bottom-2 right-2 rounded-md bg-black/70 px-1.5 py-0.5 text-[11px] font-semibold text-white">
                         {card.media.timestamp}
