@@ -64,18 +64,18 @@ const testimonials = [
 
 function TestimonialCard({ item }: { item: typeof testimonials[0] }) {
   return (
-    <div className="rounded-2xl border border-[#E5E7EB] bg-white p-6 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 w-72 flex-shrink-0">
+    <div className="rounded-2xl border border-[#E5E7EB] bg-white p-6 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 w-[300px] flex-shrink-0 flex flex-col">
       <div className="flex gap-0.5 mb-4">
         {Array.from({ length: 5 }).map((_, i) => (
           <Star key={i} className="h-3.5 w-3.5 fill-[#F59E0B] text-[#F59E0B]" />
         ))}
       </div>
-      <p className="text-sm text-[#374151] leading-relaxed mb-5">{item.text}</p>
-      <div className="flex items-center gap-3">
+      <p className="text-sm text-[#374151] leading-relaxed flex-1">{item.text}</p>
+      <div className="flex items-center gap-3 mt-5 pt-4 border-t border-[#F3F4F6]">
         <img
           src={item.image}
           alt={item.name}
-          className="h-9 w-9 rounded-full object-cover border border-[#E5E7EB]"
+          className="h-10 w-10 rounded-full object-cover border border-[#E5E7EB] flex-shrink-0"
         />
         <div>
           <div className="text-sm font-semibold text-[#111111]">{item.name}</div>
@@ -96,9 +96,9 @@ function ScrollingRow({
   duration?: number;
 }) {
   return (
-    <div className="relative flex overflow-hidden">
+    <div className="relative flex overflow-hidden py-2">
       <motion.div
-        className="flex gap-5"
+        className="flex items-stretch gap-5"
         animate={{ x: reverse ? ["-50%", "0%"] : ["0%", "-50%"] }}
         transition={{ duration, ease: "linear", repeat: Infinity }}
       >
