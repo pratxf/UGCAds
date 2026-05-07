@@ -384,7 +384,7 @@ export default function UGCStudio() {
                   transform: `${tx} ${rotate} ${scale}`,
                   transformOrigin: "bottom center",
                   zIndex: isActive ? 3 : isRight ? 2 : 1,
-                  opacity: isActive ? 1 : 0.45,
+                  opacity: 1,
                   boxShadow: isActive ? "0 16px 48px rgba(0,0,0,0.16)" : "0 6px 16px rgba(0,0,0,0.08)",
                   transition: "transform 0.45s cubic-bezier(0.4,0,0.2,1), opacity 0.45s ease",
                 }}>

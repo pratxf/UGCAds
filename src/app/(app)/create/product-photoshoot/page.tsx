@@ -332,11 +332,11 @@ export default function PhotoshootCreator() {
         {/* Hero samples fan */}
         <div className="relative flex items-center justify-center flex-shrink-0 gap-3" style={{ height: 200 }}>
           {[
-            { src: "/images/photoshoot-samples/ps-1.avif", w: 150, h: 150, rotate: "-6deg", z: 1, opacity: 0.55 },
-            { src: "/images/photoshoot-samples/ps-2.avif", w: 170, h: 170, rotate: "-2deg", z: 2, opacity: 0.72 },
+            { src: "/images/photoshoot-samples/ps-1.avif", w: 150, h: 150, rotate: "-6deg", z: 1, opacity: 1 },
+            { src: "/images/photoshoot-samples/ps-2.avif", w: 170, h: 170, rotate: "-2deg", z: 2, opacity: 1 },
             { src: "/images/photoshoot-samples/ps-3.avif", w: 190, h: 190, rotate: "0deg",  z: 3, opacity: 1 },
-            { src: "/images/photoshoot-samples/ps-4.avif", w: 170, h: 170, rotate: "2deg",  z: 2, opacity: 0.72 },
-            { src: "/images/photoshoot-samples/ps-5.avif", w: 150, h: 150, rotate: "6deg",  z: 1, opacity: 0.55 },
+            { src: "/images/photoshoot-samples/ps-4.avif", w: 170, h: 170, rotate: "2deg",  z: 2, opacity: 1 },
+            { src: "/images/photoshoot-samples/ps-5.avif", w: 150, h: 150, rotate: "6deg",  z: 1, opacity: 1 },
           ].map((card, i) => (
             <div key={i} className="flex-shrink-0 rounded-2xl overflow-hidden"
               style={{
