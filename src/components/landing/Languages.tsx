@@ -32,22 +32,23 @@ export default function Languages() {
       >
         {/* Flag image card */}
         <div
-          className="w-full rounded-3xl overflow-hidden"
+          className="w-full overflow-hidden"
           style={{
-            background: "#EEF2FF",
-            aspectRatio: "2.6 / 1",
+            borderRadius: 24,
+            aspectRatio: "3 / 1",
+            background: "#E8EEFF",
           }}
         >
           <img
             src="/images/languages-flags.png"
             alt="50+ language flags"
-            className="w-full h-full object-cover object-center scale-[1.04]"
-            style={{ mixBlendMode: "multiply" }}
+            className="w-full h-full object-cover object-center"
+            style={{ transform: "scale(1.22)", mixBlendMode: "multiply" }}
           />
         </div>
 
         {/* Text */}
-        <div className="mt-8 text-center">
+        <div className="mt-6 text-center">
           <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#111111]">
             50+ Languages
           </h2>
