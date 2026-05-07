@@ -152,7 +152,7 @@ export function PricingCard({
 		>
 			{isHighlighted && (
 				<div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
-					<span className="inline-flex items-center gap-1 rounded-full bg-[#2563EB] px-3 py-1 text-xs font-semibold text-white shadow-sm">
+					<span className="inline-flex items-center gap-1 rounded-full bg-[#111111] px-3 py-1 text-xs font-semibold text-white shadow-sm">
 						<Star className="h-3 w-3 fill-white" />
 						Most Popular
 					</span>
