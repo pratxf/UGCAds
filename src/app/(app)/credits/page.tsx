@@ -70,11 +70,11 @@ export default async function CreditsPage() {
       weeklyLabels={weeklyLabels}
       renewal={renewal}
       transactions={transactions
-        .filter((t) => t.type !== "USAGE")
+        .filter((t) => t.type === "USAGE" || t.type === "REFUND")
         .map((t) => ({
           id: t.id,
-          description: labelForType(t.type, t.credits),
-          subDescription: t.description || subLabelForType(t.type),
+          description: t.type === "USAGE" ? (t.description || "Credit Usage") : labelForType(t.type, t.credits),
+          subDescription: t.type === "USAGE" ? "Credit used" : (t.description || subLabelForType(t.type)),
           date: formatDate(t.createdAt),
           time: formatTime(t.createdAt),
           credits: t.credits,
@@ -86,22 +86,15 @@ export default async function CreditsPage() {
   );
 }
 
-function labelForType(type: string, credits: number) {
-  const display = Math.abs(credits) / 10;
+function labelForType(type: string, _credits: number) {
   switch (type) {
-    case "SUBSCRIPTION": return "Plan Purchase";
-    case "TOPUP": return `Top up – ${display} Credits`;
     case "REFUND": return "Refund";
-    case "RENEWAL": return `Monthly Renewal – ${display} Credits`;
     default: return type;
   }
 }
 
 function subLabelForType(type: string) {
   switch (type) {
-    case "SUBSCRIPTION": return "Subscription plan";
-    case "TOPUP": return "Credit pack";
-    case "RENEWAL": return "Plan renewal";
     case "REFUND": return "Credit refund";
     default: return "";
   }
