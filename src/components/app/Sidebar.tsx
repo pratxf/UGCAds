@@ -181,65 +181,70 @@ export default function Sidebar({ userName = "User", userEmail, userAvatar, cred
       {/* Bottom */}
       <div className="shrink-0 space-y-2 p-3">
 
-        {/* Credits widget — glass card */}
-        <div className="rounded-2xl p-3 space-y-2.5"
-          style={{
-            background: "rgba(37,99,235,0.08)",
-            border: "1px solid rgba(37,99,235,0.2)",
-            backdropFilter: "blur(12px)",
-          }}>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="flex h-6 w-6 items-center justify-center rounded-lg"
-                style={{ background: "rgba(37,99,235,0.18)" }}>
-                <FontAwesomeIcon icon={faBolt} style={{ fontSize: 10, color: "#60A5FA" }} />
+        {/* Credits card */}
+        <div className="rounded-2xl p-4 space-y-3"
+          style={{ background: "#FFFFFF", border: "1px solid #E5E7EB", boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+
+          {/* Top row: icon + label + number */}
+          <div className="flex items-start justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full"
+                style={{ background: "rgba(99,102,241,0.12)" }}>
+                <FontAwesomeIcon icon={faBolt} style={{ fontSize: 16, color: "#6366F1" }} />
               </div>
-              <span className="text-[12px] font-semibold text-[#6B7280]">Credits</span>
+              <span className="text-[15px] font-bold text-[#111111]">Credits</span>
             </div>
-            <span className="text-[13px] font-bold text-[#111111]">{credits}</span>
+            <div className="text-right">
+              <p className="text-[28px] font-bold text-[#111111] leading-none">{credits}</p>
+              <p className="text-[11px] text-[#9CA3AF] mt-0.5">available</p>
+            </div>
           </div>
 
           {/* Progress bar */}
-          <div className="h-1.5 w-full rounded-full overflow-hidden" style={{ background: "#E5E7EB" }}>
+          <div className="h-2 w-full rounded-full overflow-hidden" style={{ background: "#E5E7EB" }}>
             <div className="h-full rounded-full transition-all duration-500"
               style={{
                 width: `${pct}%`,
                 background: pct > 20
                   ? "linear-gradient(90deg, #2563EB, #06B6D4)"
                   : "linear-gradient(90deg, #ef4444, #f97316)",
-                boxShadow: "none",
               }} />
           </div>
+
+          {/* Usage text */}
+          <p className="text-[12px]">
+            <span style={{ color: "#2563EB", fontWeight: 600 }}>{credits}</span>
+            <span style={{ color: "#9CA3AF" }}> / {planMax} credits used</span>
+          </p>
 
           {/* Upgrade button */}
           <button
             onClick={() => router.push("/credits")}
-            className="w-full flex items-center justify-center gap-2 rounded-xl py-2 transition-all hover:brightness-110 active:scale-[0.98]"
-            style={{
-              background: "#2563EB",
-            }}
+            className="w-full flex items-center justify-center gap-2 rounded-2xl py-2.5 transition-all hover:brightness-110 active:scale-[0.98]"
+            style={{ background: "#2563EB" }}
           >
-            <FontAwesomeIcon icon={faArrowUp} style={{ fontSize: 10, color: "#fff" }} />
-            <span className="text-[12px] font-bold text-white tracking-wide">Upgrade Plan</span>
+            <FontAwesomeIcon icon={faArrowUp} style={{ fontSize: 11, color: "#fff" }} />
+            <span className="text-[13px] font-bold text-white">Upgrade Plan</span>
           </button>
         </div>
 
-        {/* User */}
+        {/* Profile card */}
         <DropdownMenu>
-          <DropdownMenuTrigger className="flex w-full items-center gap-3 rounded-2xl border border-[#E5E7EB] bg-[#F9FAFB] p-2.5 transition-colors hover:bg-[#F3F4F6]">
+          <DropdownMenuTrigger className="flex w-full items-center gap-3 rounded-2xl p-3 transition-colors hover:bg-[#F3F4F6]"
+            style={{ background: "#FFFFFF", border: "1px solid #E5E7EB", boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
             {userAvatar ? (
-              <span className="h-9 w-9 overflow-hidden rounded-xl">
+              <span className="h-11 w-11 overflow-hidden rounded-full flex-shrink-0">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={userAvatar} alt={userName} className="h-full w-full object-cover" />
               </span>
             ) : (
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-sm font-bold text-white"
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-[15px] font-bold text-white"
                 style={{ background: "linear-gradient(135deg, #2563EB, #06B6D4)" }}>
                 {initial}
               </span>
             )}
             <div className="flex-1 text-left min-w-0">
-              <p className="text-[13px] font-medium text-[#111111] truncate">{userName}</p>
+              <p className="text-[13px] font-bold text-[#111111] truncate">{userName}</p>
               <p className="text-[11px] text-[#9CA3AF] truncate">{userEmail}</p>
             </div>
             <FontAwesomeIcon icon={faEllipsis} className="shrink-0 text-[#9CA3AF]" style={{ fontSize: 16 }} />
