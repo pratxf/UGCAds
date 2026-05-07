@@ -135,49 +135,53 @@ export default function Hero() {
             transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1], delay: 0.25 }}
             className="relative flex flex-col"
           >
-            {/* Ghost card stacked behind main card */}
+            {/* Ghost card — solid lavender, clearly offset behind main card */}
             <div
-              className="absolute inset-0 rounded-2xl"
+              className="absolute inset-0 rounded-3xl"
               style={{
-                background: "linear-gradient(135deg, #DBEAFE 0%, #EDE9FE 100%)",
-                border: "1px solid rgba(37,99,235,0.18)",
-                transform: "rotate(2.5deg) translate(8px, 10px)",
+                background: "#E0E7FF",
+                transform: "rotate(3deg) translate(14px, 16px)",
                 zIndex: 0,
               }}
             />
 
             {/* Video card */}
-            <div className="relative rounded-2xl overflow-hidden border border-[#E5E7EB] shadow-2xl shadow-blue-900/10 bg-[#1a1a2e] aspect-[4/3]" style={{ zIndex: 1 }}>
+            <div
+              className="relative rounded-3xl overflow-hidden shadow-2xl shadow-blue-900/15 bg-[#1a1a2e] aspect-[4/3]"
+              style={{ zIndex: 1 }}
+            >
               <video
                 src="/videos/hero-reel.mov"
                 autoPlay muted loop playsInline preload="auto"
                 className="w-full h-full object-cover"
               />
 
-              {/* Top-left: AI Generated badge — dark charcoal */}
-              <div className="absolute top-3.5 left-3.5 flex items-center gap-1.5 rounded-full px-3 py-1.5 shadow-md"
-                style={{ background: "#1C1C2E", border: "1px solid rgba(255,255,255,0.08)" }}>
-                <div className="flex h-5 w-5 items-center justify-center rounded-full bg-[#2563EB]">
-                  <svg className="h-3 w-3 text-white" viewBox="0 0 12 12" fill="none">
-                    <path d="M6 1l1.5 3h3L8 6l1 3.5L6 8l-3 1.5L4 6 1.5 4h3z" fill="currentColor"/>
-                  </svg>
+              {/* Top-left: AI Generated badge — dark pill */}
+              <div
+                className="absolute top-4 left-4 flex items-center gap-2 rounded-full px-3 py-2 shadow-lg"
+                style={{ background: "#1C1C2E" }}
+              >
+                <div className="flex h-5 w-5 items-center justify-center rounded-full bg-[#2563EB] flex-shrink-0">
+                  <Star className="h-2.5 w-2.5 text-white fill-white" />
                 </div>
-                <span className="text-xs font-semibold text-white">AI Generated</span>
+                <span className="text-[12px] font-semibold text-white leading-none">AI Generated</span>
               </div>
 
               {/* Top-right: ROAS card */}
-              <div className="absolute top-3.5 right-3.5 rounded-xl bg-white/95 backdrop-blur-sm border border-white/60 shadow-sm px-3 py-2">
-                <div className="text-[10px] font-medium text-[#9CA3AF] leading-none mb-1">Avg. ROAS</div>
-                <div className="flex items-center gap-1">
-                  <span className="text-lg font-bold text-[#2563EB] leading-none">3.1x</span>
-                  <TrendingUp className="h-3.5 w-3.5 text-[#10B981]" strokeWidth={2.5} />
+              <div className="absolute top-4 right-4 rounded-2xl bg-white shadow-lg px-3.5 py-2.5">
+                <div className="text-[10px] font-medium text-[#9CA3AF] leading-none mb-1.5">Avg. ROAS</div>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xl font-bold text-[#2563EB] leading-none">3.1x</span>
+                  <TrendingUp className="h-4 w-4 text-[#10B981]" strokeWidth={2.5} />
                 </div>
               </div>
 
               {/* Bottom: floating caption bar */}
-              <div className="absolute bottom-3.5 left-3.5 right-3.5 flex items-center gap-3 rounded-xl px-3.5 py-2.5"
-                style={{ background: "rgba(10,10,18,0.82)", backdropFilter: "blur(10px)", border: "1px solid rgba(255,255,255,0.08)" }}>
-                <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-[#2563EB]">
+              <div
+                className="absolute bottom-4 left-4 right-4 flex items-center gap-3 rounded-2xl px-4 py-3"
+                style={{ background: "#111827" }}
+              >
+                <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl bg-[#2563EB]">
                   <svg className="h-4 w-4 text-white" viewBox="0 0 16 16" fill="currentColor">
                     <rect x="1" y="5" width="2" height="6" rx="1"/>
                     <rect x="4.5" y="2" width="2" height="12" rx="1"/>
@@ -185,7 +189,7 @@ export default function Hero() {
                     <rect x="11.5" y="1" width="2" height="14" rx="1"/>
                   </svg>
                 </div>
-                <p className="flex-1 text-xs text-white font-medium leading-snug">
+                <p className="flex-1 text-[13px] text-white font-medium leading-snug">
                   I've tried so many products, but this one changed everything.
                 </p>
               </div>
