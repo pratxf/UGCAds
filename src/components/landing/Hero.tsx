@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Play, Zap, Clock, Shield } from "lucide-react";
+import { Play, Star, Zap, Clock, Shield } from "lucide-react";
 
 const FADE_UP = {
   hidden: { opacity: 0, y: 20 },
