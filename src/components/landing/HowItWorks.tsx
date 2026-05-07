@@ -92,9 +92,14 @@ export default function HowItWorksSection() {
                 Enter or automatically generate a script that aligns with your brand&apos;s message to personalize your AI-generated video.
               </p>
             </div>
-            {/* Mockup cell */}
-            <div className={`${CELL_IMG} items-center justify-center p-8`}>
-              <ScriptEditorMockup />
+            {/* Mockup cell — card1 */}
+            <div className={CELL_IMG} style={{ minHeight: 280 }}>
+              <img
+                src="/images/howitworks-card1.avif"
+                alt="UGC Studio script editor"
+                className="w-full h-full object-cover object-top"
+                style={{ minHeight: 280 }}
+              />
             </div>
           </div>
 
