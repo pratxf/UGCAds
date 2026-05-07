@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import Sidebar from "@/components/app/Sidebar";
-import ActiveGenerationsPill from "@/components/app/ActiveGenerationsPill";
+import GenerationsOrb from "@/components/app/GenerationsOrb";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
@@ -22,9 +22,12 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         credits={user.credits}
         plan={subscription?.plan ?? undefined}
       />
+      {/* Generations orb — fixed top-right of content area */}
+      <div className="fixed top-4 right-4 z-40">
+        <GenerationsOrb />
+      </div>
       <div className="relative z-10 flex flex-1 flex-col lg:ml-[252px]">
         <main className="flex-1 p-4 sm:p-6 lg:p-8">{children}</main>
-        <ActiveGenerationsPill />
       </div>
     </div>
   );

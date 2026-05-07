@@ -1,22 +1,15 @@
 import { NextResponse } from "next/server";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import Anthropic from "@anthropic-ai/sdk";
 import { requireUser } from "@/lib/auth";
 import { rateLimitOrResponse } from "@/lib/rate-limit";
 
-const apiKey = (process.env.GOOGLE_GEMINI_API_KEY || "").trim();
+const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 export async function POST(req: Request) {
   try {
     const user = await requireUser();
     const blocked = rateLimitOrResponse(`ai-assist:${user.id}`, { windowSec: 60, max: 20 });
     if (blocked) return blocked;
-
-    if (!apiKey) {
-      return NextResponse.json(
-        { error: "GOOGLE_GEMINI_API_KEY is not configured" },
-        { status: 500 },
-      );
-    }
 
     const body = await req.json();
     const existingScript = String(body.existingScript || "").trim();
@@ -42,43 +35,19 @@ Rules:
 - Do not number the sentences
 - Just return the script text, nothing else`;
 
-    const genAI = new GoogleGenerativeAI(apiKey);
+    const message = await client.messages.create({
+      model: "claude-haiku-4-5-20251001",
+      max_tokens: 300,
+      messages: [{ role: "user", content: prompt }],
+    });
 
-    // Try the current flash models in order; fall back across name versions.
-    const candidates = [
-      "gemini-2.5-flash",
-      "gemini-2.0-flash",
-      "gemini-flash-latest",
-      "gemini-1.5-flash",
-    ];
+    const script = (message.content[0] as { text: string }).text.trim();
+    if (!script) return NextResponse.json({ error: "Empty response from AI" }, { status: 502 });
 
-    let lastErr: unknown = null;
-    for (const modelName of candidates) {
-      try {
-        const model = genAI.getGenerativeModel({ model: modelName });
-        const result = await model.generateContent(prompt);
-        const script = result.response.text().trim();
-        if (!script) {
-          lastErr = new Error("Empty response from AI");
-          continue;
-        }
-        return NextResponse.json({ script });
-      } catch (e) {
-        lastErr = e;
-        // Try next candidate on 404 / model-not-found / unsupported errors
-        const msg = e instanceof Error ? e.message : String(e);
-        if (!/404|not found|not supported|unavailable/i.test(msg)) {
-          break;
-        }
-      }
-    }
-
-    const message = lastErr instanceof Error ? lastErr.message : "AI Assist failed";
-    console.error("[ai-assist] Gemini failed:", message);
-    return NextResponse.json({ error: message }, { status: 502 });
+    return NextResponse.json({ script });
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Server error";
-    console.error("[ai-assist] route error:", msg);
+    console.error("[ai-assist/script]", msg);
     const status = msg === "Unauthorized" ? 401 : 500;
     return NextResponse.json({ error: msg }, { status });
   }

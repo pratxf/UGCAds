@@ -1,23 +1,16 @@
 import { NextResponse } from "next/server";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import Anthropic from "@anthropic-ai/sdk";
 import { requireUser } from "@/lib/auth";
 import { rateLimitOrResponse } from "@/lib/rate-limit";
 import { CREATIVE_DIRECTION_CHARACTER_LIMIT } from "@/lib/script-limits";
 
-const apiKey = (process.env.GOOGLE_GEMINI_API_KEY || "").trim();
+const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 export async function POST(req: Request) {
   try {
     const user = await requireUser();
     const blocked = rateLimitOrResponse(`ai-assist-direction:${user.id}`, { windowSec: 60, max: 20 });
     if (blocked) return blocked;
-
-    if (!apiKey) {
-      return NextResponse.json(
-        { error: "GOOGLE_GEMINI_API_KEY is not configured" },
-        { status: 500 },
-      );
-    }
 
     const body = await req.json();
     const existingDirection = String(body.existingDirection || "").trim();
@@ -42,40 +35,19 @@ Rules:
 - Do not tell the model to add on-screen text
 - Return only the direction text`;
 
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const candidates = [
-      "gemini-2.5-flash",
-      "gemini-2.0-flash",
-      "gemini-flash-latest",
-      "gemini-1.5-flash",
-    ];
+    const message = await client.messages.create({
+      model: "claude-haiku-4-5-20251001",
+      max_tokens: 200,
+      messages: [{ role: "user", content: prompt }],
+    });
 
-    let lastErr: unknown = null;
-    for (const modelName of candidates) {
-      try {
-        const model = genAI.getGenerativeModel({ model: modelName });
-        const result = await model.generateContent(prompt);
-        const direction = result.response.text().trim().slice(0, CREATIVE_DIRECTION_CHARACTER_LIMIT);
-        if (!direction) {
-          lastErr = new Error("Empty response from AI");
-          continue;
-        }
-        return NextResponse.json({ direction });
-      } catch (e) {
-        lastErr = e;
-        const msg = e instanceof Error ? e.message : String(e);
-        if (!/404|not found|not supported|unavailable/i.test(msg)) {
-          break;
-        }
-      }
-    }
+    const direction = (message.content[0] as { text: string }).text.trim().slice(0, CREATIVE_DIRECTION_CHARACTER_LIMIT);
+    if (!direction) return NextResponse.json({ error: "Empty response from AI" }, { status: 502 });
 
-    const message = lastErr instanceof Error ? lastErr.message : "AI Assist failed";
-    console.error("[ai-assist-direction] Gemini failed:", message);
-    return NextResponse.json({ error: message }, { status: 502 });
+    return NextResponse.json({ direction });
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Server error";
-    console.error("[ai-assist-direction] route error:", msg);
+    console.error("[ai-assist/direction]", msg);
     const status = msg === "Unauthorized" ? 401 : 500;
     return NextResponse.json({ error: msg }, { status });
   }

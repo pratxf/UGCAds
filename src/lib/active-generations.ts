@@ -1,4 +1,4 @@
-export type ActiveGenerationType = "UGC Ad" | "Product Ad" | "Product Photoshoot" | "AI Try-On";
+export type ActiveGenerationType = "Video Ad" | "UGC Ad" | "Product Ad" | "Product Photoshoot" | "AI Try-On";
 
 export type ActiveGeneration = {
   id: string;

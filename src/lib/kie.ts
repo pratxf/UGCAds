@@ -116,18 +116,18 @@ export async function generateKieVideo({
   duration = "5",
 }: {
   model: VideoModel;
-  imageUrl: string;
+  imageUrl?: string;
   imageUrl2?: string;
   prompt: string;
   aspectRatio?: string;
   duration?: string;
 }): Promise<string> {
-  const imageUrls = imageUrl2 ? [imageUrl, imageUrl2] : [imageUrl];
+  const imageUrls = [imageUrl, imageUrl2].filter(Boolean) as string[];
 
   if (model === "kling-3.0/video") {
     const taskId = await createKieTask("kling-3.0/video", {
       prompt,
-      image_urls: imageUrls,
+      ...(imageUrls.length > 0 && { image_urls: imageUrls }),
       sound: true,
       duration,
       aspect_ratio: aspectRatio,
@@ -142,7 +142,7 @@ export async function generateKieVideo({
   // kling-2.6/image-to-video
   const taskId = await createKieTask("kling-2.6/image-to-video", {
     prompt,
-    image_urls: imageUrls,
+    ...(imageUrls.length > 0 && { image_urls: imageUrls }),
     sound: true,
     duration,
   });
