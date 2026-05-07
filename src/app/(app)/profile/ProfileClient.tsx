@@ -1,18 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Image from "next/image";
-import { motion } from "framer-motion";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faUser,
-  faEnvelope,
   faCamera,
-  faCheck,
   faBolt,
+  faEnvelope,
   faLock,
+  faChevronRight,
+  faCheck,
+  faEye,
+  faEyeSlash,
+  faXmark,
 } from "@fortawesome/free-solid-svg-icons";
 import { faGoogle } from "@fortawesome/free-brands-svg-icons";
+import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -24,87 +27,207 @@ interface Props {
   memberSince: string | null;
 }
 
-const fadeUp = {
-  hidden: { opacity: 0, y: 16 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" as const } },
-};
-
-function formatDate(d: string | null) {
+function formatMemberSince(d: string | null) {
   if (!d) return "";
   const date = new Date(d);
   const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-  return `${months[date.getMonth()]} ${date.getFullYear()}`;
+  return `Member since ${months[date.getMonth()]} ${date.getFullYear()}`;
+}
+
+function fmtCredits(c: number) {
+  return c % 10 === 0 ? String(c / 10) : (c / 10).toFixed(1);
 }
 
 export default function ProfileClient({ name, email, avatar, credits, provider, memberSince }: Props) {
   const isGoogle = provider === "google";
-  const [displayName, setDisplayName] = useState(name);
-  const [saved, setSaved] = useState(false);
-
   const initial = (name || email).charAt(0).toUpperCase();
-  const displayCredits = credits % 10 === 0 ? String(credits / 10) : (credits / 10).toFixed(1);
 
-  function onSave() {
-    setSaved(true);
-    setTimeout(() => setSaved(false), 1800);
+  // Profile state
+  const [displayName, setDisplayName] = useState(name);
+  const [avatarUrl, setAvatarUrl] = useState(avatar);
+  const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [saveError, setSaveError] = useState("");
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+
+  // Change password state
+  const [showPasswordForm, setShowPasswordForm] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [pwState, setPwState] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [pwError, setPwError] = useState("");
+
+  // Google connect
+  const [connectingGoogle, setConnectingGoogle] = useState(false);
+
+  async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingAvatar(true);
+    try {
+      const form = new FormData();
+      form.append("image", file);
+      const res = await fetch("/api/upload/avatar", { method: "POST", body: form });
+      if (!res.ok) {
+        const { error } = await res.json();
+        alert(error || "Upload failed");
+        return;
+      }
+      const { url } = await res.json();
+      setAvatarUrl(url);
+      await fetch("/api/profile/update", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ avatar: url }),
+      });
+    } finally {
+      setUploadingAvatar(false);
+      if (avatarInputRef.current) avatarInputRef.current.value = "";
+    }
+  }
+
+  async function handleSave() {
+    if (saveState === "saving") return;
+    setSaveState("saving");
+    setSaveError("");
+    try {
+      const res = await fetch("/api/profile/update", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: displayName }),
+      });
+      if (!res.ok) {
+        const { error } = await res.json();
+        setSaveError(error || "Save failed");
+        setSaveState("error");
+        return;
+      }
+      setSaveState("saved");
+      setTimeout(() => setSaveState("idle"), 2000);
+    } catch {
+      setSaveError("Network error");
+      setSaveState("error");
+    }
+  }
+
+  async function handleChangePassword() {
+    if (pwState === "saving") return;
+    setPwError("");
+    if (newPassword.length < 8) {
+      setPwError("Password must be at least 8 characters");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setPwError("Passwords do not match");
+      return;
+    }
+    setPwState("saving");
+    try {
+      const res = await fetch("/api/profile/change-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password: newPassword }),
+      });
+      if (!res.ok) {
+        const { error } = await res.json();
+        setPwError(error || "Failed to change password");
+        setPwState("error");
+        return;
+      }
+      setPwState("saved");
+      setNewPassword("");
+      setConfirmPassword("");
+      setTimeout(() => {
+        setPwState("idle");
+        setShowPasswordForm(false);
+      }, 2000);
+    } catch {
+      setPwError("Network error");
+      setPwState("error");
+    }
+  }
+
+  async function handleConnectGoogle() {
+    if (connectingGoogle) return;
+    setConnectingGoogle(true);
+    const supabase = createClient();
+    await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback?redirect=/profile`,
+      },
+    });
+  }
+
+  async function handleSignOutEverywhere() {
+    await fetch("/auth/signout", { method: "POST" });
+    window.location.href = "/login";
   }
 
   return (
-    <motion.div
-      initial="hidden"
-      animate="show"
-      variants={fadeUp}
-      className="mx-auto w-full max-w-3xl space-y-5"
-    >
+    <div className="mx-auto w-full max-w-2xl space-y-5 pb-10">
+
+      {/* Page header */}
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">Profile</h1>
-        <p className="mt-1 text-sm text-[#6B7280]">Manage your account information.</p>
+        <h1 className="text-[26px] font-bold text-[#111111]">Profile</h1>
+        <p className="text-[13px] text-[#6B7280] mt-0.5">Manage your account information and security.</p>
       </div>
 
       {/* Identity card */}
-      <div className="rounded-2xl border border-[#E5E7EB] bg-[#F9FAFB] p-6 shadow-sm">
+      <div className="rounded-2xl p-6"
+        style={{ background: "#FFFFFF", border: "1px solid #E5E7EB", boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
         <div className="flex items-center gap-5">
-          <div className="relative">
-            {avatar ? (
-              <span className="block h-20 w-20 overflow-hidden rounded-2xl border border-[#E5E7EB]">
-                <Image src={avatar} alt={name || email} width={80} height={80} className="h-full w-full object-cover" />
+          {/* Avatar */}
+          <div className="relative shrink-0">
+            <input
+              ref={avatarInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              className="hidden"
+              onChange={handleAvatarChange}
+            />
+            {avatarUrl ? (
+              <span className="block h-20 w-20 overflow-hidden rounded-full">
+                <Image src={avatarUrl} alt={name || email} width={80} height={80}
+                  className="h-full w-full object-cover" />
               </span>
             ) : (
-              <span className="flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-[#2563EB] to-[#06B6D4] text-2xl font-bold text-white">
+              <span className="flex h-20 w-20 items-center justify-center rounded-full text-2xl font-bold text-white"
+                style={{ background: "linear-gradient(135deg, #2563EB, #06B6D4)" }}>
                 {initial}
               </span>
             )}
-            {!isGoogle && (
-              <button
-                type="button"
-                className="absolute -bottom-1.5 -right-1.5 flex h-7 w-7 items-center justify-center rounded-full bg-primary text-white ring-2 ring-background transition hover:brightness-105"
-                aria-label="Change avatar"
-              >
-                <FontAwesomeIcon icon={faCamera} style={{ fontSize: 11 }} />
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={() => avatarInputRef.current?.click()}
+              disabled={uploadingAvatar}
+              className="absolute bottom-0 right-0 flex h-7 w-7 items-center justify-center rounded-full text-white transition hover:brightness-110 disabled:opacity-60"
+              style={{ background: "#2563EB", border: "2.5px solid #fff" }}
+              aria-label="Change avatar"
+            >
+              <FontAwesomeIcon icon={faCamera} style={{ fontSize: 11 }} />
+            </button>
           </div>
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-lg font-semibold text-foreground">{name || "No name set"}</p>
-            <p className="truncate text-sm text-[#6B7280]">{email}</p>
-            <div className="mt-2 flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-2.5 py-0.5 text-[11px] font-semibold text-primary">
+
+          {/* Info */}
+          <div className="flex-1 min-w-0">
+            <p className="text-[20px] font-bold text-[#111111] truncate">{name || "No name set"}</p>
+            <p className="text-[13px] text-[#6B7280] truncate">{email}</p>
+            <div className="mt-2.5 flex flex-wrap items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[12px] font-semibold"
+                style={{ background: "rgba(37,99,235,0.08)", color: "#2563EB" }}>
                 <FontAwesomeIcon icon={faBolt} style={{ fontSize: 10 }} />
-                {displayCredits} credits
+                {fmtCredits(credits)} credits
               </span>
-              {isGoogle ? (
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-[#E5E7EB] bg-[#F3F4F6] px-2.5 py-0.5 text-[11px] font-semibold text-[#374151]">
-                  <FontAwesomeIcon icon={faGoogle} style={{ fontSize: 10 }} />
-                  Google
-                </span>
-              ) : (
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-[#E5E7EB] bg-[#F3F4F6] px-2.5 py-0.5 text-[11px] font-semibold text-[#374151]">
-                  <FontAwesomeIcon icon={faEnvelope} style={{ fontSize: 10 }} />
-                  Email
-                </span>
-              )}
+              <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[12px] font-semibold"
+                style={{ background: "rgba(16,185,129,0.08)", color: "#059669" }}>
+                <FontAwesomeIcon icon={faEnvelope} style={{ fontSize: 10 }} />
+                Email verified
+              </span>
               {memberSince && (
-                <span className="text-[11px] text-[#9CA3AF]">Member since {formatDate(memberSince)}</span>
+                <span className="text-[12px] text-[#9CA3AF]">{formatMemberSince(memberSince)}</span>
               )}
             </div>
           </div>
@@ -112,168 +235,240 @@ export default function ProfileClient({ name, email, avatar, credits, provider, 
       </div>
 
       {/* Account details */}
-      <div className="rounded-2xl border border-[#E5E7EB] bg-[#F9FAFB] p-6 shadow-sm space-y-5">
-        <h2 className="text-sm font-semibold text-foreground">Account details</h2>
+      <div className="rounded-2xl p-6 space-y-5"
+        style={{ background: "#FFFFFF", border: "1px solid #E5E7EB", boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+        <div>
+          <h2 className="text-[16px] font-bold text-[#111111]">Account details</h2>
+        </div>
 
-        <Field
-          label="Display name"
-          icon={faUser}
-          locked={isGoogle}
-          hint={isGoogle ? "Managed by Google" : undefined}
-        >
+        {/* Display name */}
+        <div className="space-y-1.5">
+          <label className="flex items-center gap-1.5 text-[12px] text-[#6B7280]">
+            <FontAwesomeIcon icon={faCamera} className="opacity-0" style={{ fontSize: 11 }} />
+            Display name
+          </label>
           <input
             type="text"
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value)}
-            disabled={isGoogle}
-            className={cn(
-              "w-full rounded-xl border px-3 py-2.5 text-sm transition",
-              isGoogle
-                ? "bg-[#F3F4F6] border-[#E5E7EB] text-[#6B7280] cursor-not-allowed"
-                : "bg-white border-[#E5E7EB] text-foreground placeholder:text-[#9CA3AF] focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20"
-            )}
+            className="w-full rounded-2xl border border-[#E5E7EB] bg-[#F9FAFB] px-4 py-3 text-[14px] text-[#111111] placeholder:text-[#9CA3AF] focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/15 transition"
             placeholder="Your name"
           />
-        </Field>
+        </div>
 
-        <Field
-          label="Email"
-          icon={faEnvelope}
-          locked
-          hint={isGoogle ? "Linked Google account" : "Verified email"}
-        >
-          <input
-            type="email"
-            value={email}
-            disabled
-            className="w-full rounded-xl border border-[#E5E7EB] bg-[#F3F4F6] px-3 py-2.5 text-sm text-[#6B7280] cursor-not-allowed"
-          />
-        </Field>
-
-        {!isGoogle && (
-          <div className="flex items-center justify-end gap-2 pt-1">
-            <button
-              type="button"
-              onClick={onSave}
-              className={cn(
-                "rounded-xl px-5 py-2.5 text-sm font-bold transition flex items-center gap-2",
-                saved
-                  ? "bg-primary/15 text-primary border border-primary/30"
-                  : "bg-primary text-white ring-1 ring-inset ring-black/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_1px_2px_rgba(0,0,0,0.12)] hover:brightness-105 active:scale-[0.99]"
-              )}
-            >
-              {saved ? (
-                <>
-                  <FontAwesomeIcon icon={faCheck} style={{ fontSize: 12 }} />
-                  Saved
-                </>
-              ) : (
-                "Save changes"
-              )}
-            </button>
+        {/* Email */}
+        <div className="space-y-1.5">
+          <label className="flex items-center gap-1.5 text-[12px] text-[#6B7280]">
+            <FontAwesomeIcon icon={faCamera} className="opacity-0" style={{ fontSize: 11 }} />
+            Email address
+          </label>
+          <div className="relative">
+            <input
+              type="email"
+              value={email}
+              disabled
+              className="w-full rounded-2xl border border-[#E5E7EB] bg-[#F9FAFB] px-4 py-3 pr-24 text-[14px] text-[#6B7280] cursor-not-allowed"
+            />
+            <span className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-1 text-[12px] font-semibold"
+              style={{ color: "#059669" }}>
+              <FontAwesomeIcon icon={faCheck} style={{ fontSize: 11 }} />
+              Verified
+            </span>
           </div>
+        </div>
+
+        {saveError && (
+          <p className="text-[12px] text-red-500">{saveError}</p>
         )}
+
+        <button
+          type="button"
+          onClick={handleSave}
+          disabled={saveState === "saving"}
+          className={cn(
+            "rounded-2xl px-6 py-2.5 text-[13px] font-bold text-white transition",
+            saveState === "saved" ? "opacity-80" : "hover:brightness-110",
+            saveState === "saving" && "opacity-70 cursor-wait"
+          )}
+          style={{ background: "#2563EB" }}
+        >
+          {saveState === "saved" ? (
+            <span className="flex items-center gap-2">
+              <FontAwesomeIcon icon={faCheck} style={{ fontSize: 12 }} />
+              Saved
+            </span>
+          ) : saveState === "saving" ? "Saving..." : "Save changes"}
+        </button>
       </div>
 
       {/* Connected accounts */}
-      <div className="rounded-2xl border border-[#E5E7EB] bg-[#F9FAFB] p-6 shadow-sm">
-        <h2 className="text-sm font-semibold text-foreground">Connected accounts</h2>
-        <p className="mt-1 text-xs text-[#6B7280]">Manage how you sign in to your account.</p>
+      <div className="rounded-2xl p-6 space-y-4"
+        style={{ background: "#FFFFFF", border: "1px solid #E5E7EB", boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+        <div>
+          <h2 className="text-[16px] font-bold text-[#111111]">Connected accounts</h2>
+          <p className="text-[12px] text-[#6B7280] mt-0.5">Manage how you sign in to your account.</p>
+        </div>
 
-        <div className="mt-4 space-y-2">
-          <div className="flex items-center gap-3 rounded-xl border border-[#E5E7EB] bg-white px-4 py-3">
-            <span className="flex size-9 items-center justify-center rounded-lg bg-[#F3F4F6] border border-[#E5E7EB]">
-              <FontAwesomeIcon icon={faGoogle} className="text-[#374151]" style={{ fontSize: 14 }} />
-            </span>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-foreground">Google</p>
-              <p className="text-[11px] text-[#6B7280]">
-                {isGoogle ? `Connected as ${email}` : "Not connected"}
-              </p>
-            </div>
-            {isGoogle ? (
-              <span className="rounded-full border border-primary/30 bg-primary/10 px-2.5 py-0.5 text-[10px] font-bold text-primary">
-                Active
-              </span>
-            ) : (
-              <button
-                type="button"
-                className="rounded-lg border border-[#D1D5DB] bg-[#F3F4F6] hover:bg-[#E5E7EB] px-3 py-1.5 text-xs font-semibold text-[#374151] hover:text-[#111111] transition"
-              >
-                Connect
-              </button>
-            )}
+        {/* Google */}
+        <div className="flex items-center gap-4 rounded-2xl border border-[#E5E7EB] bg-[#F9FAFB] px-4 py-3.5">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white border border-[#E5E7EB]">
+            <FontAwesomeIcon icon={faGoogle} style={{ fontSize: 15, color: "#374151" }} />
           </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-[13px] font-semibold text-[#111111]">Google</p>
+            <p className="text-[11px] text-[#6B7280]">
+              {isGoogle ? `Connected as ${email}` : "Not connected"}
+            </p>
+          </div>
+          {isGoogle ? (
+            <span className="rounded-full border border-[#E5E7EB] px-3 py-1 text-[12px] font-semibold text-[#6B7280]">
+              Active
+            </span>
+          ) : (
+            <button
+              type="button"
+              onClick={handleConnectGoogle}
+              disabled={connectingGoogle}
+              className="rounded-full border border-[#E5E7EB] bg-white px-3 py-1 text-[12px] font-semibold text-[#374151] transition hover:bg-[#F3F4F6] disabled:opacity-60"
+            >
+              {connectingGoogle ? "Connecting..." : "Connect"}
+            </button>
+          )}
+        </div>
 
-          <div className="flex items-center gap-3 rounded-xl border border-[#E5E7EB] bg-white px-4 py-3">
-            <span className="flex size-9 items-center justify-center rounded-lg bg-[#F3F4F6] border border-[#E5E7EB]">
-              <FontAwesomeIcon icon={faEnvelope} className="text-[#374151]" style={{ fontSize: 14 }} />
-            </span>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-foreground">Email and password</p>
-              <p className="text-[11px] text-[#6B7280]">
-                {!isGoogle ? `Active for ${email}` : "Set a password to enable email login"}
-              </p>
-            </div>
-            {!isGoogle ? (
-              <span className="rounded-full border border-primary/30 bg-primary/10 px-2.5 py-0.5 text-[10px] font-bold text-primary">
-                Active
-              </span>
-            ) : (
-              <button
-                type="button"
-                className="rounded-lg border border-[#D1D5DB] bg-[#F3F4F6] hover:bg-[#E5E7EB] px-3 py-1.5 text-xs font-semibold text-[#374151] hover:text-[#111111] transition"
-              >
-                Set password
-              </button>
-            )}
+        {/* Email and password */}
+        <div className="flex items-center gap-4 rounded-2xl border border-[#E5E7EB] bg-[#F9FAFB] px-4 py-3.5">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white border border-[#E5E7EB]">
+            <FontAwesomeIcon icon={faEnvelope} style={{ fontSize: 14, color: "#374151" }} />
           </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-[13px] font-semibold text-[#111111]">Email and password</p>
+            <p className="text-[11px] text-[#6B7280]">
+              {!isGoogle ? `Active for ${email}` : "Set a password to enable email login"}
+            </p>
+          </div>
+          <span className="rounded-full border border-[#E5E7EB] px-3 py-1 text-[12px] font-semibold text-[#6B7280]">
+            Active
+          </span>
         </div>
       </div>
 
-      {/* Danger zone */}
-      <div className="rounded-2xl border border-[#E5E7EB] bg-[#F9FAFB] p-6 shadow-sm">
-        <h2 className="text-sm font-semibold text-foreground">Sign out of all devices</h2>
-        <p className="mt-1 text-xs text-[#6B7280]">This will end your active sessions across devices.</p>
+      {/* Security */}
+      <div className="rounded-2xl p-6 space-y-4"
+        style={{ background: "#FFFFFF", border: "1px solid #E5E7EB", boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+        <div>
+          <h2 className="text-[16px] font-bold text-[#111111]">Security</h2>
+          <p className="text-[12px] text-[#6B7280] mt-0.5">Keep your account secure.</p>
+        </div>
+
+        {/* Password row */}
+        <div className="rounded-2xl border border-[#E5E7EB] bg-[#F9FAFB] overflow-hidden">
+          <div className="flex items-center gap-4 px-4 py-3.5">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white border border-[#E5E7EB]">
+              <FontAwesomeIcon icon={faLock} style={{ fontSize: 14, color: "#374151" }} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[13px] font-semibold text-[#111111]">Password</p>
+              <p className="text-[11px] text-[#6B7280]">Update your account password</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => { setShowPasswordForm((v) => !v); setPwState("idle"); setPwError(""); setNewPassword(""); setConfirmPassword(""); }}
+              className="flex items-center gap-1 text-[12px] font-semibold text-[#374151] transition hover:text-[#111111]"
+            >
+              {showPasswordForm ? (
+                <>
+                  Cancel
+                  <FontAwesomeIcon icon={faXmark} style={{ fontSize: 11, marginLeft: 2 }} />
+                </>
+              ) : (
+                <>
+                  Change password
+                  <FontAwesomeIcon icon={faChevronRight} style={{ fontSize: 11, marginLeft: 2 }} />
+                </>
+              )}
+            </button>
+          </div>
+
+          {/* Inline password form */}
+          {showPasswordForm && (
+            <div className="border-t border-[#E5E7EB] px-4 pb-4 pt-3 space-y-3">
+              {/* New password */}
+              <div className="space-y-1">
+                <label className="text-[11px] font-semibold text-[#6B7280] uppercase tracking-wider">New password</label>
+                <div className="relative">
+                  <input
+                    type={showNew ? "text" : "password"}
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="Min. 8 characters"
+                    className="w-full rounded-xl border border-[#E5E7EB] bg-white px-4 py-2.5 pr-10 text-[13px] text-[#111111] placeholder:text-[#9CA3AF] focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/15 transition"
+                  />
+                  <button type="button" onClick={() => setShowNew((v) => !v)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9CA3AF] hover:text-[#6B7280]">
+                    <FontAwesomeIcon icon={showNew ? faEyeSlash : faEye} style={{ fontSize: 13 }} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Confirm password */}
+              <div className="space-y-1">
+                <label className="text-[11px] font-semibold text-[#6B7280] uppercase tracking-wider">Confirm password</label>
+                <div className="relative">
+                  <input
+                    type={showConfirm ? "text" : "password"}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="Repeat new password"
+                    className="w-full rounded-xl border border-[#E5E7EB] bg-white px-4 py-2.5 pr-10 text-[13px] text-[#111111] placeholder:text-[#9CA3AF] focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/15 transition"
+                  />
+                  <button type="button" onClick={() => setShowConfirm((v) => !v)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9CA3AF] hover:text-[#6B7280]">
+                    <FontAwesomeIcon icon={showConfirm ? faEyeSlash : faEye} style={{ fontSize: 13 }} />
+                  </button>
+                </div>
+              </div>
+
+              {pwError && <p className="text-[12px] text-red-500">{pwError}</p>}
+
+              <button
+                type="button"
+                onClick={handleChangePassword}
+                disabled={pwState === "saving" || !newPassword || !confirmPassword}
+                className={cn(
+                  "rounded-xl px-5 py-2.5 text-[13px] font-bold text-white transition",
+                  "hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed"
+                )}
+                style={{ background: "#2563EB" }}
+              >
+                {pwState === "saving" ? "Updating..." : pwState === "saved" ? (
+                  <span className="flex items-center gap-2">
+                    <FontAwesomeIcon icon={faCheck} style={{ fontSize: 12 }} />
+                    Password updated
+                  </span>
+                ) : "Update password"}
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Sign out of all devices */}
+      <div className="rounded-2xl p-5 flex items-center justify-between gap-4"
+        style={{ background: "#FFF5F5", border: "1px solid rgba(239,68,68,0.2)" }}>
+        <div>
+          <p className="text-[14px] font-bold text-[#DC2626]">Sign out of all devices</p>
+          <p className="text-[12px] text-[#EF4444]/70 mt-0.5">This will end your active sessions across all devices.</p>
+        </div>
         <button
           type="button"
-          className="mt-4 rounded-xl border border-destructive/40 bg-destructive/10 px-4 py-2 text-sm font-semibold text-destructive transition hover:bg-destructive/15"
+          onClick={handleSignOutEverywhere}
+          className="shrink-0 rounded-full border border-[#EF4444]/40 px-4 py-2 text-[13px] font-semibold text-[#DC2626] transition hover:bg-[#EF4444]/10"
         >
           Sign out everywhere
         </button>
       </div>
-    </motion.div>
-  );
-}
 
-function Field({
-  label,
-  icon,
-  children,
-  locked,
-  hint,
-}: {
-  label: string;
-  icon: typeof faUser;
-  children: React.ReactNode;
-  locked?: boolean;
-  hint?: string;
-}) {
-  return (
-    <div className="flex flex-col gap-2">
-      <div className="flex items-center justify-between">
-        <label className="flex items-center gap-1.5 text-[11px] uppercase tracking-widest text-[#9CA3AF]">
-          <FontAwesomeIcon icon={icon} style={{ fontSize: 10 }} />
-          {label}
-        </label>
-        {locked && hint && (
-          <span className="inline-flex items-center gap-1 text-[10px] text-[#9CA3AF]">
-            <FontAwesomeIcon icon={faLock} style={{ fontSize: 9 }} />
-            {hint}
-          </span>
-        )}
-      </div>
-      {children}
     </div>
   );
 }
