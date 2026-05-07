@@ -45,7 +45,7 @@ export function PricingSection({
 	description,
 	...props
 }: PricingSectionProps) {
-	const [frequency, setFrequency] = React.useState<FREQUENCY>('monthly');
+	const [frequency, setFrequency] = React.useState<FREQUENCY>('yearly');
 
 	return (
 		<div
@@ -144,7 +144,7 @@ export function PricingCard({
 			className={cn(
 				'relative flex w-full flex-col rounded-2xl border transition-all duration-300 hover:-translate-y-1',
 				isHighlighted
-					? 'border-[#2563EB] bg-[#2563EB] text-white shadow-xl shadow-blue-500/20'
+					? 'border-[#111111] bg-[#111111] text-white shadow-xl shadow-black/20'
 					: 'border-[#E5E7EB] bg-white shadow-sm hover:shadow-md',
 				className,
 			)}
@@ -152,7 +152,7 @@ export function PricingCard({
 		>
 			{isHighlighted && (
 				<div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
-					<span className="inline-flex items-center gap-1 rounded-full bg-[#06B6D4] px-3 py-1 text-xs font-semibold text-white shadow-sm">
+					<span className="inline-flex items-center gap-1 rounded-full bg-[#2563EB] px-3 py-1 text-xs font-semibold text-white shadow-sm">
 						<Star className="h-3 w-3 fill-white" />
 						Most Popular
 					</span>
@@ -180,28 +180,28 @@ export function PricingCard({
 						</span>
 					)}
 				</div>
-				<p className={cn("text-xs mb-3", isHighlighted ? "text-blue-200" : "text-[#6B7280]")}>{plan.info}</p>
+				<p className={cn("text-xs mb-3", isHighlighted ? "text-white/60" : "text-[#6B7280]")}>{plan.info}</p>
 				<div className="flex items-end gap-1">
 					{isOneTime ? (
 						<>
 							<span className={cn("text-3xl font-bold", isHighlighted ? "text-white" : "text-[#111111]")}>${plan.price.monthly}</span>
-							<span className={cn("mb-1 text-sm", isHighlighted ? "text-blue-200" : "text-[#6B7280]")}>one-time</span>
+							<span className={cn("mb-1 text-sm", isHighlighted ? "text-white/60" : "text-[#6B7280]")}>one-time</span>
 						</>
 					) : frequency === 'yearly' ? (
 						<>
 							<span className={cn("text-3xl font-bold", isHighlighted ? "text-white" : "text-[#111111]")}>${Math.round(plan.price.yearly / 12)}</span>
-							<span className={cn("mb-1 text-sm", isHighlighted ? "text-blue-200" : "text-[#6B7280]")}>/month</span>
-							<span className={cn("mb-1 ml-1 text-xs line-through", isHighlighted ? "text-blue-300" : "text-[#9CA3AF]")}>${plan.price.monthly}</span>
+							<span className={cn("mb-1 text-sm", isHighlighted ? "text-white/60" : "text-[#6B7280]")}>/month</span>
+							<span className={cn("mb-1 ml-1 text-xs line-through", isHighlighted ? "text-white/40" : "text-[#9CA3AF]")}>${plan.price.monthly}</span>
 						</>
 					) : (
 						<>
 							<span className={cn("text-3xl font-bold", isHighlighted ? "text-white" : "text-[#111111]")}>${plan.price.monthly}</span>
-							<span className={cn("mb-1 text-sm", isHighlighted ? "text-blue-200" : "text-[#6B7280]")}>/month</span>
+							<span className={cn("mb-1 text-sm", isHighlighted ? "text-white/60" : "text-[#6B7280]")}>/month</span>
 						</>
 					)}
 				</div>
 				{frequency === 'yearly' && !isOneTime && (
-					<p className={cn("text-[11px] mt-1", isHighlighted ? "text-blue-200" : "text-[#10B981]")}>
+					<p className={cn("text-[11px] mt-1", isHighlighted ? "text-white/50" : "text-[#10B981]")}>
 						Billed annually · Save ${plan.price.monthly * 12 - plan.price.yearly}
 					</p>
 				)}
@@ -222,7 +222,7 @@ export function PricingCard({
 									<TooltipTrigger
 										className={cn(
 											'cursor-pointer border-b border-dashed text-left text-sm',
-											isHighlighted ? "border-blue-300 text-blue-100" : "border-[#9CA3AF] text-[#6B7280]"
+											isHighlighted ? "border-white/30 text-white/80" : "border-[#9CA3AF] text-[#6B7280]"
 										)}
 									>
 										{feature.text}
@@ -233,7 +233,7 @@ export function PricingCard({
 								</Tooltip>
 							</TooltipProvider>
 						) : (
-							<p className={cn("text-sm", isHighlighted ? "text-blue-100" : "text-[#6B7280]")}>{feature.text}</p>
+							<p className={cn("text-sm", isHighlighted ? "text-white/80" : "text-[#6B7280]")}>{feature.text}</p>
 						)}
 					</div>
 				))}
@@ -243,7 +243,7 @@ export function PricingCard({
 				{isHighlighted ? (
 					<Link
 						href={plan.btn.href}
-						className="flex w-full items-center justify-center rounded-full bg-white py-3 text-sm font-semibold text-[#2563EB] hover:bg-blue-50 transition-colors active:scale-[0.98]"
+						className="flex w-full items-center justify-center rounded-full bg-white py-3 text-sm font-semibold text-[#111111] hover:bg-gray-100 transition-colors active:scale-[0.98]"
 					>
 						{plan.btn.text}
 						<span className="ml-2">→</span>

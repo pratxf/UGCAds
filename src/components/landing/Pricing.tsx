@@ -82,7 +82,7 @@ const PLANS = [
       { text: "Priority email support", tooltip: "Responses within 4 hours on business days" },
     ],
     btn: {
-      text: "Start Creating",
+      text: "Get Started",
       href: "/signup",
     },
   },
@@ -105,7 +105,7 @@ const PLANS = [
       { text: "Priority+ support", tooltip: "Dedicated account manager" },
     ],
     btn: {
-      text: "Go Agency",
+      text: "Get Started",
       href: "/signup",
     },
   },
