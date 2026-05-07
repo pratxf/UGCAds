@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { createPortal } from "react-dom";
@@ -18,10 +18,12 @@ import {
   faVolumeXmark,
   faXmark,
   faWandMagicSparkles,
+  faMagnifyingGlass,
+  faChevronDown,
+  faEllipsis,
 } from "@fortawesome/free-solid-svg-icons";
-import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
+import { useEffect } from "react";
 import { cn } from "@/lib/utils";
-import { motion } from "framer-motion";
 
 type AdType = "UGC Ad" | "Product Ad" | "Product Photoshoot" | "AI Try-On";
 type Status = "Complete" | "Processing" | "Failed";
@@ -52,57 +54,31 @@ const tabMap: Record<string, AdType> = {
   tryon: "AI Try-On",
 };
 
-function statusIcon(s: Status) {
-  return s === "Complete" ? faCheck : s === "Processing" ? faSpinner : faXmark;
-}
-function statusStyle(s: Status) {
-  return s === "Complete"
-    ? "text-primary bg-white/90 ring-1 ring-primary/30"
-    : s === "Processing"
-    ? "text-amber bg-white/90 ring-1 ring-amber/30"
-    : "text-destructive bg-white/90 ring-1 ring-destructive/30";
-}
-function typeStyle(t: AdType) {
-  if (t === "UGC Ad") return "text-primary";
-  if (t === "Product Ad") return "text-violet";
-  if (t === "AI Try-On") return "text-[#7D39EB]";
-  return "text-amber";
+function typeDisplayLabel(t: AdType) {
+  if (t === "UGC Ad") return "UGC Video";
+  if (t === "Product Ad") return "Product Video";
+  return t;
 }
 
-const container = { hidden: {}, show: { transition: { staggerChildren: 0.04 } } };
-const fadeUp = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.45, ease: "easeOut" as const } },
-};
+function typeTagStyle(t: AdType): React.CSSProperties {
+  switch (t) {
+    case "UGC Ad": return { background: "rgba(37,99,235,0.08)", color: "#2563EB" };
+    case "Product Ad": return { background: "rgba(124,58,237,0.08)", color: "#7C3AED" };
+    case "Product Photoshoot": return { background: "rgba(6,182,212,0.08)", color: "#0891B2" };
+    case "AI Try-On": return { background: "rgba(168,85,247,0.08)", color: "#9333EA" };
+  }
+}
 
-type StatCardProps = {
-  icon: IconDefinition;
-  label: string;
-  value: number;
-  iconClass: string;
-  badgeClass: string;
-  valueClass?: string;
-};
-
-function StatCard({ icon, label, value, iconClass, badgeClass, valueClass }: StatCardProps) {
-  return (
-    <div className="rounded-2xl border border-[#E5E7EB] bg-[#F9FAFB] backdrop-blur-xl p-4">
-      <div className="flex items-center gap-2 mb-3">
-        <div className={cn("flex size-7 items-center justify-center rounded-lg", badgeClass)}>
-          <FontAwesomeIcon icon={icon} className={iconClass} style={{ fontSize: 14 }} />
-        </div>
-        <span className="text-[11px] text-[#4B5563]">{label}</span>
-      </div>
-      <p className={cn("text-2xl font-bold", valueClass ?? "text-[#111111]")}>{value}</p>
-    </div>
-  );
+function statusBadgeStyle(s: Status): React.CSSProperties {
+  if (s === "Complete") return { background: "rgba(16,185,129,0.15)", color: "#059669" };
+  if (s === "Processing") return { background: "rgba(245,158,11,0.15)", color: "#D97706" };
+  return { background: "rgba(239,68,68,0.15)", color: "#DC2626" };
 }
 
 function downloadAsset(url: string, type: string, id: string) {
   const isImage = type === "Product Photoshoot" || type === "AI Try-On";
   const ext = isImage ? "jpg" : "mp4";
   const filename = `${type.toLowerCase().replace(/\s+/g, "-")}-${id.slice(-6)}.${ext}`;
-  // Route through our /api/download proxy so Content-Disposition forces save.
   const proxied = `/api/download?url=${encodeURIComponent(url)}&filename=${encodeURIComponent(filename)}`;
   const a = document.createElement("a");
   a.href = proxied;
@@ -115,233 +91,229 @@ function downloadAsset(url: string, type: string, id: string) {
 export default function HistoryClient({ items: rawItems }: { items: Item[] }) {
   const items = rawItems.filter((i) => i.status !== "Failed");
   const [tab, setTab] = useState("all");
+  const [search, setSearch] = useState("");
+  const [sort, setSort] = useState<"newest" | "oldest">("newest");
   const [preview, setPreview] = useState<Item | null>(null);
-  const filtered = tab === "all" ? items : items.filter((i) => i.type === tabMap[tab]);
 
-  // Stats
   const total = items.length;
   const complete = items.filter((g) => g.status === "Complete").length;
   const processing = items.filter((g) => g.status === "Processing").length;
 
+  const filtered = items
+    .filter((i) => tab === "all" || i.type === tabMap[tab])
+    .filter((i) => !search || i.title.toLowerCase().includes(search.toLowerCase()))
+    .sort((a, b) => sort === "oldest" ? 0 : 0); // server already sorted newest; just reverse if oldest
 
   return (
-    <motion.div variants={container} initial="hidden" animate="show" className="space-y-5 pb-8">
-      {/* Stats row */}
-      <motion.div variants={fadeUp} className="grid gap-3 grid-cols-1 sm:grid-cols-3">
-        <StatCard
-          icon={faFilm}
-          label="Total"
-          value={total}
-          iconClass="text-[#4B5563]"
-          badgeClass="bg-[#F3F4F6]"
-        />
-        <StatCard
-          icon={faCheck}
-          label="Complete"
-          value={complete}
-          iconClass="text-primary"
-          badgeClass="bg-primary/10"
-          valueClass="text-primary"
-        />
-        <StatCard
-          icon={faSpinner}
-          label="Processing"
-          value={processing}
-          iconClass="text-amber"
-          badgeClass="bg-amber/10"
-          valueClass="text-amber"
-        />
-      </motion.div>
+    <div className="space-y-5 pb-8">
+
+      {/* Header */}
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-[28px] font-bold text-[#111111]" style={{ letterSpacing: "-0.02em" }}>History</h1>
+          <p className="text-[13px] text-[#6B7280] mt-0.5">View and manage all your generated content.</p>
+        </div>
+        {/* Search */}
+        <div className="flex items-center gap-2.5 rounded-xl border border-[#E5E7EB] bg-white px-3 py-2 w-[220px] flex-shrink-0"
+          style={{ boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
+          <FontAwesomeIcon icon={faMagnifyingGlass} style={{ fontSize: 12, color: "#9CA3AF" }} />
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search ads..."
+            className="flex-1 bg-transparent text-[13px] text-[#111111] outline-none placeholder-[#9CA3AF]"
+          />
+        </div>
+      </div>
+
+      {/* Stats row + sort */}
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div className="flex items-center gap-5">
+          <span className="text-[13px]">
+            <span className="font-bold text-[#111111]">{total}</span>
+            <span className="text-[#6B7280] ml-1.5">Total</span>
+          </span>
+          <span className="text-[13px]">
+            <span className="font-bold" style={{ color: "#2563EB" }}>{complete}</span>
+            <span className="text-[#6B7280] ml-1.5">Complete</span>
+          </span>
+          <span className="text-[13px]">
+            <span className="font-bold" style={{ color: "#D97706" }}>{processing}</span>
+            <span className="text-[#6B7280] ml-1.5">Processing</span>
+          </span>
+        </div>
+        {/* Sort */}
+        <div className="relative">
+          <select
+            value={sort}
+            onChange={(e) => setSort(e.target.value as "newest" | "oldest")}
+            className="appearance-none flex items-center gap-2 rounded-xl border border-[#E5E7EB] bg-white pl-3 pr-8 py-2 text-[13px] font-medium text-[#374151] outline-none cursor-pointer hover:bg-[#F9FAFB] transition"
+            style={{ boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}
+          >
+            <option value="newest">Newest first</option>
+            <option value="oldest">Oldest first</option>
+          </select>
+          <FontAwesomeIcon icon={faChevronDown} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#9CA3AF]" style={{ fontSize: 10 }} />
+        </div>
+      </div>
 
       {/* Filter tabs */}
-      <motion.div variants={fadeUp} className="flex gap-1.5 flex-wrap">
+      <div className="flex gap-1.5 flex-wrap">
         {tabs.map((t) => (
-          <button
-            key={t.value}
-            onClick={() => setTab(t.value)}
-            className={cn(
-              "rounded-full px-3.5 py-1.5 text-[11px] font-medium transition-all flex items-center gap-1.5",
-              tab === t.value
-                ? "bg-[#111111] text-white"
-                : "border border-[#E5E7EB] bg-[#F9FAFB] text-[#4B5563] hover:text-[#111111]"
-            )}
-          >
+          <button key={t.value} onClick={() => setTab(t.value)}
+            className="rounded-full px-3.5 py-1.5 text-[12px] font-medium transition-all"
+            style={{
+              background: tab === t.value ? "#2563EB" : "#FFFFFF",
+              color: tab === t.value ? "#FFFFFF" : "#6B7280",
+              border: `1px solid ${tab === t.value ? "#2563EB" : "#E5E7EB"}`,
+            }}>
             {t.label}
           </button>
         ))}
-      </motion.div>
+      </div>
 
-      {/* Grid or empty */}
-      <motion.div variants={fadeUp}>
-        {filtered.length === 0 ? (
-          <div className="rounded-3xl border border-dashed border-[#E5E7EB] bg-white p-12 text-center">
-            <div className="size-14 mx-auto rounded-2xl bg-primary/10 ring-1 ring-primary/20 flex items-center justify-center mb-3">
-              <FontAwesomeIcon
-                icon={total === 0 ? faWandMagicSparkles : faFilm}
-                className="text-primary"
-                style={{ fontSize: 24 }}
-              />
-            </div>
-            <p className="text-sm font-semibold text-[#111111]">
-              {total === 0 ? "No generations yet" : "Nothing in this category"}
-            </p>
-            <p className="text-xs text-[#4B5563] mt-1 mb-4">
-              {total === 0 ? "Create your first ad to see it here" : "Try a different filter"}
-            </p>
-            {total === 0 && (
-              <Link
-                href="/create/ugc"
-                className="inline-flex items-center gap-1.5 rounded-full bg-[#2563EB] text-white px-4 h-9 text-xs font-semibold hover:brightness-110 transition-all"
-              >
-                <FontAwesomeIcon icon={faWandMagicSparkles} style={{ fontSize: 12 }} /> Create your first ad
-              </Link>
-            )}
+      {/* Grid */}
+      {filtered.length === 0 ? (
+        <div className="rounded-3xl border border-dashed border-[#E5E7EB] bg-white p-12 text-center">
+          <div className="size-14 mx-auto rounded-2xl bg-[#EFF6FF] flex items-center justify-center mb-3">
+            <FontAwesomeIcon icon={total === 0 ? faWandMagicSparkles : faFilm} className="text-[#2563EB]" style={{ fontSize: 24 }} />
           </div>
-        ) : (
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {filtered.map((g) => {
-              const isVideo = g.type === "UGC Ad" || g.type === "Product Ad";
-              const canPreview =
-                g.status === "Complete" &&
-                Boolean(g.finalUrl);
+          <p className="text-sm font-semibold text-[#111111]">
+            {total === 0 ? "No generations yet" : "Nothing in this category"}
+          </p>
+          <p className="text-xs text-[#6B7280] mt-1 mb-4">
+            {total === 0 ? "Create your first ad to see it here" : "Try a different filter"}
+          </p>
+          {total === 0 && (
+            <Link href="/create/ugc-studio"
+              className="inline-flex items-center gap-1.5 rounded-full bg-[#2563EB] text-white px-4 h-9 text-xs font-semibold hover:brightness-110 transition-all">
+              <FontAwesomeIcon icon={faWandMagicSparkles} style={{ fontSize: 12 }} /> Create your first ad
+            </Link>
+          )}
+        </div>
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {filtered.map((g) => {
+            const isVideo = g.type === "UGC Ad" || g.type === "Product Ad";
+            const canPreview = g.status === "Complete" && Boolean(g.finalUrl);
+            const thumbnail = g.thumbnailUrl || g.characterImage;
 
-              return (
-              <article
-                key={g.id}
-                role={canPreview ? "button" : undefined}
-                tabIndex={canPreview ? 0 : undefined}
-                onClick={() => {
-                  if (canPreview) setPreview(g);
-                }}
-                onKeyDown={(e) => {
-                  if (!canPreview) return;
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    setPreview(g);
-                  }
-                }}
+            return (
+              <article key={g.id}
+                onClick={() => canPreview && setPreview(g)}
                 className={cn(
-                  "group relative overflow-hidden rounded-3xl border border-[#E5E7EB] bg-white backdrop-blur-xl transition-all text-left",
-                  canPreview
-                    ? "cursor-pointer hover:border-[#D1D5DB] hover:shadow-lg hover:shadow-black/30"
-                    : "cursor-default",
+                  "group rounded-2xl border border-[#E5E7EB] bg-white overflow-hidden transition-all",
+                  canPreview ? "cursor-pointer hover:shadow-lg hover:shadow-black/8 hover:-translate-y-0.5" : "cursor-default"
                 )}
-              >
-                <div className="relative aspect-[4/3] bg-white overflow-hidden">
-                  {g.characterImage || g.thumbnailUrl ? (
-                    <Image
-                      src={(g.thumbnailUrl || g.characterImage)!}
-                      alt={g.title}
-                      fill
+                style={{ boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
+
+                {/* Thumbnail */}
+                <div className="relative aspect-[4/3] bg-[#F3F4F6] overflow-hidden">
+                  {thumbnail ? (
+                    <Image src={thumbnail} alt={g.title} fill
                       className="object-cover object-top transition-transform duration-300 group-hover:scale-105"
-                      sizes="300px"
-                      loading="lazy"
-                    />
+                      sizes="360px" loading="lazy" />
                   ) : (
-                    <div className="flex size-full items-center justify-center">
-                      <FontAwesomeIcon icon={faFilm} className="text-[#9CA3AF]" style={{ fontSize: 32 }} />
+                    <div className="w-full h-full flex items-center justify-center">
+                      <FontAwesomeIcon icon={faFilm} style={{ fontSize: 32, color: "#D1D5DB" }} />
                     </div>
                   )}
-                  {g.finalUrl && g.status === "Complete" && isVideo && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <div className="flex size-10 items-center justify-center rounded-full bg-white/90 shadow-lg">
-                        <FontAwesomeIcon icon={faPlay} className="text-black ml-0.5" style={{ fontSize: 16 }} />
+
+                  {/* Processing overlay */}
+                  {g.status === "Processing" && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-3"
+                      style={{ background: "rgba(0,0,0,0.45)" }}>
+                      <FontAwesomeIcon icon={faWandMagicSparkles} style={{ fontSize: 28, color: "white" }} />
+                      <p className="text-white text-[13px] font-semibold">Rendering your video...</p>
+                      <div className="w-[55%] h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.25)" }}>
+                        <div className="h-full rounded-full animate-pulse" style={{ width: "45%", background: "#F59E0B" }} />
                       </div>
                     </div>
                   )}
-                  <div
-                    className={cn(
-                      "absolute top-2.5 left-2.5 flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium backdrop-blur-sm",
-                      statusStyle(g.status)
-                    )}
-                  >
+
+                  {/* Status badge top-left */}
+                  <div className="absolute top-2.5 left-2.5 flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold backdrop-blur-sm"
+                    style={statusBadgeStyle(g.status)}>
                     <FontAwesomeIcon
-                      icon={statusIcon(g.status)}
+                      icon={g.status === "Complete" ? faCheck : g.status === "Processing" ? faSpinner : faXmark}
                       className={g.status === "Processing" ? "animate-spin" : ""}
-                      style={{ fontSize: 10 }}
-                    />
+                      style={{ fontSize: 9 }} />
                     {g.status}
                   </div>
+
+                  {/* Play / image button top-right */}
+                  <div className="absolute top-2.5 right-2.5 flex h-8 w-8 items-center justify-center rounded-full"
+                    style={{ background: "rgba(0,0,0,0.45)", backdropFilter: "blur(4px)" }}>
+                    <FontAwesomeIcon icon={isVideo ? faPlay : faExpand}
+                      style={{ fontSize: isVideo ? 11 : 10, color: "white", marginLeft: isVideo ? 2 : 0 }} />
+                  </div>
+
+                  {/* Download on hover */}
                   {g.finalUrl && (
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        downloadAsset(g.finalUrl!, g.type, g.id);
-                      }}
-                      className="absolute top-2.5 right-2.5 flex size-7 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/60"
-                    >
-                      <FontAwesomeIcon icon={faDownload} style={{ fontSize: 12 }} />
+                    <button type="button"
+                      onClick={(e) => { e.stopPropagation(); downloadAsset(g.finalUrl!, g.type, g.id); }}
+                      className="absolute bottom-2.5 right-2.5 flex h-8 w-8 items-center justify-center rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                      style={{ background: "rgba(0,0,0,0.55)", backdropFilter: "blur(4px)" }}>
+                      <FontAwesomeIcon icon={faDownload} style={{ fontSize: 11, color: "white" }} />
                     </button>
                   )}
                 </div>
-                <div className="p-4">
-                  <p className="text-[13px] font-semibold text-[#111111] truncate">{g.title}</p>
-                  <div className="mt-1.5 flex items-center justify-between">
-                    <span className={cn("text-[11px] font-medium", typeStyle(g.type))}>{g.type}</span>
-                    <span className="text-[11px] text-[#6B7280]">{g.date}</span>
+
+                {/* Card footer */}
+                <div className="px-4 py-3">
+                  <div className="flex items-center justify-between mb-2 gap-2">
+                    <p className="text-[13px] font-bold text-[#111111] truncate flex-1">{g.title}</p>
+                    <button type="button" onClick={(e) => e.stopPropagation()}
+                      className="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-lg hover:bg-[#F3F4F6] transition text-[#9CA3AF]">
+                      <FontAwesomeIcon icon={faEllipsis} style={{ fontSize: 13 }} />
+                    </button>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full" style={typeTagStyle(g.type)}>
+                      {typeDisplayLabel(g.type)}
+                    </span>
+                    <span className="text-[11px] text-[#9CA3AF]">{g.date}</span>
                   </div>
                 </div>
               </article>
-              );
-            })}
-          </div>
-        )}
-      </motion.div>
+            );
+          })}
+        </div>
+      )}
 
       {preview && preview.finalUrl && (
         <PreviewModal item={preview} onClose={() => setPreview(null)} />
       )}
-    </motion.div>
+    </div>
   );
 }
 
 function PreviewModal({ item, onClose }: { item: Item; onClose: () => void }) {
   const isVideo = item.type === "UGC Ad" || item.type === "Product Ad";
   return createPortal(
-    <div
-      onClick={onClose}
-      className="flex items-center justify-center bg-black/90 p-4"
-      style={{
-        position: "fixed",
-        inset: 0,
-        zIndex: 2147483647,
-      }}
-    >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        className="relative flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl border border-[#E5E7EB] bg-white shadow-2xl"
-      >
+    <div onClick={onClose} className="flex items-center justify-center bg-black/90 p-4"
+      style={{ position: "fixed", inset: 0, zIndex: 2147483647 }}>
+      <div onClick={(e) => e.stopPropagation()}
+        className="relative flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl border border-[#E5E7EB] bg-white shadow-2xl">
         <div className="flex items-center justify-between px-5 py-3 border-b border-[#E5E7EB]">
           <div>
             <p className="text-sm font-semibold text-[#111111]">{item.title}</p>
-            <p className="text-[11px] text-[#6B7280]">{item.type} · {item.date}</p>
+            <p className="text-[11px] text-[#6B7280]">{typeDisplayLabel(item.type)} · {item.date}</p>
           </div>
           <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => downloadAsset(item.finalUrl!, item.type, item.id)}
-              className="inline-flex items-center gap-2 rounded-lg bg-primary text-white px-3 h-9 text-xs font-bold hover:brightness-105 transition"
-            >
-              <FontAwesomeIcon icon={faDownload} style={{ fontSize: 12 }} />
-              Download
+            <button type="button" onClick={() => downloadAsset(item.finalUrl!, item.type, item.id)}
+              className="inline-flex items-center gap-2 rounded-lg bg-[#2563EB] text-white px-3 h-9 text-xs font-bold hover:brightness-105 transition">
+              <FontAwesomeIcon icon={faDownload} style={{ fontSize: 12 }} /> Download
             </button>
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex size-9 items-center justify-center rounded-lg text-[#4B5563] hover:text-foreground hover:bg-[#F9FAFB] transition"
-            >
+            <button type="button" onClick={onClose}
+              className="flex size-9 items-center justify-center rounded-lg text-[#6B7280] hover:bg-[#F3F4F6] transition">
               <FontAwesomeIcon icon={faXmark} style={{ fontSize: 14 }} />
             </button>
           </div>
         </div>
         <div className="flex min-h-0 flex-1 items-center justify-center overflow-hidden bg-black">
           {isVideo ? (
-            <CustomVideoPlayer
-              src={item.finalUrl!}
-              poster={item.thumbnailUrl || item.characterImage || undefined}
-            />
+            <CustomVideoPlayer src={item.finalUrl!} poster={item.thumbnailUrl || item.characterImage || undefined} />
           ) : (
             <ImagePreview src={item.finalUrl!} alt={item.title} />
           )}
@@ -354,21 +326,12 @@ function PreviewModal({ item, onClose }: { item: Item; onClose: () => void }) {
 
 function ImagePreview({ src, alt }: { src: string; alt: string }) {
   const [loaded, setLoaded] = useState(false);
-
   return (
     <div className="relative flex min-h-[280px] w-full items-center justify-center">
       {!loaded && <LoadingOverlay label="Loading image" />}
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={src}
-        alt={alt}
-        decoding="async"
-        onLoad={() => setLoaded(true)}
-        className={cn(
-          "max-h-[80vh] max-w-full object-contain transition-opacity duration-200",
-          loaded ? "opacity-100" : "opacity-0",
-        )}
-      />
+      <img src={src} alt={alt} decoding="async" onLoad={() => setLoaded(true)}
+        className={cn("max-h-[80vh] max-w-full object-contain transition-opacity duration-200", loaded ? "opacity-100" : "opacity-0")} />
     </div>
   );
 }
@@ -384,66 +347,37 @@ function CustomVideoPlayer({ src, poster }: { src: string; poster?: string }) {
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   useEffect(() => {
-    const onFullscreenChange = () => {
-      setIsFullscreen(Boolean(document.fullscreenElement));
-    };
-    document.addEventListener("fullscreenchange", onFullscreenChange);
-    return () => document.removeEventListener("fullscreenchange", onFullscreenChange);
+    const onFSChange = () => setIsFullscreen(Boolean(document.fullscreenElement));
+    document.addEventListener("fullscreenchange", onFSChange);
+    return () => document.removeEventListener("fullscreenchange", onFSChange);
   }, []);
 
-  useEffect(() => {
-    setIsReady(false);
-    setIsPlaying(false);
-    setCurrentTime(0);
-  }, [src]);
+  useEffect(() => { setIsReady(false); setIsPlaying(false); setCurrentTime(0); }, [src]);
 
   const togglePlay = async () => {
-    const video = videoRef.current;
-    if (!video) return;
-    if (video.paused) {
-      await video.play().catch(() => undefined);
-    } else {
-      video.pause();
-    }
+    const v = videoRef.current; if (!v) return;
+    v.paused ? await v.play().catch(() => undefined) : v.pause();
   };
-
   const toggleMute = () => {
-    const video = videoRef.current;
-    if (!video) return;
-    video.muted = !video.muted;
-    setIsMuted(video.muted);
+    const v = videoRef.current; if (!v) return;
+    v.muted = !v.muted; setIsMuted(v.muted);
   };
-
-  const seek = (value: string) => {
-    const video = videoRef.current;
-    if (!video) return;
-    const nextTime = Number(value);
-    video.currentTime = nextTime;
-    setCurrentTime(nextTime);
+  const seek = (val: string) => {
+    const v = videoRef.current; if (!v) return;
+    v.currentTime = Number(val); setCurrentTime(Number(val));
   };
-
   const toggleFullscreen = async () => {
     if (!shellRef.current) return;
-    if (document.fullscreenElement) {
-      await document.exitFullscreen().catch(() => undefined);
-    } else {
-      await shellRef.current.requestFullscreen().catch(() => undefined);
-    }
+    document.fullscreenElement
+      ? await document.exitFullscreen().catch(() => undefined)
+      : await shellRef.current.requestFullscreen().catch(() => undefined);
   };
 
   return (
     <div ref={shellRef} className="relative flex max-h-[80vh] w-full items-center justify-center bg-black">
       {!isReady && <LoadingOverlay label="Loading video" />}
-      <video
-        ref={videoRef}
-        src={src}
-        poster={poster}
-        autoPlay
-        playsInline
-        preload="metadata"
-        onLoadedMetadata={(e) => {
-          setDuration(e.currentTarget.duration || 0);
-        }}
+      <video ref={videoRef} src={src} poster={poster} autoPlay playsInline preload="metadata"
+        onLoadedMetadata={(e) => setDuration(e.currentTarget.duration || 0)}
         onCanPlay={() => setIsReady(true)}
         onPlay={() => setIsPlaying(true)}
         onPause={() => setIsPlaying(false)}
@@ -451,23 +385,12 @@ function CustomVideoPlayer({ src, poster }: { src: string; poster?: string }) {
         onWaiting={() => setIsReady(false)}
         onPlaying={() => setIsReady(true)}
         onClick={togglePlay}
-        className={cn(
-          "max-h-[80vh] max-w-full cursor-pointer object-contain transition-opacity duration-200",
-          isReady ? "opacity-100" : "opacity-0",
-        )}
+        className={cn("max-h-[80vh] max-w-full cursor-pointer object-contain transition-opacity duration-200", isReady ? "opacity-100" : "opacity-0")}
       />
-
       <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/45 to-transparent px-4 pb-4 pt-10">
-        <input
-          type="range"
-          min={0}
-          max={Number.isFinite(duration) && duration > 0 ? duration : 0}
-          step={0.01}
-          value={currentTime}
-          onChange={(e) => seek(e.target.value)}
-          className="h-1 w-full accent-primary"
-          aria-label="Seek video"
-        />
+        <input type="range" min={0} max={Number.isFinite(duration) && duration > 0 ? duration : 0}
+          step={0.01} value={currentTime} onChange={(e) => seek(e.target.value)}
+          className="h-1 w-full accent-[#2563EB]" aria-label="Seek video" />
         <div className="mt-3 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <IconButton onClick={togglePlay} label={isPlaying ? "Pause" : "Play"}>
@@ -491,23 +414,10 @@ function CustomVideoPlayer({ src, poster }: { src: string; poster?: string }) {
   );
 }
 
-function IconButton({
-  children,
-  label,
-  onClick,
-}: {
-  children: React.ReactNode;
-  label: string;
-  onClick: () => void;
-}) {
+function IconButton({ children, label, onClick }: { children: React.ReactNode; label: string; onClick: () => void }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-label={label}
-      title={label}
-      className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/18"
-    >
+    <button type="button" onClick={onClick} aria-label={label} title={label}
+      className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20">
       {children}
     </button>
   );
@@ -517,7 +427,7 @@ function LoadingOverlay({ label }: { label: string }) {
   return (
     <div className="absolute inset-0 z-10 flex items-center justify-center bg-black">
       <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-2 text-xs font-medium text-white/70">
-        <FontAwesomeIcon icon={faSpinner} className="animate-spin text-primary" style={{ fontSize: 12 }} />
+        <FontAwesomeIcon icon={faSpinner} className="animate-spin text-[#2563EB]" style={{ fontSize: 12 }} />
         {label}
       </div>
     </div>
