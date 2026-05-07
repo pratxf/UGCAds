@@ -114,9 +114,6 @@ function VideoStack() {
   );
 }
 
-/* ── Language flag strip ────────────────────────────────── */
-const FLAGS = ["🇺🇸","🇬🇧","🇩🇪","🇫🇷","🇪🇸","🇮🇹","🇯🇵","🇰🇷","🇨🇳","🇧🇷","🇵🇹","🇷🇺","🇦🇷","🇲🇽","🇮🇳","🇸🇦","🇹🇷","🇳🇱","🇸🇪","🇵🇱","🇩🇰","🇫🇮","🇨🇿","🇮🇩","🇵🇭","🇹🇭","🇻🇳","🇲🇾","🇺🇦","🇨🇱","🇷🇴","🇻🇪","🇲🇾","🇰🇪","🇯🇲","🇧🇪","🇭🇺"];
-
 /* ── Main component ─────────────────────────────────────── */
 export default function HowItWorksSection() {
   return (
@@ -231,7 +228,7 @@ export default function HowItWorksSection() {
           </div>
         </div>
 
-        {/* Language strip */}
+        {/* Language section */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -239,14 +236,16 @@ export default function HowItWorksSection() {
           transition={{ duration: 0.5, delay: 0.2 }}
           className="mt-10"
         >
-          <div className="rounded-2xl bg-white/70 border border-white/80 px-6 py-5 mb-5 overflow-hidden">
-            <div className="flex flex-wrap gap-y-3 gap-x-4 justify-around">
-              {FLAGS.map((f, i) => (
-                <span key={i} className="text-3xl opacity-75 hover:opacity-100 transition-opacity">
-                  {f}
-                </span>
-              ))}
-            </div>
+          <div
+            className="w-full overflow-hidden mb-6"
+            style={{ borderRadius: 24, aspectRatio: "3 / 1", background: "#E8EEFF" }}
+          >
+            <img
+              src="/images/languages-flags.avif"
+              alt="50+ language flags"
+              className="w-full h-full object-cover object-center"
+              style={{ transform: "scale(1.22)", mixBlendMode: "multiply" }}
+            />
           </div>
           <div className="text-center">
             <p className="text-base font-bold text-[#111111]">50+ Languages</p>
