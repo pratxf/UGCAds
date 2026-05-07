@@ -2,6 +2,7 @@ import Navbar from "@/components/landing/Navbar";
 import Hero from "@/components/landing/Hero";
 import LogoStrip from "@/components/landing/LogoStrip";
 import Features from "@/components/landing/Features";
+import Languages from "@/components/landing/Languages";
 import HowItWorks from "@/components/landing/HowItWorks";
 import Pricing from "@/components/landing/Pricing";
 import Testimonials from "@/components/landing/Testimonials";
@@ -17,6 +18,7 @@ export default function HomePage() {
       <Hero />
       <LogoStrip />
       <Features />
+      <Languages />
       <HowItWorks />
       <Pricing />
       <ComparisonTable />
