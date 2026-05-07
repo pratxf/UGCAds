@@ -471,24 +471,19 @@ export default function UGCStudio() {
                 </button>
               </div>
 
-              {/* Textarea — no example placeholder */}
-              <textarea
-                value={prompt}
-                onChange={(e) => {
-                  setPrompt(e.target.value);
-                  const el = e.target;
-                  el.style.height = "auto";
-                  el.style.height = Math.min(el.scrollHeight, 300) + "px";
-                }}
-                placeholder="Describe what happens in the ad..."
-                className="w-full bg-transparent border-none outline-none text-[15px] leading-relaxed text-[#111111] placeholder-[#D1D5DB] resize-none px-4 pt-3"
-                style={{ minHeight: "90px", height: "90px", maxHeight: "300px", overflowY: "auto" }}
-                maxLength={10000}
-              />
-
-              {/* Bottom: char count */}
-              <div className="flex justify-end px-4 pb-2">
-                <span className="text-[11px] text-[#D1D5DB]">{prompt.length} / 10000</span>
+              {/* Textarea — fills remaining height */}
+              <div className="flex-1 relative px-4 pt-3 pb-2 flex flex-col">
+                <textarea
+                  value={prompt}
+                  onChange={(e) => setPrompt(e.target.value)}
+                  placeholder="Describe what happens in the ad..."
+                  className="flex-1 w-full bg-transparent border-none outline-none text-[15px] leading-relaxed text-[#111111] placeholder-[#D1D5DB] resize-none"
+                  style={{ minHeight: 0 }}
+                  maxLength={10000}
+                />
+                <div className="flex justify-end pt-1">
+                  <span className="text-[11px] text-[#D1D5DB]">{prompt.length} / 10000</span>
+                </div>
               </div>
             </div>
 
