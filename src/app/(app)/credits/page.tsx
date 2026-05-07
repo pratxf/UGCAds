@@ -69,30 +69,54 @@ export default async function CreditsPage() {
       weeklyData={weeklyData}
       weeklyLabels={weeklyLabels}
       renewal={renewal}
-      transactions={transactions.map((t) => ({
-        id: t.id,
-        description: t.description || labelForType(t.type),
-        date: formatDate(t.createdAt),
-        credits: t.credits,
-      }))}
+      transactions={transactions
+        .filter((t) => t.type !== "USAGE")
+        .map((t) => ({
+          id: t.id,
+          description: labelForType(t.type, t.credits),
+          subDescription: t.description || subLabelForType(t.type),
+          date: formatDate(t.createdAt),
+          time: formatTime(t.createdAt),
+          credits: t.credits,
+          amountCents: t.amountCents,
+          type: t.type,
+          status: t.status,
+        }))}
     />
   );
 }
 
-function labelForType(type: string) {
+function labelForType(type: string, credits: number) {
+  const display = Math.abs(credits) / 10;
   switch (type) {
-    case "SUBSCRIPTION": return "Subscription";
-    case "TOPUP": return "Credit Pack";
-    case "USAGE": return "Usage";
+    case "SUBSCRIPTION": return "Plan Purchase";
+    case "TOPUP": return `Top up – ${display} Credits`;
     case "REFUND": return "Refund";
-    case "RENEWAL": return "Monthly Renewal";
+    case "RENEWAL": return `Monthly Renewal – ${display} Credits`;
     default: return type;
+  }
+}
+
+function subLabelForType(type: string) {
+  switch (type) {
+    case "SUBSCRIPTION": return "Subscription plan";
+    case "TOPUP": return "Credit pack";
+    case "RENEWAL": return "Plan renewal";
+    case "REFUND": return "Credit refund";
+    default: return "";
   }
 }
 
 function formatDate(d: Date) {
   const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-  return `${months[d.getMonth()]} ${d.getDate()}`;
+  return `${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
+}
+
+function formatTime(d: Date) {
+  const h = d.getHours();
+  const m = d.getMinutes().toString().padStart(2, "0");
+  const ampm = h >= 12 ? "PM" : "AM";
+  return `${h % 12 || 12}:${m} ${ampm}`;
 }
 
 function formatRenewal(d: Date) {
