@@ -40,7 +40,7 @@ export default function Languages() {
           }}
         >
           <img
-            src="/images/languages-flags.png"
+            src="/images/languages-flags.avif"
             alt="50+ language flags"
             className="w-full h-full object-cover object-center"
             style={{ transform: "scale(1.22)", mixBlendMode: "multiply" }}
