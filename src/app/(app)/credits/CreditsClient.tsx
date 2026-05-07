@@ -747,25 +747,6 @@ export default function CreditsClient({ currentPlanId, credits, monthlyCredits, 
                 })}
               </div>
 
-              {/* Footer */}
-              <div className="mt-6 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-xl"
-                    style={{ background: "rgba(37,99,235,0.08)" }}>
-                    <FontAwesomeIcon icon={faShieldHalved} style={{ fontSize: 15, color: "#2563EB" }} />
-                  </div>
-                  <div>
-                    <p className="text-[13px] font-semibold text-[#111111]">Secure &amp; flexible</p>
-                    <p className="text-[11px] text-[#6B7280]">You can change or cancel your plan anytime.</p>
-                  </div>
-                </div>
-                <div className="text-[13px] text-[#6B7280]">
-                  Need help?{" "}
-                  <a href="/support" className="font-semibold text-[#2563EB] hover:underline">
-                    Contact support →
-                  </a>
-                </div>
-              </div>
             </div>
           </div>
         </div>
