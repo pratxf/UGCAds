@@ -1,11 +1,9 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
-import { useDropzone } from "react-dropzone";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faUpload,
   faWandMagicSparkles,
   faDownload,
   faArrowsRotate,
@@ -14,14 +12,14 @@ import {
   faCheck,
   faChevronDown,
   faTableCellsLarge,
-  faPenToSquare,
   faMagnifyingGlass,
+  faPaperclip,
+  faPlus,
 } from "@fortawesome/free-solid-svg-icons";
 import { usePhotoshootTemplates, type LibraryItem } from "@/lib/hooks/use-library";
 import { addActiveGeneration } from "@/lib/active-generations";
 
 type AspectRatio = "1:1" | "4:5" | "9:16" | "16:9";
-type BgMode = "templates" | "custom";
 
 const IMAGE_MODELS = [
   { id: "seedream/4.5-edit", name: "Seedream 4.5", tag: "ByteDance · 4K Edit", logo: "/models/seedream-4-5.jpg" },
@@ -82,24 +80,27 @@ function DropdownPill<T extends string>({
   );
 }
 
-// ── Template Library Modal ───────────────────────────────────────
+// ── Template Modal ───────────────────────────────────────────────
 
-function LibraryModal({
-  templates, categories, categoryFilter, setCategoryFilter, selectedId, onSelect, onClose,
+function TemplateModal({
+  open, onClose, selected, onSelect, items, categories,
 }: {
-  templates: LibraryItem[];
-  categories: { id: string; name: string }[];
-  categoryFilter: string;
-  setCategoryFilter: (v: string) => void;
-  selectedId: string | null;
-  onSelect: (id: string) => void;
+  open: boolean;
   onClose: () => void;
+  selected: string | null;
+  onSelect: (id: string) => void;
+  items: LibraryItem[];
+  categories: { id: string; name: string }[];
 }) {
   const [search, setSearch] = useState("");
-  const filtered = templates.filter(
-    (t) => (categoryFilter === "all" || t.categoryId === categoryFilter) &&
-      (!search || t.name.toLowerCase().includes(search.toLowerCase()))
+  const [catFilter, setCatFilter] = useState("all");
+
+  const filtered = items.filter((item) =>
+    (catFilter === "all" || item.categoryId === catFilter) &&
+    (!search || item.name.toLowerCase().includes(search.toLowerCase()))
   );
+
+  if (!open) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-6 lg:pl-[268px]">
@@ -110,18 +111,18 @@ function LibraryModal({
         {/* Sidebar */}
         <div className="w-[185px] shrink-0 flex flex-col p-5 gap-0.5" style={{ borderRight: "1px solid #E5E7EB" }}>
           <p className="text-[14px] font-semibold text-[#111111] mb-5">Scene Templates</p>
-          <button onClick={() => setCategoryFilter("all")}
+          <button onClick={() => setCatFilter("all")}
             className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] text-left transition-colors"
-            style={{ color: categoryFilter === "all" ? "#2563EB" : "#6B7280", background: categoryFilter === "all" ? "rgba(37,99,235,0.1)" : "transparent" }}>
+            style={{ color: catFilter === "all" ? "#2563EB" : "#6B7280", background: catFilter === "all" ? "rgba(37,99,235,0.1)" : "transparent" }}>
             All
           </button>
           {categories.length > 0 && (
             <>
               <div className="my-3 h-px bg-[#E5E7EB]" />
               {categories.map((c) => (
-                <button key={c.id} onClick={() => setCategoryFilter(c.id)}
+                <button key={c.id} onClick={() => setCatFilter(c.id)}
                   className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] text-left transition-colors"
-                  style={{ color: categoryFilter === c.id ? "#2563EB" : "#6B7280", background: categoryFilter === c.id ? "rgba(37,99,235,0.1)" : "transparent" }}>
+                  style={{ color: catFilter === c.id ? "#2563EB" : "#6B7280", background: catFilter === c.id ? "rgba(37,99,235,0.1)" : "transparent" }}>
                   {c.name}
                 </button>
               ))}
@@ -147,13 +148,13 @@ function LibraryModal({
               {filtered.map((t) => (
                 <button key={t.id} type="button" onClick={() => { onSelect(t.id); onClose(); }}
                   className="relative aspect-square rounded-xl overflow-hidden transition-all"
-                  style={{ border: selectedId === t.id ? "2px solid #2563EB" : "2px solid transparent" }}>
+                  style={{ border: selected === t.id ? "2px solid #2563EB" : "2px solid transparent" }}>
                   <img src={t.imageUrl} alt={t.name} className="w-full h-full object-cover" />
                   <div className="absolute inset-x-0 bottom-0 pb-2 pt-6 px-2"
                     style={{ background: "linear-gradient(to top, rgba(0,0,0,0.75), transparent)" }}>
                     <p className="text-[10px] font-semibold text-white truncate">{t.name}</p>
                   </div>
-                  {selectedId === t.id && (
+                  {selected === t.id && (
                     <div className="absolute top-2 right-2 flex h-5 w-5 items-center justify-center rounded-full bg-[#2563EB]">
                       <FontAwesomeIcon icon={faCheck} style={{ fontSize: 8, color: "#fff" }} />
                     </div>
@@ -172,14 +173,14 @@ function LibraryModal({
 
 export default function PhotoshootCreator() {
   const productFileRef = useRef<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [productImage, setProductImage] = useState<string | null>(null);
   const [productName, setProductName] = useState<string | null>(null);
 
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
+  const [templateModalOpen, setTemplateModalOpen] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState("all");
-  const [bgMode, setBgMode] = useState<BgMode>("templates");
   const [customPrompt, setCustomPrompt] = useState("");
-  const [libraryOpen, setLibraryOpen] = useState(false);
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>("1:1");
   const [modelChoice, setModelChoice] = useState("seedream/4.5-edit");
 
@@ -190,34 +191,7 @@ export default function PhotoshootCreator() {
   const [generationError, setGenerationError] = useState<string | null>(null);
 
   const { items: photoshootTemplates, categories: templateCategories } = usePhotoshootTemplates();
-
-  const filteredTemplates = photoshootTemplates.filter(
-    (t) => categoryFilter === "all" || t.categoryId === categoryFilter
-  );
   const selectedTemplateObj = photoshootTemplates.find((t) => t.id === selectedTemplate);
-
-  const visibleTemplates = (() => {
-    const head = filteredTemplates.slice(0, 5);
-    if (!selectedTemplateObj) return head;
-    if (head.find((t) => t.id === selectedTemplateObj.id)) return head;
-    return [selectedTemplateObj, ...head.slice(0, 4)];
-  })();
-
-  const onDrop = useCallback((acceptedFiles: File[]) => {
-    const file = acceptedFiles[0];
-    if (file) {
-      productFileRef.current = file;
-      setProductImage(URL.createObjectURL(file));
-      setProductName(file.name);
-    }
-  }, []);
-
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop,
-    accept: { "image/*": [".jpg", ".jpeg", ".png", ".webp"] },
-    maxFiles: 1,
-    maxSize: 10 * 1024 * 1024,
-  });
 
   useEffect(() => {
     if (!generationId || finalImageUrl || generationError) return;
@@ -243,7 +217,21 @@ export default function PhotoshootCreator() {
     return () => { cancelled = true; clearInterval(interval); };
   }, [generationId, finalImageUrl, generationError]);
 
-  const hasBackground = bgMode === "templates" ? !!selectedTemplate : customPrompt.trim().length > 0;
+  function handleProductFile(file: File) {
+    productFileRef.current = file;
+    if (productImage) URL.revokeObjectURL(productImage);
+    setProductImage(URL.createObjectURL(file));
+    setProductName(file.name);
+  }
+
+  function removeProduct() {
+    if (productImage) URL.revokeObjectURL(productImage);
+    setProductImage(null);
+    setProductName(null);
+    productFileRef.current = null;
+  }
+
+  const hasBackground = !!selectedTemplate || customPrompt.trim().length > 0;
   const canGenerate = !!productFileRef.current && hasBackground && !isGenerating;
 
   async function handleGenerate() {
@@ -257,14 +245,8 @@ export default function PhotoshootCreator() {
     fd.append("productImage", productFileRef.current);
     fd.append("imageModel", modelChoice);
     fd.append("aspectRatio", aspectRatio);
-    if (bgMode === "templates" && selectedTemplate) {
-      if (!selectedTemplate.startsWith("custom-")) {
-        fd.append("templateId", selectedTemplate);
-      } else {
-        setIsGenerating(false);
-        setGenerationError("Switch to Custom Prompt to describe your scene.");
-        return;
-      }
+    if (selectedTemplate && !selectedTemplate.startsWith("custom-")) {
+      fd.append("templateId", selectedTemplate);
     } else {
       fd.append("customPrompt", customPrompt.trim());
     }
@@ -291,16 +273,12 @@ export default function PhotoshootCreator() {
   }
 
   function reset() {
-    setProductImage(null); setProductName(null);
+    removeProduct();
     setIsGenerating(false); setGenerationId(null); setGenStatus(null);
     setFinalImageUrl(null); setGenerationError(null);
-    productFileRef.current = null;
   }
 
-  function removeProduct() {
-    setProductImage(null); setProductName(null);
-    productFileRef.current = null;
-  }
+  const creditCost = 1;
 
   return (
     <div className="flex flex-col items-center justify-center gap-6" style={{ minHeight: "calc(100vh - 80px)" }}>
@@ -342,7 +320,7 @@ export default function PhotoshootCreator() {
             </button>
             <button onClick={reset}
               className="inline-flex items-center gap-2 h-10 px-5 rounded-xl text-[13px] font-semibold border border-[#E5E7EB] text-[#6B7280] transition hover:bg-[#F3F4F6]">
-              <FontAwesomeIcon icon={faWandMagicSparkles} style={{ fontSize: 12 }} /> New
+              New
             </button>
           </div>
         </div>
@@ -351,7 +329,7 @@ export default function PhotoshootCreator() {
       {/* ── Idle state ─── */}
       {!isGenerating && !finalImageUrl && (<>
 
-        {/* Hero showcase — placeholder until user provides images */}
+        {/* Hero placeholder */}
         <div className="relative flex items-center justify-center flex-shrink-0 gap-3" style={{ height: 200 }}>
           {[
             { w: 150, h: 150, rotate: "-6deg", z: 1, opacity: 0.5 },
@@ -392,150 +370,87 @@ export default function PhotoshootCreator() {
           <div className="rounded-2xl border border-[#E5E7EB] bg-white flex overflow-hidden"
             style={{ boxShadow: "0 2px 16px rgba(0,0,0,0.06)" }}>
 
-            {/* Left: scene selector */}
+            {/* Left: scene prompt */}
             <div className="flex-1 flex flex-col min-w-0">
-              {/* Top bar: mode tabs */}
+              {/* Top bar: Add file + product thumbnail */}
               <div className="flex items-center justify-between px-4 pt-3 pb-2 gap-3 border-b border-[#F3F4F6]">
-                <div className="flex items-center gap-0.5 rounded-lg bg-[#F3F4F6] p-0.5">
-                  <button type="button" onClick={() => setBgMode("templates")}
-                    className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[12px] font-medium transition-all"
-                    style={{
-                      background: bgMode === "templates" ? "#FFFFFF" : "transparent",
-                      color: bgMode === "templates" ? "#111111" : "#9CA3AF",
-                      boxShadow: bgMode === "templates" ? "0 1px 3px rgba(0,0,0,0.08)" : "none",
-                    }}>
-                    <FontAwesomeIcon icon={faTableCellsLarge} style={{ fontSize: 10 }} />
-                    Templates
-                  </button>
-                  <button type="button" onClick={() => setBgMode("custom")}
-                    className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[12px] font-medium transition-all"
-                    style={{
-                      background: bgMode === "custom" ? "#FFFFFF" : "transparent",
-                      color: bgMode === "custom" ? "#111111" : "#9CA3AF",
-                      boxShadow: bgMode === "custom" ? "0 1px 3px rgba(0,0,0,0.08)" : "none",
-                    }}>
-                    <FontAwesomeIcon icon={faPenToSquare} style={{ fontSize: 10 }} />
-                    Custom
-                  </button>
+                <div className="flex items-center gap-2">
+                  <input ref={fileInputRef} type="file" accept="image/*" className="hidden"
+                    onChange={(e) => e.target.files?.[0] && handleProductFile(e.target.files[0])} />
+                  {!productImage && (
+                    <button type="button" onClick={() => fileInputRef.current?.click()}
+                      className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-medium transition-all"
+                      style={{ color: "#9CA3AF", background: "#F9FAFB", border: "1px solid #F0F0F0" }}>
+                      <FontAwesomeIcon icon={faPaperclip} style={{ fontSize: 11 }} />
+                      Add file
+                    </button>
+                  )}
+                  {productImage && (
+                    <div className="relative rounded-lg overflow-hidden border border-[#E5E7EB] flex-shrink-0"
+                      style={{ width: 36, height: 36 }}>
+                      <img src={productImage} alt="Product" className="w-full h-full object-cover" />
+                      <button type="button" onClick={removeProduct}
+                        className="absolute top-0.5 right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-black/60">
+                        <FontAwesomeIcon icon={faXmark} style={{ fontSize: 7, color: "white" }} />
+                      </button>
+                    </div>
+                  )}
                 </div>
-                {bgMode === "templates" && filteredTemplates.length > visibleTemplates.length && (
-                  <button type="button" onClick={() => setLibraryOpen(true)}
-                    className="text-[11px] text-[#2563EB] font-medium hover:underline transition flex-shrink-0">
-                    View all {filteredTemplates.length}
-                  </button>
-                )}
               </div>
 
-              {/* Content */}
+              {/* Scene prompt textarea */}
               <div className="flex-1 flex flex-col px-4 pt-3 pb-2 min-h-0">
-                {bgMode === "templates" ? (
-                  <div className="flex-1 flex flex-col gap-2">
-                    {/* Mini template grid */}
-                    <div className="grid grid-cols-3 gap-2 flex-1">
-                      {visibleTemplates.slice(0, 6).map((t) => (
-                        <button key={t.id} type="button" onClick={() => setSelectedTemplate(t.id)}
-                          className="relative aspect-square rounded-xl overflow-hidden transition-all"
-                          style={{
-                            border: selectedTemplate === t.id ? "2px solid #2563EB" : "2px solid #F3F4F6",
-                            background: "#F3F4F6",
-                          }}>
-                          <img src={t.imageUrl} alt={t.name} className="w-full h-full object-cover" />
-                          <div className="absolute inset-x-0 bottom-0 pb-1.5 pt-4 px-1.5"
-                            style={{ background: "linear-gradient(to top, rgba(0,0,0,0.7), transparent)" }}>
-                            <p className="text-[9px] font-semibold text-white truncate">{t.name}</p>
-                          </div>
-                          {selectedTemplate === t.id && (
-                            <div className="absolute top-1.5 right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-[#2563EB]">
-                              <FontAwesomeIcon icon={faCheck} style={{ fontSize: 7, color: "#fff" }} />
-                            </div>
-                          )}
-                        </button>
-                      ))}
-                    </div>
-                    {/* Category filter chips */}
-                    <div className="flex gap-1.5 flex-wrap pt-1">
-                      <button onClick={() => setCategoryFilter("all")}
-                        className="rounded-full px-2.5 py-0.5 text-[10px] font-medium transition-all"
-                        style={{
-                          background: categoryFilter === "all" ? "#111111" : "#F3F4F6",
-                          color: categoryFilter === "all" ? "#FFFFFF" : "#6B7280",
-                          border: "1px solid",
-                          borderColor: categoryFilter === "all" ? "#111111" : "#E5E7EB",
-                        }}>
-                        All
-                      </button>
-                      {templateCategories.map((c) => (
-                        <button key={c.id} onClick={() => setCategoryFilter(c.id)}
-                          className="rounded-full px-2.5 py-0.5 text-[10px] font-medium transition-all"
-                          style={{
-                            background: categoryFilter === c.id ? "#111111" : "#F3F4F6",
-                            color: categoryFilter === c.id ? "#FFFFFF" : "#6B7280",
-                            border: "1px solid",
-                            borderColor: categoryFilter === c.id ? "#111111" : "#E5E7EB",
-                          }}>
-                          {c.name}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex-1 flex flex-col">
-                    <textarea
-                      value={customPrompt}
-                      onChange={(e) => setCustomPrompt(e.target.value)}
-                      placeholder="Describe the scene for your product...&#10;e.g. On a marble kitchen counter with soft morning light"
-                      className="flex-1 w-full bg-transparent border-none outline-none text-[14px] leading-relaxed text-[#111111] placeholder-[#D1D5DB] resize-none"
-                      style={{ minHeight: 0 }}
-                      maxLength={2000}
-                    />
-                    <div className="flex justify-end pt-1">
-                      <span className="text-[11px] text-[#D1D5DB]">{customPrompt.length} / 2000</span>
-                    </div>
-                  </div>
-                )}
+                <textarea
+                  value={customPrompt}
+                  onChange={(e) => setCustomPrompt(e.target.value)}
+                  placeholder="Describe the scene for your product..."
+                  className="flex-1 w-full bg-transparent border-none outline-none text-[15px] leading-relaxed text-[#111111] placeholder-[#D1D5DB] resize-none"
+                  style={{ minHeight: 0 }}
+                  maxLength={2000}
+                />
+                <div className="flex justify-end pt-1">
+                  <span className="text-[11px] text-[#D1D5DB]">{customPrompt.length} / 2000</span>
+                </div>
               </div>
             </div>
 
-            {/* Right: product upload + generate */}
+            {/* Right: template picker + generate */}
             <div className="w-[170px] flex-shrink-0 flex flex-col items-center justify-between p-5 gap-4"
               style={{ borderLeft: "1px solid #EFEFEF" }}>
 
-              {/* Product image slot */}
-              <div className="w-full flex flex-col items-center gap-2">
-                <div className="relative w-full" style={{ aspectRatio: "1/1" }}>
-                  {productImage ? (
+              {/* Template picker — same style as avatar picker */}
+              <div className="flex flex-col items-center gap-2 w-full">
+                <button type="button" onClick={() => setTemplateModalOpen(true)}
+                  className="relative w-full transition-all hover:opacity-90 active:scale-[0.98]"
+                  style={{ aspectRatio: "3/4" }}>
+                  {selectedTemplateObj ? (
                     <>
                       <div className="w-full h-full rounded-2xl overflow-hidden border-2 border-[#2563EB]">
-                        <Image src={productImage} alt="Product" fill className="object-cover" sizes="150px" />
+                        <img src={selectedTemplateObj.imageUrl} alt={selectedTemplateObj.name}
+                          className="w-full h-full object-cover" />
                       </div>
-                      <button type="button" onClick={removeProduct}
+                      <button type="button" onClick={(e) => { e.stopPropagation(); setSelectedTemplate(null); }}
                         className="absolute top-1.5 right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-black/50 border border-white/30 z-10">
                         <FontAwesomeIcon icon={faXmark} style={{ fontSize: 8, color: "white" }} />
                       </button>
                     </>
                   ) : (
-                    <div {...getRootProps()}
-                      className="w-full h-full rounded-2xl border-2 border-dashed flex flex-col items-center justify-center gap-2 cursor-pointer transition-all"
-                      style={{
-                        borderColor: isDragActive ? "#2563EB" : "#D1D5DB",
-                        background: isDragActive ? "rgba(37,99,235,0.04)" : "#FAFAFA",
-                      }}>
-                      <input {...getInputProps()} />
+                    <div className="w-full h-full rounded-2xl border-2 border-dashed border-[#D1D5DB] flex flex-col items-center justify-center gap-2 hover:border-[#2563EB] hover:bg-blue-50/40 transition-all bg-[#FAFAFA]">
                       <div className="w-9 h-9 rounded-full bg-[#F3F4F6] flex items-center justify-center">
-                        <FontAwesomeIcon icon={faUpload} style={{ fontSize: 14, color: "#9CA3AF" }} />
+                        <FontAwesomeIcon icon={faPlus} style={{ fontSize: 14, color: "#9CA3AF" }} />
                       </div>
-                      <span className="text-[10px] text-[#9CA3AF] font-medium text-center px-2 leading-tight">
-                        {isDragActive ? "Drop here" : "Upload product"}
-                      </span>
+                      <span className="text-[11px] text-[#9CA3AF] font-medium text-center px-2 leading-tight">Choose template</span>
                     </div>
                   )}
-                </div>
-                {productImage && productName && (
-                  <span className="text-[10px] text-[#9CA3AF] text-center truncate w-full px-1">{productName}</span>
+                </button>
+                {selectedTemplateObj && (
+                  <span className="text-[11px] text-[#9CA3AF] text-center">
+                    {selectedTemplateObj.name} · <button type="button" onClick={() => setTemplateModalOpen(true)} className="text-[#2563EB] hover:underline">Change</button>
+                  </span>
                 )}
               </div>
 
-              {/* Generate button */}
+              {/* Generate */}
               <button type="button" onClick={handleGenerate} disabled={!canGenerate}
                 className="w-full flex items-center justify-center gap-2 rounded-xl text-[13px] font-bold transition-all"
                 style={{
@@ -548,7 +463,7 @@ export default function PhotoshootCreator() {
                   ? <FontAwesomeIcon icon={faCircleNotch} className="animate-spin" style={{ fontSize: 13 }} />
                   : <FontAwesomeIcon icon={faWandMagicSparkles} style={{ fontSize: 12 }} />}
                 <span>Generate</span>
-                <span className="text-[11px] opacity-60">·1</span>
+                <span className="text-[11px] opacity-60">·{creditCost}</span>
               </button>
             </div>
           </div>
@@ -583,17 +498,14 @@ export default function PhotoshootCreator() {
 
       </>)}
 
-      {libraryOpen && (
-        <LibraryModal
-          templates={photoshootTemplates}
-          categories={templateCategories}
-          categoryFilter={categoryFilter}
-          setCategoryFilter={setCategoryFilter}
-          selectedId={selectedTemplate}
-          onSelect={(id) => { setSelectedTemplate(id); setLibraryOpen(false); }}
-          onClose={() => setLibraryOpen(false)}
-        />
-      )}
+      <TemplateModal
+        open={templateModalOpen}
+        onClose={() => setTemplateModalOpen(false)}
+        selected={selectedTemplate}
+        onSelect={setSelectedTemplate}
+        items={photoshootTemplates}
+        categories={templateCategories}
+      />
     </div>
   );
 }
