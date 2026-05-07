@@ -97,7 +97,7 @@ export default function HowItWorksSection() {
               <img
                 src="/images/howitworks-card1.avif"
                 alt="UGC Studio script editor"
-                className="w-full h-full object-cover object-right"
+                className="w-full h-full object-cover object-left"
                 style={{ minHeight: 280 }}
               />
             </div>
