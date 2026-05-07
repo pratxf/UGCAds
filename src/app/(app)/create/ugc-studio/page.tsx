@@ -41,7 +41,7 @@ function downloadAsset(url: string, id: string) {
 // ── Avatar Modal ──────────────────────────────────────────────────
 
 function AvatarModal({
-  open, onClose, selected, onSelect, items, categories,
+  open, onClose, selected, onSelect, items, categories, onCustomUpload,
 }: {
   open: boolean;
   onClose: () => void;
@@ -49,9 +49,11 @@ function AvatarModal({
   onSelect: (id: string) => void;
   items: LibraryItem[];
   categories: LibraryCategory[];
+  onCustomUpload: (file: File, preview: string) => void;
 }) {
   const [search, setSearch] = useState("");
   const [catFilter, setCatFilter] = useState("all");
+  const uploadRef = useRef<HTMLInputElement>(null);
 
   const filtered = items.filter((item) =>
     (catFilter === "all" || item.categoryId === catFilter) &&
@@ -60,13 +62,20 @@ function AvatarModal({
 
   if (!open) return null;
 
+  function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    onCustomUpload(file, URL.createObjectURL(file));
+    onClose();
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-6 lg:pl-[268px]">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
       <div className="relative z-10 flex w-full max-w-[880px] h-[600px] rounded-2xl overflow-hidden shadow-2xl"
         style={{ background: "#FFFFFF", border: "1px solid #E5E7EB" }}>
 
-        {/* Sidebar — only All + categories, no My avatars */}
+        {/* Sidebar — only All + categories */}
         <div className="w-[185px] shrink-0 flex flex-col p-5 gap-0.5" style={{ borderRight: "1px solid #E5E7EB" }}>
           <p className="text-[14px] font-semibold text-[#111111] mb-5">Select Avatar</p>
           <button onClick={() => setCatFilter("all")}
@@ -103,6 +112,17 @@ function AvatarModal({
           </div>
           <div className="flex-1 overflow-y-auto p-5">
             <div className="grid grid-cols-5 gap-3">
+              {/* Upload your own avatar card */}
+              <input ref={uploadRef} type="file" accept="image/*" className="hidden" onChange={handleUpload} />
+              <button type="button" onClick={() => uploadRef.current?.click()}
+                className="relative aspect-[3/4] rounded-xl overflow-hidden transition-all flex flex-col items-center justify-center gap-2"
+                style={{ border: "2px dashed #D1D5DB", background: "#FAFAFA" }}>
+                <div className="w-8 h-8 rounded-full bg-[#F3F4F6] flex items-center justify-center">
+                  <FontAwesomeIcon icon={faPlus} style={{ fontSize: 13, color: "#9CA3AF" }} />
+                </div>
+                <span className="text-[10px] text-[#9CA3AF] font-medium text-center px-2 leading-tight">Upload your own</span>
+              </button>
+
               {filtered.map((c) => (
                 <button key={c.id} type="button" onClick={() => { onSelect(c.id); onClose(); }}
                   className="relative aspect-[3/4] rounded-xl overflow-hidden transition-all"
@@ -198,6 +218,9 @@ export default function UGCStudio() {
   const [uploadedPreviews, setUploadedPreviews] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const [customAvatarFile, setCustomAvatarFile] = useState<File | null>(null);
+  const [customAvatarPreview, setCustomAvatarPreview] = useState<string | null>(null);
+
   const [prompt, setPrompt] = useState("");
   const [videoModel, setVideoModel] = useState<VideoModel>("kling-3.0/video");
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>("9:16");
@@ -232,6 +255,19 @@ export default function UGCStudio() {
     setUploadedPreviews(prev => prev.filter((_, i) => i !== idx));
   }
 
+  function handleCustomAvatarUpload(file: File, preview: string) {
+    if (customAvatarPreview) URL.revokeObjectURL(customAvatarPreview);
+    setCustomAvatarFile(file);
+    setCustomAvatarPreview(preview);
+    setSelectedCharacter(null);
+  }
+
+  function removeCustomAvatar() {
+    if (customAvatarPreview) URL.revokeObjectURL(customAvatarPreview);
+    setCustomAvatarFile(null);
+    setCustomAvatarPreview(null);
+  }
+
   function startPolling(id: string) {
     pollRef.current = setInterval(async () => {
       try {
@@ -253,6 +289,7 @@ export default function UGCStudio() {
       fd.append("aspectRatio", aspectRatio === "9:16" ? "NINE_SIXTEEN" : aspectRatio === "16:9" ? "SIXTEEN_NINE" : "ONE_ONE");
       fd.append("duration", duration);
       if (selectedCharacter) fd.append("characterId", selectedCharacter);
+      if (customAvatarFile) fd.append("avatarImage", customAvatarFile);
       if (uploadedFiles[0]) fd.append("image1", uploadedFiles[0]);
       if (uploadedFiles[1]) fd.append("image2", uploadedFiles[1]);
 
@@ -380,9 +417,43 @@ export default function UGCStudio() {
 
             {/* Left: prompt */}
             <div className="flex-1 flex flex-col min-w-0">
-              {/* Label + AI button */}
-              <div className="flex items-center justify-between px-4 pt-3 pb-1 gap-3">
-                <span className="text-[13px] text-[#9CA3AF]">Describe what happens in the ad...</span>
+              {/* Top bar: Add file + thumbnails (left) + Write with AI (right) */}
+              <div className="flex items-center justify-between px-4 pt-3 pb-2 gap-3 border-b border-[#F3F4F6]">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <input ref={fileInputRef} type="file" accept="image/*" multiple className="hidden"
+                    onChange={(e) => e.target.files && addImages(e.target.files)} />
+                  {/* Add file button — hidden when 2 files attached */}
+                  {uploadedFiles.length < 2 && (
+                    <button type="button" onClick={() => fileInputRef.current?.click()}
+                      className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-medium transition-all"
+                      style={{ color: "#9CA3AF", background: "#F9FAFB", border: "1px solid #F0F0F0" }}>
+                      <FontAwesomeIcon icon={faPaperclip} style={{ fontSize: 11 }} />
+                      Add file
+                    </button>
+                  )}
+                  {/* Image thumbnails — side by side */}
+                  {uploadedPreviews.map((src, i) => (
+                    <div key={i} className="relative rounded-lg overflow-hidden border border-[#E5E7EB] flex-shrink-0"
+                      style={{ width: 36, height: 36 }}>
+                      <img src={src} alt="" className="w-full h-full object-cover" />
+                      <button type="button" onClick={() => removeImage(i)}
+                        className="absolute top-0.5 right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-black/60">
+                        <FontAwesomeIcon icon={faXmark} style={{ fontSize: 7, color: "white" }} />
+                      </button>
+                    </div>
+                  ))}
+                  {/* Custom avatar chip */}
+                  {customAvatarPreview && (
+                    <div className="relative rounded-lg overflow-hidden border-2 border-[#2563EB] flex-shrink-0"
+                      style={{ width: 36, height: 36 }}>
+                      <img src={customAvatarPreview} alt="Avatar" className="w-full h-full object-cover object-top" />
+                      <button type="button" onClick={removeCustomAvatar}
+                        className="absolute top-0.5 right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-black/60">
+                        <FontAwesomeIcon icon={faXmark} style={{ fontSize: 7, color: "white" }} />
+                      </button>
+                    </div>
+                  )}
+                </div>
                 <button type="button" onClick={handleWriteScript}
                   disabled={!prompt.trim() || isWritingScript}
                   className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-semibold flex-shrink-0 transition-all"
@@ -400,52 +471,24 @@ export default function UGCStudio() {
                 </button>
               </div>
 
-              {/* Textarea */}
-              <div className="relative px-4 pb-2 flex-1">
-                <textarea
-                  value={prompt}
-                  onChange={(e) => {
-                    setPrompt(e.target.value);
-                    const el = e.target;
-                    el.style.height = "auto";
-                    el.style.height = Math.min(el.scrollHeight, 140) + "px";
-                  }}
-                  placeholder={"Example:\nA skincare creator explaining why this moisturizer\nhelped her acne in 7 days."}
-                  className="w-full bg-transparent border-none outline-none text-[15px] leading-relaxed text-[#111111] placeholder-[#D1D5DB] resize-none"
-                  style={{ minHeight: "110px", height: "110px", maxHeight: "200px", overflowY: "auto" }}
-                  maxLength={2000}
-                />
-                <div className="flex items-end justify-between">
-                  {/* Add file — inside input, bottom-left */}
-                  <div className="flex items-center gap-2">
-                    <input ref={fileInputRef} type="file" accept="image/*" multiple className="hidden"
-                      onChange={(e) => e.target.files && addImages(e.target.files)} />
-                    <button type="button"
-                      onClick={() => uploadedFiles.length < 2 && fileInputRef.current?.click()}
-                      title={uploadedFiles.length >= 2 ? "Max 2 images" : "Attach images (max 2)"}
-                      className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-medium transition-all"
-                      style={{
-                        color: uploadedFiles.length >= 2 ? "#D1D5DB" : "#9CA3AF",
-                        background: "#F9FAFB",
-                        border: "1px solid #F3F4F6",
-                        cursor: uploadedFiles.length >= 2 ? "not-allowed" : "pointer",
-                      }}>
-                      <FontAwesomeIcon icon={faPaperclip} style={{ fontSize: 11 }} />
-                      {uploadedFiles.length > 0 ? `${uploadedFiles.length}/2 attached` : "Add file"}
-                    </button>
-                    {/* Image preview thumbnails */}
-                    {uploadedPreviews.map((src, i) => (
-                      <div key={i} className="relative w-7 h-7 rounded-lg overflow-hidden border border-[#E5E7EB]">
-                        <img src={src} alt="" className="w-full h-full object-cover" />
-                        <button type="button" onClick={() => removeImage(i)}
-                          className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 hover:opacity-100 transition-opacity rounded-lg">
-                          <FontAwesomeIcon icon={faXmark} style={{ fontSize: 8, color: "white" }} />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                  <span className="text-[11px] text-[#D1D5DB]">{prompt.length} / 2000</span>
-                </div>
+              {/* Textarea — no example placeholder */}
+              <textarea
+                value={prompt}
+                onChange={(e) => {
+                  setPrompt(e.target.value);
+                  const el = e.target;
+                  el.style.height = "auto";
+                  el.style.height = Math.min(el.scrollHeight, 300) + "px";
+                }}
+                placeholder="Describe what happens in the ad..."
+                className="w-full bg-transparent border-none outline-none text-[15px] leading-relaxed text-[#111111] placeholder-[#D1D5DB] resize-none px-4 pt-3"
+                style={{ minHeight: "90px", height: "90px", maxHeight: "300px", overflowY: "auto" }}
+                maxLength={10000}
+              />
+
+              {/* Bottom: char count */}
+              <div className="flex justify-end px-4 pb-2">
+                <span className="text-[11px] text-[#D1D5DB]">{prompt.length} / 10000</span>
               </div>
             </div>
 
@@ -468,18 +511,28 @@ export default function UGCStudio() {
                         <FontAwesomeIcon icon={faXmark} style={{ fontSize: 8, color: "white" }} />
                       </button>
                     </>
+                  ) : customAvatarPreview ? (
+                    <>
+                      <div className="w-full h-full rounded-2xl overflow-hidden border-2 border-[#2563EB]">
+                        <img src={customAvatarPreview} alt="Custom avatar" className="w-full h-full object-cover object-top" />
+                      </div>
+                      <button type="button" onClick={(e) => { e.stopPropagation(); removeCustomAvatar(); }}
+                        className="absolute top-1.5 right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-black/50 border border-white/30 z-10">
+                        <FontAwesomeIcon icon={faXmark} style={{ fontSize: 8, color: "white" }} />
+                      </button>
+                    </>
                   ) : (
                     <div className="w-full h-full rounded-2xl border-2 border-dashed border-[#D1D5DB] flex flex-col items-center justify-center gap-2 hover:border-[#2563EB] hover:bg-blue-50/40 transition-all bg-[#FAFAFA]">
                       <div className="w-9 h-9 rounded-full bg-[#F3F4F6] flex items-center justify-center">
                         <FontAwesomeIcon icon={faPlus} style={{ fontSize: 14, color: "#9CA3AF" }} />
                       </div>
-                      <span className="text-[11px] text-[#9CA3AF] font-medium">Add avatar</span>
+                      <span className="text-[11px] text-[#9CA3AF] font-medium">Choose avatar</span>
                     </div>
                   )}
                 </button>
-                {selectedChar && (
+                {(selectedChar || customAvatarPreview) && (
                   <span className="text-[11px] text-[#9CA3AF] text-center">
-                    {selectedChar.name} · <button type="button" onClick={() => setAvatarModalOpen(true)} className="text-[#2563EB] hover:underline">Change</button>
+                    {selectedChar?.name ?? "Custom"} · <button type="button" onClick={() => setAvatarModalOpen(true)} className="text-[#2563EB] hover:underline">Change</button>
                   </span>
                 )}
               </div>
@@ -559,6 +612,7 @@ export default function UGCStudio() {
         onSelect={setSelectedCharacter}
         items={characters}
         categories={categories}
+        onCustomUpload={handleCustomAvatarUpload}
       />
     </div>
   );

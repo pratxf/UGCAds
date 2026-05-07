@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faDownload, faXmark, faCheck, faSpinner, faTriangleExclamation } from "@fortawesome/free-solid-svg-icons";
+import { faDownload, faXmark, faCheck, faSpinner, faTriangleExclamation, faChevronDown } from "@fortawesome/free-solid-svg-icons";
 import {
   ACTIVE_GENERATIONS_EVENT,
   readActiveGenerations,
@@ -101,37 +101,39 @@ export default function GenerationsOrb() {
 
   const liveCount = items.filter((i) => LIVE_STATUSES.has(i.status)).length;
   const isActive = liveCount > 0;
+  const hasAny = items.length > 0;
 
   return (
     <>
       {previewUrl && <VideoPreviewModal url={previewUrl} onClose={() => setPreviewUrl(null)} />}
 
       <div className="relative" ref={dropdownRef}>
-        {/* Circle orb */}
+        {/* Pill trigger */}
         <button
           onClick={() => setOpen((o) => !o)}
-          className="relative flex items-center justify-center rounded-full transition-all hover:scale-105 active:scale-95"
+          className="flex items-center gap-2 rounded-full px-3 py-1.5 transition-all hover:bg-[#F3F4F6] active:scale-[0.97]"
           style={{
-            width: 40,
-            height: 40,
-            background: isActive ? "#111111" : "#FFFFFF",
-            border: isActive ? "none" : "1.5px solid #E5E7EB",
-            boxShadow: isActive ? "0 2px 12px rgba(0,0,0,0.15)" : "0 1px 4px rgba(0,0,0,0.06)",
+            background: "#FFFFFF",
+            border: "1.5px solid #E5E7EB",
+            boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
           }}
         >
-          <span className="text-[13px] font-bold" style={{ color: isActive ? "#FFFFFF" : "#374151" }}>
-            {items.length}
+          {/* Status dot */}
+          <span
+            className="h-2 w-2 rounded-full flex-shrink-0"
+            style={{
+              background: isActive ? "#10B981" : "#D1D5DB",
+              boxShadow: isActive ? "0 0 0 3px rgba(16,185,129,0.18)" : "none",
+            }}
+          />
+          <span className="text-[13px] font-semibold text-[#374151]">{hasAny ? items.length : "0"}</span>
+          <span className="hidden sm:inline text-[12px] text-[#9CA3AF]">
+            {isActive ? "Generating" : hasAny ? "Jobs" : "No jobs"}
           </span>
-          {/* Live pulse ring */}
-          {isActive && (
-            <span className="absolute inset-0 rounded-full animate-ping"
-              style={{ background: "rgba(16,185,129,0.25)", animationDuration: "1.5s" }} />
-          )}
-          {/* Green dot badge */}
-          {isActive && (
-            <span className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white"
-              style={{ background: "#10B981" }} />
-          )}
+          <FontAwesomeIcon
+            icon={faChevronDown}
+            style={{ fontSize: 10, color: "#9CA3AF", transform: open ? "rotate(180deg)" : "none", transition: "transform 0.15s" }}
+          />
         </button>
 
         {/* Dropdown */}
