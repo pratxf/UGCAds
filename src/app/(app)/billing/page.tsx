@@ -55,7 +55,7 @@ export default async function BillingPage() {
       monthlyCredits={subscription?.monthlyCredits ?? 0}
       billingCycle={subscription?.billingCycle ?? "MONTHLY"}
       renewal={subscription?.currentPeriodEnd ? formatDate(subscription.currentPeriodEnd) : null}
-      totalUsedThisMonth={Math.abs(usageThisMonth._sum.credits ?? 0)}
+      totalUsedThisMonth={Math.round(Math.abs(usageThisMonth._sum.credits ?? 0) / 10)}
       dailyUsage={days.map((d) => dailyMap[d.key])}
       dayLabels={days.map((d) => d.label)}
       invoices={invoices.map((t) => ({

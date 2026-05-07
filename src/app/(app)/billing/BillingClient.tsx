@@ -173,7 +173,7 @@ export default function BillingClient({
                 This month
               </span>
             </div>
-            <p className="text-4xl font-bold text-[#111111]">{fmt(totalUsedThisMonth)}</p>
+            <p className="text-4xl font-bold text-[#111111]">{totalUsedThisMonth}</p>
             <p className="mt-0.5 text-sm text-[#6B7280]">credits used</p>
             <div className="mt-4 flex-1">
               <BarChart data={dailyUsage} labels={dayLabels} />

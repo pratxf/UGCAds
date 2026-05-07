@@ -154,10 +154,10 @@ export default function CreditsClient({ currentPlanId, credits, monthlyCredits, 
   const [showAll, setShowAll] = useState(false);
 
   const creditsTotal = monthlyCredits || 300;
-  const pct = creditsTotal > 0 ? Math.min(Math.round((monthUsed / (creditsTotal * 10)) * 100), 100) : 0;
+  const pct = creditsTotal > 0 ? Math.min(Math.round((monthUsed / creditsTotal) * 100), 100) : 0;
   const remainingPct = 100 - pct;
-  const displayRemaining = fmt(credits);
-  const displayUsed = fmt(monthUsed);
+  const displayRemaining = Math.round(credits / 10).toString();
+  const displayUsed = monthUsed.toString();
   const currentPlanName = currentPlanId ? currentPlanId.charAt(0).toUpperCase() + currentPlanId.slice(1) : null;
 
   // Ring geometry
