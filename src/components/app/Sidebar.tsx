@@ -230,7 +230,7 @@ export default function Sidebar({ userName = "User", userEmail, userAvatar, cred
 
         {/* Profile card */}
         <DropdownMenu>
-          <DropdownMenuTrigger className="flex w-full items-center gap-3 rounded-2xl p-3 transition-colors hover:bg-[#F3F4F6]"
+          <DropdownMenuTrigger className="flex w-full items-center gap-3 rounded-2xl p-3 transition-colors hover:bg-[#F3F4F6] focus:outline-none focus-visible:outline-none active:translate-y-0"
             style={{ background: "#FFFFFF", border: "1px solid #E5E7EB", boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
             {userAvatar ? (
               <span className="h-11 w-11 overflow-hidden rounded-full flex-shrink-0">
