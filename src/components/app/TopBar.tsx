@@ -51,7 +51,7 @@ export default function TopBar({ credits = 0 }: { credits?: number }) {
         {/* Upgrade */}
         <Link
           href="/credits?upgrade=true"
-          className="inline-flex items-center gap-2 rounded-full bg-primary px-3 sm:px-5 py-2 sm:py-2.5 text-xs font-semibold text-primary-foreground shadow-sm shadow-blue-500/20 transition-all hover:brightness-105 active:scale-[0.99]"
+          className="inline-flex items-center gap-2 rounded-full bg-primary px-3 sm:px-5 py-2 sm:py-2.5 text-xs font-semibold text-primary-foreground shadow-sm transition-all hover:brightness-105 active:scale-[0.99]"
         >
           <FontAwesomeIcon icon={faBolt} style={{ fontSize: 14 }} />
           <span className="hidden sm:inline">Upgrade</span>

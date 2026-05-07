@@ -448,7 +448,7 @@ function ModelTile({
       className={cn(
         "relative aspect-[3/4] rounded-2xl overflow-hidden border bg-[#F3F4F6] cursor-pointer transition",
         selected
-          ? "border-primary shadow-[0_0_0_2px_rgba(125,57,235,0.25)]"
+          ? "border-primary shadow-sm"
           : "border-[#E5E7EB] hover:border-[#D1D5DB]",
       )}
     >

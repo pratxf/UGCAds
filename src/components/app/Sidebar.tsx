@@ -207,7 +207,7 @@ export default function Sidebar({ userName = "User", userEmail, userAvatar, cred
                 background: pct > 20
                   ? "linear-gradient(90deg, #2563EB, #06B6D4)"
                   : "linear-gradient(90deg, #ef4444, #f97316)",
-                boxShadow: pct > 20 ? "0 0 8px rgba(37,99,235,0.5)" : "0 0 8px rgba(239,68,68,0.5)",
+                boxShadow: "none",
               }} />
           </div>
 
@@ -217,7 +217,6 @@ export default function Sidebar({ userName = "User", userEmail, userAvatar, cred
             className="w-full flex items-center justify-center gap-2 rounded-xl py-2 transition-all hover:brightness-110 active:scale-[0.98]"
             style={{
               background: "#2563EB",
-              boxShadow: "0 0 16px rgba(37,99,235,0.35)",
             }}
           >
             <FontAwesomeIcon icon={faArrowUp} style={{ fontSize: 10, color: "#fff" }} />

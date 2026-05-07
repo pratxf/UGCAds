@@ -322,11 +322,8 @@ export default function UGCStudio() {
                   height: skeletonH,
                   background: "#F3F4F6",
                   border: `1px solid ${P.border}`,
-                  boxShadow: "0 0 40px rgba(37,99,235,0.08)",
                 }}>
-                {/* Violet corner glow */}
-                <div className="absolute inset-x-0 bottom-0 h-1/3 pointer-events-none"
-                  style={{ background: "linear-gradient(to top, rgba(37,99,235,0.06), transparent)" }} />
+
                 {/* Model badge */}
                 <div className="absolute bottom-4 left-0 right-0 flex flex-col items-center gap-2">
                   <img src={currentModel.logo} alt={currentModel.name}

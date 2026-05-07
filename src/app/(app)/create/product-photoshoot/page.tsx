@@ -698,7 +698,7 @@ function TemplateTile({
       className={cn(
         "relative aspect-square overflow-hidden rounded-xl border bg-[#F3F4F6] cursor-pointer transition-all",
         selected
-          ? "border-primary shadow-[0_0_0_1px_var(--color-primary),0_4px_20px_rgba(37,99,235,0.12)]"
+          ? "border-primary shadow-sm"
           : "border-[#E5E7EB] hover:border-[#D1D5DB] hover:-translate-y-0.5 hover:shadow-[0_6px_24px_rgba(0,0,0,0.08)]",
       )}
     >

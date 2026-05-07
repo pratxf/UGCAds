@@ -175,7 +175,7 @@ export default function HistoryClient({ items: rawItems }: { items: Item[] }) {
       <motion.div variants={fadeUp}>
         {filtered.length === 0 ? (
           <div className="rounded-3xl border border-dashed border-[#E5E7EB] bg-white p-12 text-center">
-            <div className="size-14 mx-auto rounded-2xl bg-primary/10 ring-1 ring-primary/20 shadow-[0_0_40px_rgba(198,255,51,0.12)] flex items-center justify-center mb-3">
+            <div className="size-14 mx-auto rounded-2xl bg-primary/10 ring-1 ring-primary/20 flex items-center justify-center mb-3">
               <FontAwesomeIcon
                 icon={total === 0 ? faWandMagicSparkles : faFilm}
                 className="text-primary"
