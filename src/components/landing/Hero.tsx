@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Play, Star, Zap, Clock, Shield, TrendingUp } from "lucide-react";
+import { Play, Zap, Clock, Shield } from "lucide-react";
 
 const FADE_UP = {
   hidden: { opacity: 0, y: 20 },
@@ -133,68 +133,59 @@ export default function Hero() {
             initial={{ opacity: 0, y: 24, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1], delay: 0.25 }}
-            className="relative flex flex-col"
+            className="relative w-full aspect-[1.58]"
           >
-            {/* Ghost card — solid lavender, clearly offset behind main card */}
-            <div
-              className="absolute inset-0 rounded-3xl"
-              style={{
-                background: "#E0E7FF",
-                transform: "rotate(3deg) translate(14px, 16px)",
-                zIndex: 0,
-              }}
-            />
+            {/* Decorative card 1 — back, blue, rotated counter-clockwise */}
+            <div className="absolute inset-0 bg-[#DFE6FA] rounded-[24px] shadow-sm" style={{ transform: "rotate(-4.5deg)" }} />
 
-            {/* Video card */}
-            <div
-              className="relative rounded-3xl overflow-hidden shadow-2xl shadow-blue-900/15 bg-[#1a1a2e] aspect-[4/3]"
-              style={{ zIndex: 1 }}
-            >
+            {/* Decorative card 2 — middle, white, rotated clockwise */}
+            <div className="absolute inset-0 bg-white rounded-[24px] shadow-sm" style={{ transform: "rotate(3.5deg)" }} />
+
+            {/* Foreground video card */}
+            <div className="absolute inset-0 rounded-[24px] overflow-hidden shadow-[0_15px_40px_-10px_rgba(0,0,0,0.15)] z-20 bg-gray-200">
               <video
-                src="/videos/hero-reel.mov"
+                src="/videos/hero-reel.mp4"
                 autoPlay muted loop playsInline preload="auto"
                 className="w-full h-full object-cover"
               />
 
-              {/* Top-left: AI Generated badge — dark pill */}
-              <div
-                className="absolute top-4 left-4 flex items-center gap-2 rounded-full px-3 py-2 shadow-lg"
-                style={{ background: "#1C1C2E" }}
-              >
-                <div className="flex h-5 w-5 items-center justify-center rounded-full bg-[#2563EB] flex-shrink-0">
-                  <Star className="h-2.5 w-2.5 text-white fill-white" />
-                </div>
-                <span className="text-[12px] font-semibold text-white leading-none">AI Generated</span>
+              {/* Top-left: AI Generated badge */}
+              <div className="absolute top-5 left-5 bg-white rounded-full px-3.5 py-2 flex items-center gap-1.5 shadow-md">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="#1A56FF">
+                  <path d="M10 2C10 7.5 14.5 12 20 12C14.5 12 10 16.5 10 22C10 16.5 5.5 12 0 12C5.5 12 10 7.5 10 2Z" />
+                  <path d="M21 3C21 5 22.5 6.5 24.5 6.5C22.5 6.5 21 8 21 10C21 8 19.5 6.5 17.5 6.5C19.5 6.5 21 5 21 3Z" />
+                </svg>
+                <span className="text-[#1A1D20] text-[13px] font-semibold tracking-wide">AI Generated</span>
               </div>
 
-              {/* Top-right: ROAS card */}
-              <div className="absolute top-4 right-4 rounded-2xl bg-white shadow-lg px-3.5 py-2.5">
-                <div className="text-[10px] font-medium text-[#9CA3AF] leading-none mb-1.5">Avg. ROAS</div>
-                <div className="flex items-center gap-1.5">
-                  <span className="text-xl font-bold text-[#2563EB] leading-none">3.1x</span>
-                  <TrendingUp className="h-4 w-4 text-[#10B981]" strokeWidth={2.5} />
-                </div>
-              </div>
-
-              {/* Bottom: floating caption bar */}
-              <div
-                className="absolute bottom-4 left-4 right-4 flex items-center gap-3 rounded-2xl px-4 py-3"
-                style={{ background: "#111827" }}
-              >
-                <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl bg-[#2563EB]">
-                  <svg className="h-4 w-4 text-white" viewBox="0 0 16 16" fill="currentColor">
-                    <rect x="1" y="5" width="2" height="6" rx="1"/>
-                    <rect x="4.5" y="2" width="2" height="12" rx="1"/>
-                    <rect x="8" y="4" width="2" height="8" rx="1"/>
-                    <rect x="11.5" y="1" width="2" height="14" rx="1"/>
+              {/* Top-right: Avg. ROAS */}
+              <div className="absolute top-5 right-5 bg-white rounded-[16px] px-4 py-3 shadow-md min-w-[110px]">
+                <div className="text-[#808489] text-[12px] font-medium mb-1">Avg. ROAS</div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[#1A56FF] text-[24px] font-bold leading-none tracking-tight">3.1x</span>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2EBA5B" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="3 17 9 11 13 15 21 7" />
+                    <polyline points="14 7 21 7 21 14" />
                   </svg>
                 </div>
-                <p className="flex-1 text-[13px] text-white font-medium leading-snug">
+              </div>
+
+              {/* Bottom: caption bar with blur */}
+              <div className="absolute bottom-5 left-5 right-5 bg-[#363636]/80 backdrop-blur-md rounded-[20px] p-1.5 pr-5 flex items-center gap-3 shadow-xl">
+                <div className="w-[40px] h-[40px] bg-[#1A56FF] rounded-[14px] flex items-center justify-center shrink-0">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" className="text-white">
+                    <rect x="2.5" y="9.5" width="2.5" height="5" rx="1.25" />
+                    <rect x="7" y="5.5" width="2.5" height="13" rx="1.25" />
+                    <rect x="11.5" y="3" width="2.5" height="18" rx="1.25" />
+                    <rect x="16" y="5.5" width="2.5" height="13" rx="1.25" />
+                    <rect x="20.5" y="9.5" width="2.5" height="5" rx="1.25" />
+                  </svg>
+                </div>
+                <span className="text-white text-[14px] font-medium leading-snug">
                   I've tried so many products, but this one changed everything.
-                </p>
+                </span>
               </div>
             </div>
-
           </motion.div>
         </div>
       </div>
