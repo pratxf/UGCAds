@@ -278,28 +278,25 @@ export default function TryonCreator() {
       {/* ── Idle state ─── */}
       {!isGenerating && !resultUrl && (<>
 
-        {/* Hero placeholder */}
+        {/* Hero samples fan */}
         <div className="relative flex items-center justify-center flex-shrink-0 gap-3" style={{ height: 200 }}>
           {[
-            { w: 120, h: 160, rotate: "-6deg", z: 1, opacity: 0.5 },
-            { w: 135, h: 180, rotate: "-2deg", z: 2, opacity: 0.65 },
-            { w: 150, h: 200, rotate: "0deg", z: 3, opacity: 1 },
-            { w: 135, h: 180, rotate: "2deg", z: 2, opacity: 0.65 },
-            { w: 120, h: 160, rotate: "6deg", z: 1, opacity: 0.5 },
+            { src: "/images/tryon-samples/to-1.avif", w: 120, h: 160, rotate: "-6deg", z: 1, opacity: 0.55 },
+            { src: "/images/tryon-samples/to-2.avif", w: 135, h: 180, rotate: "-2deg", z: 2, opacity: 0.72 },
+            { src: "/images/tryon-samples/to-3.avif", w: 150, h: 200, rotate: "0deg",  z: 3, opacity: 1 },
+            { src: "/images/tryon-samples/to-4.avif", w: 135, h: 180, rotate: "2deg",  z: 2, opacity: 0.72 },
+            { src: "/images/tryon-samples/to-5.avif", w: 120, h: 160, rotate: "6deg",  z: 1, opacity: 0.55 },
           ].map((card, i) => (
             <div key={i} className="flex-shrink-0 rounded-2xl overflow-hidden"
               style={{
                 width: card.w, height: card.h,
-                background: "linear-gradient(135deg, #F3F4F6 0%, #E5E7EB 100%)",
                 border: "1px solid #E5E7EB",
                 transform: `rotate(${card.rotate})`,
                 zIndex: card.z,
                 opacity: card.opacity,
-                boxShadow: card.z === 3 ? "0 16px 48px rgba(0,0,0,0.12)" : "0 4px 12px rgba(0,0,0,0.06)",
+                boxShadow: card.z === 3 ? "0 16px 48px rgba(0,0,0,0.18)" : "0 4px 12px rgba(0,0,0,0.08)",
               }}>
-              <div className="w-full h-full flex items-center justify-center">
-                <FontAwesomeIcon icon={faShirt} style={{ fontSize: card.w * 0.25, color: "#D1D5DB" }} />
-              </div>
+              <img src={card.src} alt="" className="w-full h-full object-cover" />
             </div>
           ))}
         </div>
