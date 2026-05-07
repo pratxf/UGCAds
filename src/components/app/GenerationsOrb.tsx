@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faDownload, faXmark, faChevronDown, faCheck, faSpinner, faTriangleExclamation } from "@fortawesome/free-solid-svg-icons";
+import { faDownload, faXmark, faCheck, faSpinner, faTriangleExclamation } from "@fortawesome/free-solid-svg-icons";
 import {
   ACTIVE_GENERATIONS_EVENT,
   readActiveGenerations,
@@ -42,19 +42,10 @@ function VideoPreviewModal({ url, onClose }: { url: string; onClose: () => void 
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-6" onClick={onClose}>
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
       <div className="relative z-10 flex flex-col items-center gap-4" onClick={(e) => e.stopPropagation()}>
-        <video
-          src={url}
-          controls
-          autoPlay
-          className="rounded-2xl max-h-[80vh] max-w-[90vw] shadow-2xl"
-          style={{ background: "#000" }}
-        />
-        <button
-          onClick={onClose}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white text-[#111111] text-sm font-semibold hover:bg-gray-100 transition"
-        >
-          <FontAwesomeIcon icon={faXmark} style={{ fontSize: 12 }} />
-          Close
+        <video src={url} controls autoPlay className="rounded-2xl max-h-[80vh] max-w-[90vw] shadow-2xl" />
+        <button onClick={onClose}
+          className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white text-[#111111] text-sm font-semibold hover:bg-gray-100 transition">
+          <FontAwesomeIcon icon={faXmark} style={{ fontSize: 12 }} /> Close
         </button>
       </div>
     </div>
@@ -79,7 +70,6 @@ export default function GenerationsOrb() {
     };
   }, [sync]);
 
-  // Poll active generations
   useEffect(() => {
     const active = items.filter((item) => LIVE_STATUSES.has(item.status));
     if (active.length === 0) return;
@@ -90,11 +80,7 @@ export default function GenerationsOrb() {
           const res = await fetch(`/api/generations/${item.id}`);
           if (!res.ok || cancelled) return;
           const data = await res.json();
-          updateActiveGeneration(item.id, {
-            status: data.status,
-            finalVideoUrl: data.finalVideoUrl,
-            errorMessage: data.errorMessage,
-          });
+          updateActiveGeneration(item.id, { status: data.status, finalVideoUrl: data.finalVideoUrl, errorMessage: data.errorMessage });
         } catch {}
       }));
       if (!cancelled) sync();
@@ -104,7 +90,6 @@ export default function GenerationsOrb() {
     return () => { cancelled = true; window.clearInterval(interval); };
   }, [items, sync]);
 
-  // Close on outside click
   useEffect(() => {
     if (!open) return;
     const handler = (e: MouseEvent) => {
@@ -115,116 +100,98 @@ export default function GenerationsOrb() {
   }, [open]);
 
   const liveCount = items.filter((i) => LIVE_STATUSES.has(i.status)).length;
-  const hasAny = items.length > 0;
+  const isActive = liveCount > 0;
 
   return (
     <>
       {previewUrl && <VideoPreviewModal url={previewUrl} onClose={() => setPreviewUrl(null)} />}
 
       <div className="relative" ref={dropdownRef}>
-        {/* Orb pill */}
+        {/* Circle orb */}
         <button
           onClick={() => setOpen((o) => !o)}
-          className="flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold transition-all hover:bg-[#F3F4F6]"
+          className="relative flex items-center justify-center rounded-full transition-all hover:scale-105 active:scale-95"
           style={{
-            background: "#FFFFFF",
-            borderColor: "#E5E7EB",
-            color: "#374151",
+            width: 40,
+            height: 40,
+            background: isActive ? "#111111" : "#FFFFFF",
+            border: isActive ? "none" : "1.5px solid #E5E7EB",
+            boxShadow: isActive ? "0 2px 12px rgba(0,0,0,0.15)" : "0 1px 4px rgba(0,0,0,0.06)",
           }}
         >
-          <span
-            className="h-2 w-2 rounded-full flex-shrink-0"
-            style={{
-              background: liveCount > 0 ? "#10B981" : "#D1D5DB",
-              boxShadow: liveCount > 0 ? "0 0 0 3px rgba(16,185,129,0.2)" : "none",
-            }}
-          />
-          <span>{liveCount > 0 ? liveCount : items.length}</span>
-          <span className="hidden sm:inline text-[#6B7280]">
-            {liveCount > 0 ? "Generating" : hasAny ? "Jobs" : "No jobs"}
+          <span className="text-[13px] font-bold" style={{ color: isActive ? "#FFFFFF" : "#374151" }}>
+            {items.length}
           </span>
-          <FontAwesomeIcon
-            icon={faChevronDown}
-            style={{
-              fontSize: 10,
-              color: "#9CA3AF",
-              transform: open ? "rotate(180deg)" : "none",
-              transition: "transform 0.15s",
-            }}
-          />
+          {/* Live pulse ring */}
+          {isActive && (
+            <span className="absolute inset-0 rounded-full animate-ping"
+              style={{ background: "rgba(16,185,129,0.25)", animationDuration: "1.5s" }} />
+          )}
+          {/* Green dot badge */}
+          {isActive && (
+            <span className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white"
+              style={{ background: "#10B981" }} />
+          )}
         </button>
 
         {/* Dropdown */}
         {open && (
           <div
-            className="absolute right-0 top-full mt-2 w-[320px] rounded-2xl border border-[#E5E7EB] bg-white shadow-xl overflow-hidden z-50"
-            style={{ maxHeight: 420 }}
+            className="absolute right-0 top-full mt-2 w-[300px] rounded-2xl border border-[#E5E7EB] bg-white overflow-hidden z-50"
+            style={{ boxShadow: "0 8px 32px rgba(0,0,0,0.12)", maxHeight: 400 }}
           >
+            <div className="flex items-center justify-between px-4 py-3 border-b border-[#F3F4F6]">
+              <p className="text-[13px] font-semibold text-[#111111]">Generations</p>
+              {items.some(i => !LIVE_STATUSES.has(i.status)) && (
+                <button
+                  onClick={() => items.filter(i => !LIVE_STATUSES.has(i.status)).forEach(i => removeActiveGeneration(i.id))}
+                  className="text-[11px] text-[#9CA3AF] hover:text-[#6B7280] transition"
+                >
+                  Clear done
+                </button>
+              )}
+            </div>
+
             {items.length === 0 ? (
               <div className="py-10 text-center">
-                <p className="text-sm text-[#9CA3AF]">No active generations</p>
+                <p className="text-[13px] text-[#9CA3AF]">No generations yet</p>
               </div>
             ) : (
-              <div className="overflow-y-auto" style={{ maxHeight: 420 }}>
-                <div className="px-4 py-3 border-b border-[#F3F4F6] flex items-center justify-between">
-                  <p className="text-xs font-semibold text-[#111111]">Generations</p>
-                  <button
-                    onClick={() => {
-                      items.filter(i => !LIVE_STATUSES.has(i.status)).forEach(i => removeActiveGeneration(i.id));
-                    }}
-                    className="text-[11px] text-[#9CA3AF] hover:text-[#6B7280] transition"
-                  >
-                    Clear done
-                  </button>
-                </div>
+              <div className="overflow-y-auto" style={{ maxHeight: 340 }}>
                 {items.map((item) => {
                   const isLive = LIVE_STATUSES.has(item.status);
                   const isDone = item.status === "COMPLETED";
                   const isFailed = item.status === "FAILED";
                   return (
-                    <div
-                      key={item.id}
-                      className="flex items-center gap-3 px-4 py-3 border-b border-[#F9FAFB] hover:bg-[#FAFAFA] transition-colors"
-                    >
-                      {/* Thumbnail / status icon */}
+                    <div key={item.id}
+                      className="flex items-center gap-3 px-4 py-3 border-b border-[#F9FAFB] hover:bg-[#FAFAFA] transition-colors last:border-0">
+                      {/* Thumbnail */}
                       <div
                         className="relative w-10 h-10 rounded-xl overflow-hidden flex-shrink-0 flex items-center justify-center"
                         onClick={() => isDone && item.finalVideoUrl && setPreviewUrl(item.finalVideoUrl)}
-                        style={{
-                          background: "#F3F4F6",
-                          cursor: isDone && item.finalVideoUrl ? "pointer" : "default",
-                        }}
+                        style={{ background: "#F3F4F6", cursor: isDone && item.finalVideoUrl ? "pointer" : "default" }}
                       >
                         {isDone && item.finalVideoUrl ? (
-                          <video
-                            src={item.finalVideoUrl}
-                            className="w-full h-full object-cover"
-                            muted
-                            playsInline
-                          />
+                          <>
+                            <video src={item.finalVideoUrl} className="w-full h-full object-cover" muted playsInline />
+                            <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity rounded-xl">
+                              <span className="text-white text-[9px] font-bold">PLAY</span>
+                            </div>
+                          </>
                         ) : (
                           <FontAwesomeIcon
                             icon={isFailed ? faTriangleExclamation : isLive ? faSpinner : faCheck}
                             className={isLive ? "animate-spin" : ""}
-                            style={{
-                              fontSize: 14,
-                              color: isFailed ? "#EF4444" : isDone ? "#10B981" : "#2563EB",
-                            }}
+                            style={{ fontSize: 14, color: isFailed ? "#EF4444" : isDone ? "#10B981" : "#2563EB" }}
                           />
-                        )}
-                        {isDone && item.finalVideoUrl && (
-                          <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity rounded-xl">
-                            <span className="text-white text-[9px] font-bold">PLAY</span>
-                          </div>
                         )}
                       </div>
 
                       {/* Info */}
                       <div className="flex-1 min-w-0">
                         <p className="text-[13px] font-semibold text-[#111111] truncate">{item.type}</p>
-                        <p className="text-[11px] truncate" style={{
-                          color: isFailed ? "#EF4444" : isDone ? "#10B981" : "#6B7280"
-                        }}>
+                        <p className="text-[11px] truncate"
+                          style={{ color: isFailed ? "#EF4444" : isDone ? "#10B981" : "#6B7280" }}>
                           {isLive ? statusLabel(item.status) : isDone ? "Completed" : item.errorMessage || "Failed"}
                         </p>
                       </div>
@@ -232,20 +199,14 @@ export default function GenerationsOrb() {
                       {/* Actions */}
                       <div className="flex items-center gap-1 flex-shrink-0">
                         {isDone && item.finalVideoUrl && (
-                          <button
-                            onClick={() => downloadVideo(item.finalVideoUrl!, item.id)}
-                            className="flex h-7 w-7 items-center justify-center rounded-lg hover:bg-[#F3F4F6] transition"
-                            title="Download"
-                          >
+                          <button onClick={() => downloadVideo(item.finalVideoUrl!, item.id)}
+                            className="flex h-7 w-7 items-center justify-center rounded-lg hover:bg-[#F3F4F6] transition" title="Download">
                             <FontAwesomeIcon icon={faDownload} style={{ fontSize: 11, color: "#6B7280" }} />
                           </button>
                         )}
                         {!isLive && (
-                          <button
-                            onClick={() => removeActiveGeneration(item.id)}
-                            className="flex h-7 w-7 items-center justify-center rounded-lg hover:bg-[#F3F4F6] transition"
-                            title="Dismiss"
-                          >
+                          <button onClick={() => removeActiveGeneration(item.id)}
+                            className="flex h-7 w-7 items-center justify-center rounded-lg hover:bg-[#F3F4F6] transition" title="Dismiss">
                             <FontAwesomeIcon icon={faXmark} style={{ fontSize: 11, color: "#9CA3AF" }} />
                           </button>
                         )}
