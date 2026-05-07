@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faGrip,
@@ -24,13 +25,6 @@ import { cn } from "@/lib/utils";
 import { fromUnits, PLAN_CREDITS } from "@/lib/credits";
 import { Logo } from "@/components/ui/logo";
 import { useMobileNav } from "@/lib/stores/mobile-nav";
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu";
 
 interface NavItem {
   label: string;
@@ -93,10 +87,30 @@ export default function Sidebar({ userName = "User", userEmail, userAvatar, cred
   const pathname = usePathname();
   const router = useRouter();
   const { open, setOpen } = useMobileNav();
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const profileTriggerRef = useRef<HTMLButtonElement>(null);
+  const [menuPos, setMenuPos] = useState({ bottom: 0, left: 0, width: 0 });
 
   useEffect(() => {
     setOpen(false);
   }, [pathname, setOpen]);
+
+  useEffect(() => {
+    if (profileMenuOpen) setProfileMenuOpen(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
+
+  function openProfileMenu() {
+    const el = profileTriggerRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    setMenuPos({
+      bottom: window.innerHeight - rect.top + 8,
+      left: rect.left,
+      width: rect.width,
+    });
+    setProfileMenuOpen(true);
+  }
 
   async function handleSignOut() {
     await fetch("/auth/signout", { method: "POST" });
@@ -229,42 +243,73 @@ export default function Sidebar({ userName = "User", userEmail, userAvatar, cred
         </div>
 
         {/* Profile card */}
-        <DropdownMenu>
-          <DropdownMenuTrigger className="flex w-full items-center gap-3 rounded-2xl p-3 transition-colors hover:bg-[#F3F4F6] focus:outline-none focus-visible:outline-none active:translate-y-0"
-            style={{ background: "#FFFFFF", border: "1px solid #E5E7EB", boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
-            {userAvatar ? (
-              <span className="h-11 w-11 overflow-hidden rounded-full flex-shrink-0">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={userAvatar} alt={userName} className="h-full w-full object-cover" />
-              </span>
-            ) : (
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-[15px] font-bold text-white"
-                style={{ background: "linear-gradient(135deg, #2563EB, #06B6D4)" }}>
-                {initial}
-              </span>
-            )}
-            <div className="flex-1 text-left min-w-0">
-              <p className="text-[13px] font-bold text-[#111111] truncate">{userName}</p>
-              <p className="text-[11px] text-[#9CA3AF] truncate">{userEmail}</p>
+        <button
+          ref={profileTriggerRef}
+          type="button"
+          onClick={openProfileMenu}
+          className="flex w-full items-center gap-3 rounded-2xl p-3 text-left transition-colors hover:bg-[#F3F4F6] focus:outline-none"
+          style={{ background: "#FFFFFF", border: "1px solid #E5E7EB", boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}
+        >
+          {userAvatar ? (
+            <span className="h-11 w-11 overflow-hidden rounded-full flex-shrink-0">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={userAvatar} alt={userName} className="h-full w-full object-cover" />
+            </span>
+          ) : (
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-[15px] font-bold text-white"
+              style={{ background: "linear-gradient(135deg, #2563EB, #06B6D4)" }}>
+              {initial}
+            </span>
+          )}
+          <div className="flex-1 text-left min-w-0">
+            <p className="text-[13px] font-bold text-[#111111] truncate">{userName}</p>
+            <p className="text-[11px] text-[#9CA3AF] truncate">{userEmail}</p>
+          </div>
+          <FontAwesomeIcon icon={faEllipsis} className="shrink-0 text-[#9CA3AF]" style={{ fontSize: 16 }} />
+        </button>
+
+        {/* Portal profile menu — renders to document.body, zero layout impact */}
+        {profileMenuOpen && typeof document !== "undefined" && createPortal(
+          <>
+            <div className="fixed inset-0 z-40" onClick={() => setProfileMenuOpen(false)} />
+            <div
+              className="fixed z-50 rounded-2xl overflow-hidden py-1"
+              style={{
+                bottom: menuPos.bottom,
+                left: menuPos.left,
+                width: menuPos.width,
+                background: "#FFFFFF",
+                border: "1px solid #E5E7EB",
+                boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
+              }}
+            >
+              {[
+                { icon: faUser, label: "Profile", href: "/profile" },
+                { icon: faCreditCard, label: "Billing", href: "/billing" },
+              ].map((item) => (
+                <button
+                  key={item.href}
+                  type="button"
+                  onClick={() => { setProfileMenuOpen(false); router.push(item.href); }}
+                  className="flex w-full items-center gap-3 px-4 py-2.5 text-[13px] font-medium text-[#374151] hover:bg-[#F3F4F6] transition-colors"
+                >
+                  <FontAwesomeIcon icon={item.icon} style={{ fontSize: 13, color: "#6B7280" }} />
+                  {item.label}
+                </button>
+              ))}
+              <div className="my-1 h-px mx-3" style={{ background: "#E5E7EB" }} />
+              <button
+                type="button"
+                onClick={() => { setProfileMenuOpen(false); handleSignOut(); }}
+                className="flex w-full items-center gap-3 px-4 py-2.5 text-[13px] font-medium text-[#DC2626] hover:bg-red-50 transition-colors"
+              >
+                <FontAwesomeIcon icon={faRightFromBracket} style={{ fontSize: 13 }} />
+                Sign Out
+              </button>
             </div>
-            <FontAwesomeIcon icon={faEllipsis} className="shrink-0 text-[#9CA3AF]" style={{ fontSize: 16 }} />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent side="top" align="start" sideOffset={8}>
-            <DropdownMenuItem onClick={() => router.push("/profile")}>
-              <FontAwesomeIcon icon={faUser} className="mr-2" style={{ fontSize: 14 }} />
-              Profile
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => router.push("/billing")}>
-              <FontAwesomeIcon icon={faCreditCard} className="mr-2" style={{ fontSize: 14 }} />
-              Billing
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleSignOut}>
-              <FontAwesomeIcon icon={faRightFromBracket} className="mr-2" style={{ fontSize: 14 }} />
-              Sign Out
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+          </>,
+          document.body
+        )}
       </div>
     </aside>
     </>
