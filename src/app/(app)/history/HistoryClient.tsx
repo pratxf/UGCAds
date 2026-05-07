@@ -41,10 +41,9 @@ interface Item {
 
 const tabs = [
   { value: "all", label: "All" },
-  { value: "ugc", label: "UGC" },
-  { value: "product", label: "Product" },
+  { value: "ugc", label: "UGC Video" },
   { value: "mockup", label: "Product Photoshoot" },
-  { value: "tryon", label: "Try-On" },
+  { value: "tryon", label: "AI Try-On" },
 ] as const;
 
 const tabMap: Record<string, AdType> = {
