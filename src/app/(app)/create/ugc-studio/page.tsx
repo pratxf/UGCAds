@@ -135,7 +135,7 @@ function DropdownPill<T extends string>({
   icon: React.ReactNode;
   label: string;
   value: T;
-  options: { value: T; label: string; locked?: boolean }[];
+  options: { value: T; label: string; locked?: boolean; shape?: React.ReactNode }[];
   onChange: (v: T) => void;
 }) {
   const [open, setOpen] = useState(false);
@@ -162,9 +162,10 @@ function DropdownPill<T extends string>({
           {options.map((opt) => (
             <button key={opt.value} type="button" disabled={opt.locked}
               onClick={() => { if (!opt.locked) { onChange(opt.value); setOpen(false); } }}
-              className="w-full flex items-center justify-between gap-3 px-3.5 h-10 text-[13px] transition hover:bg-[#F3F4F6]"
+              className="w-full flex items-center gap-3 px-3.5 h-11 text-[13px] transition hover:bg-[#F3F4F6]"
               style={{ color: opt.locked ? "#D1D5DB" : value === opt.value ? "#2563EB" : "#374151", cursor: opt.locked ? "not-allowed" : "pointer" }}>
-              <span>{opt.label}</span>
+              {opt.shape && <span className="flex-shrink-0">{opt.shape}</span>}
+              <span className="flex-1 text-left">{opt.label}</span>
               {value === opt.value && !opt.locked && <FontAwesomeIcon icon={faCheck} style={{ fontSize: 10 }} />}
               {opt.locked && <span className="text-[10px] text-[#D1D5DB]">N/A</span>}
             </button>
@@ -411,7 +412,7 @@ export default function UGCStudio() {
                   }}
                   placeholder={"Example:\nA skincare creator explaining why this moisturizer\nhelped her acne in 7 days."}
                   className="w-full bg-transparent border-none outline-none text-[15px] leading-relaxed text-[#111111] placeholder-[#D1D5DB] resize-none"
-                  style={{ minHeight: "72px", height: "72px", maxHeight: "140px", overflowY: "auto" }}
+                  style={{ minHeight: "110px", height: "110px", maxHeight: "200px", overflowY: "auto" }}
                   maxLength={2000}
                 />
                 <div className="flex items-end justify-between">
@@ -449,47 +450,54 @@ export default function UGCStudio() {
             </div>
 
             {/* Right: avatar + generate */}
-            <div className="w-[150px] flex-shrink-0 flex flex-col items-center justify-between p-4 gap-3"
-              style={{ borderLeft: "1px solid #F3F4F6" }}>
+            <div className="w-[170px] flex-shrink-0 flex flex-col items-center justify-between p-5 gap-4"
+              style={{ borderLeft: "1px solid #EFEFEF" }}>
 
-              {/* Avatar picker */}
-              <div className="flex flex-col items-center gap-1.5">
+              {/* Avatar picker — rounded square */}
+              <div className="flex flex-col items-center gap-2 w-full">
                 <button type="button" onClick={() => setAvatarModalOpen(true)}
-                  className="relative transition-all hover:scale-105 active:scale-95">
+                  className="relative w-full transition-all hover:opacity-90 active:scale-[0.98]"
+                  style={{ aspectRatio: "3/4" }}>
                   {selectedChar ? (
                     <>
-                      <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-[#2563EB]">
-                        <Image src={selectedChar.imageUrl} alt={selectedChar.name} width={56} height={56} className="object-cover object-top" />
+                      <div className="w-full h-full rounded-2xl overflow-hidden border-2 border-[#2563EB]">
+                        <Image src={selectedChar.imageUrl} alt={selectedChar.name} fill className="object-cover object-top" sizes="160px" />
                       </div>
                       <button type="button" onClick={(e) => { e.stopPropagation(); setSelectedCharacter(null); }}
-                        className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-[#6B7280] border border-white">
-                        <FontAwesomeIcon icon={faXmark} style={{ fontSize: 7, color: "white" }} />
+                        className="absolute top-1.5 right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-black/50 border border-white/30 z-10">
+                        <FontAwesomeIcon icon={faXmark} style={{ fontSize: 8, color: "white" }} />
                       </button>
                     </>
                   ) : (
-                    <div className="w-14 h-14 rounded-full border-2 border-dashed border-[#D1D5DB] flex items-center justify-center hover:border-[#2563EB] transition-colors bg-[#F9FAFB]">
-                      <FontAwesomeIcon icon={faPlus} style={{ fontSize: 14, color: "#9CA3AF" }} />
+                    <div className="w-full h-full rounded-2xl border-2 border-dashed border-[#D1D5DB] flex flex-col items-center justify-center gap-2 hover:border-[#2563EB] hover:bg-blue-50/40 transition-all bg-[#FAFAFA]">
+                      <div className="w-9 h-9 rounded-full bg-[#F3F4F6] flex items-center justify-center">
+                        <FontAwesomeIcon icon={faPlus} style={{ fontSize: 14, color: "#9CA3AF" }} />
+                      </div>
+                      <span className="text-[11px] text-[#9CA3AF] font-medium">Add avatar</span>
                     </div>
                   )}
                 </button>
-                <span className="text-[11px] text-[#9CA3AF] text-center leading-tight">
-                  {selectedChar ? "Change avatar" : "Add avatar"}
-                </span>
+                {selectedChar && (
+                  <span className="text-[11px] text-[#9CA3AF] text-center">
+                    {selectedChar.name} · <button type="button" onClick={() => setAvatarModalOpen(true)} className="text-[#2563EB] hover:underline">Change</button>
+                  </span>
+                )}
               </div>
 
               {/* Generate */}
               <button type="button" onClick={handleGenerate} disabled={!canGenerate}
-                className="w-full flex items-center justify-center gap-1.5 h-10 rounded-xl text-[12px] font-bold transition-all"
+                className="w-full flex items-center justify-center gap-2 rounded-xl text-[13px] font-bold transition-all"
                 style={{
+                  height: 44,
                   background: canGenerate ? "#2563EB" : "#F3F4F6",
                   color: canGenerate ? "#FFFFFF" : "#9CA3AF",
                   cursor: canGenerate ? "pointer" : "not-allowed",
                 }}>
                 {isGenerating
-                  ? <FontAwesomeIcon icon={faCircleNotch} className="animate-spin" style={{ fontSize: 12 }} />
-                  : <FontAwesomeIcon icon={faWandMagicSparkles} style={{ fontSize: 11 }} />}
-                <span>Generate Ad</span>
-                <span className="opacity-60 text-[10px]">·{creditCost}</span>
+                  ? <FontAwesomeIcon icon={faCircleNotch} className="animate-spin" style={{ fontSize: 13 }} />
+                  : <FontAwesomeIcon icon={faWandMagicSparkles} style={{ fontSize: 12 }} />}
+                <span>Generate</span>
+                <span className="text-[11px] opacity-60">·{creditCost}</span>
               </button>
             </div>
           </div>
@@ -501,9 +509,18 @@ export default function UGCStudio() {
               label="Aspect Ratio  "
               value={aspectRatio}
               options={[
-                { value: "9:16" as AspectRatio, label: "9:16" },
-                { value: "1:1" as AspectRatio, label: "1:1" },
-                { value: "16:9" as AspectRatio, label: "16:9" },
+                {
+                  value: "9:16" as AspectRatio, label: "9:16",
+                  shape: <span className="inline-block rounded-[3px] border-[1.5px] border-current flex-shrink-0" style={{ width: 10, height: 17 }} />,
+                },
+                {
+                  value: "1:1" as AspectRatio, label: "1:1",
+                  shape: <span className="inline-block rounded-[3px] border-[1.5px] border-current flex-shrink-0" style={{ width: 14, height: 14 }} />,
+                },
+                {
+                  value: "16:9" as AspectRatio, label: "16:9",
+                  shape: <span className="inline-block rounded-[3px] border-[1.5px] border-current flex-shrink-0" style={{ width: 20, height: 11 }} />,
+                },
               ]}
               onChange={setAspectRatio}
             />
