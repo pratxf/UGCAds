@@ -153,12 +153,17 @@ export default function ProfileClient({ name, email, avatar, credits, provider, 
     if (connectingGoogle) return;
     setConnectingGoogle(true);
     const supabase = createClient();
-    await supabase.auth.signInWithOAuth({
+    const { error } = await supabase.auth.linkIdentity({
       provider: "google",
       options: {
         redirectTo: `${window.location.origin}/auth/callback?redirect=/profile`,
       },
     });
+    if (error) {
+      alert(error.message);
+      setConnectingGoogle(false);
+    }
+    // On success Supabase redirects to Google — no cleanup needed here
   }
 
   async function handleSignOutEverywhere() {
