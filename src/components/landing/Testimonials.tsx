@@ -64,22 +64,32 @@ const testimonials = [
 
 function TestimonialCard({ item }: { item: typeof testimonials[0] }) {
   return (
-    <div className="rounded-2xl border border-[#E5E7EB] bg-white p-6 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 w-[300px] flex-shrink-0 flex flex-col">
-      <div className="flex gap-0.5 mb-4">
+    <div
+      className="bg-white w-[300px] flex-shrink-0 flex flex-col p-6 transition-all duration-300 hover:-translate-y-1"
+      style={{
+        borderRadius: 20,
+        border: "1px solid #E5E7EB",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.06), 0 0 0 0 transparent",
+      }}
+      onMouseEnter={e => (e.currentTarget.style.boxShadow = "0 8px 24px rgba(0,0,0,0.10)")}
+      onMouseLeave={e => (e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.06)")}
+    >
+      <div className="flex gap-1 mb-4">
         {Array.from({ length: 5 }).map((_, i) => (
-          <Star key={i} className="h-3.5 w-3.5 fill-[#F59E0B] text-[#F59E0B]" />
+          <Star key={i} className="h-4 w-4 fill-[#F59E0B] text-[#F59E0B]" />
         ))}
       </div>
-      <p className="text-sm text-[#374151] leading-relaxed flex-1">{item.text}</p>
-      <div className="flex items-center gap-3 mt-5 pt-4 border-t border-[#F3F4F6]">
+      <p className="text-[14px] text-[#374151] leading-relaxed flex-1">{item.text}</p>
+      <div className="flex items-center gap-3 mt-5">
         <img
           src={item.image}
           alt={item.name}
-          className="h-10 w-10 rounded-full object-cover border border-[#E5E7EB] flex-shrink-0"
+          className="h-10 w-10 rounded-full object-cover flex-shrink-0"
+          style={{ border: "2px solid #F3F4F6" }}
         />
         <div>
-          <div className="text-sm font-semibold text-[#111111]">{item.name}</div>
-          <div className="text-xs text-[#6B7280]">{item.role}</div>
+          <div className="text-[13px] font-semibold text-[#111111] leading-tight">{item.name}</div>
+          <div className="text-[12px] text-[#9CA3AF] mt-0.5">{item.role}</div>
         </div>
       </div>
     </div>
