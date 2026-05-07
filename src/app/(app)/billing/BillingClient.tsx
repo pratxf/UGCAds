@@ -131,7 +131,7 @@ export default function BillingClient({
                 <div className="flex items-center gap-2">
                   <FontAwesomeIcon icon={faBolt} className="text-[#9CA3AF]" style={{ fontSize: 12 }} />
                   <div>
-                    <p className="text-xs font-semibold text-[#111111]">{fmt(monthlyCredits)}</p>
+                    <p className="text-xs font-semibold text-[#111111]">{monthlyCredits}</p>
                     <p className="text-[10px] text-[#9CA3AF]">credits / cycle</p>
                   </div>
                 </div>
@@ -152,21 +152,13 @@ export default function BillingClient({
               </div>
             )}
 
-            <div className="mt-5 flex gap-2">
+            <div className="mt-5">
               <button
                 onClick={() => setShowPlansModal(true)}
                 className="rounded-xl bg-[#2563EB] text-white px-4 py-2.5 text-sm font-bold transition hover:brightness-105 active:scale-[0.99]"
               >
                 {isPaid ? "Change plan" : "Upgrade"}
               </button>
-              {isPaid && (
-                <button
-                  type="button"
-                  className="rounded-xl border border-[#E5E7EB] bg-white hover:bg-[#F9FAFB] px-4 py-2.5 text-sm font-semibold text-[#374151] transition"
-                >
-                  Manage subscription
-                </button>
-              )}
             </div>
           </div>
 
