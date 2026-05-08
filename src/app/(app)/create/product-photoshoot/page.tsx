@@ -372,7 +372,7 @@ export default function PhotoshootCreator() {
                   {!productImage && (
                     <button type="button" onClick={() => fileInputRef.current?.click()}
                       className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-medium transition-all"
-                      style={{ color: "#9CA3AF", background: "#F9FAFB", border: "1px solid #F0F0F0" }}>
+                      style={{ color: "#374151", background: "#F3F4F6", border: "1px solid #D1D5DB" }}>
                       <FontAwesomeIcon icon={faPaperclip} style={{ fontSize: 11 }} />
                       Add file
                     </button>
