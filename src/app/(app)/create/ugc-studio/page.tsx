@@ -70,31 +70,26 @@ function AvatarModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-6 lg:pl-[268px]">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 lg:pl-[256px] lg:pr-3">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative z-10 flex w-full max-w-[880px] h-[600px] rounded-2xl overflow-hidden shadow-2xl"
+      <div className="relative z-10 flex w-full max-w-[1120px] h-[720px] rounded-2xl overflow-hidden shadow-2xl"
         style={{ background: "#FFFFFF", border: "1px solid #E5E7EB" }}>
 
-        {/* Sidebar — only All + categories */}
-        <div className="w-[185px] shrink-0 flex flex-col p-5 gap-0.5" style={{ borderRight: "1px solid #E5E7EB" }}>
-          <p className="text-[14px] font-semibold text-[#111111] mb-5">Select Avatar</p>
+        {/* Sidebar */}
+        <div className="w-[185px] shrink-0 flex flex-col p-4 gap-0.5 overflow-y-auto" style={{ borderRight: "1px solid #E5E7EB", scrollbarWidth: "none" }}>
+          <p className="text-[14px] font-semibold text-[#111111] mb-3">Select Avatar</p>
           <button onClick={() => setCatFilter("all")}
             className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] text-left transition-colors"
             style={{ color: catFilter === "all" ? "#2563EB" : "#6B7280", background: catFilter === "all" ? "rgba(37,99,235,0.1)" : "transparent" }}>
             All
           </button>
-          {categories.length > 0 && (
-            <>
-              <div className="my-3 h-px bg-[#E5E7EB]" />
-              {categories.map((c) => (
-                <button key={c.id} onClick={() => setCatFilter(c.id)}
-                  className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] text-left transition-colors"
-                  style={{ color: catFilter === c.id ? "#2563EB" : "#6B7280", background: catFilter === c.id ? "rgba(37,99,235,0.1)" : "transparent" }}>
-                  {c.name}
-                </button>
-              ))}
-            </>
-          )}
+          {categories.map((c) => (
+            <button key={c.id} onClick={() => setCatFilter(c.id)}
+              className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] text-left transition-colors"
+              style={{ color: catFilter === c.id ? "#2563EB" : "#6B7280", background: catFilter === c.id ? "rgba(37,99,235,0.1)" : "transparent" }}>
+              {c.name}
+            </button>
+          ))}
         </div>
 
         {/* Grid */}
@@ -102,7 +97,7 @@ function AvatarModal({
           <div className="flex items-center gap-3 px-5 py-4 border-b border-[#E5E7EB]">
             <div className="flex-1 flex items-center gap-2.5 h-9 rounded-xl px-3 bg-[#F3F4F6] border border-[#E5E7EB]">
               <FontAwesomeIcon icon={faMagnifyingGlass} style={{ fontSize: 12, color: "#6B7280" }} />
-              <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search..."
+              <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search avatars..."
                 className="flex-1 bg-transparent text-[13px] text-[#111111] outline-none" />
             </div>
             <button onClick={onClose}
@@ -112,7 +107,7 @@ function AvatarModal({
           </div>
           <div className="flex-1 overflow-y-auto p-5">
             <div className="grid grid-cols-5 gap-3">
-              {/* Upload your own avatar card */}
+              {/* Upload your own */}
               <input ref={uploadRef} type="file" accept="image/*" className="hidden" onChange={handleUpload} />
               <button type="button" onClick={() => uploadRef.current?.click()}
                 className="relative aspect-[3/4] rounded-xl overflow-hidden transition-all flex flex-col items-center justify-center gap-2"
@@ -127,7 +122,7 @@ function AvatarModal({
                 <button key={c.id} type="button" onClick={() => { onSelect(c.id); onClose(); }}
                   className="relative aspect-[3/4] rounded-xl overflow-hidden transition-all"
                   style={{ border: selected === c.id ? "2px solid #2563EB" : "2px solid transparent" }}>
-                  <Image src={c.imageUrl} alt={c.name} fill className="object-cover object-top" sizes="140px" />
+                  <img src={c.thumbnailUrl || c.imageUrl} alt={c.name} className="w-full h-full object-cover object-top" />
                   <div className="absolute inset-x-0 bottom-0 pb-2 pt-8 px-2"
                     style={{ background: "linear-gradient(to top, rgba(0,0,0,0.8), transparent)" }}>
                     <p className="text-[11px] font-semibold text-white truncate">{c.name}</p>

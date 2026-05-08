@@ -7,6 +7,7 @@ export type LibraryItem = {
   id: string;
   name: string;
   imageUrl: string;
+  thumbnailUrl?: string;
   categoryId: string | null;
 };
 

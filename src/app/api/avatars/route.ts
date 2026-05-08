@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 export async function GET() {
-  const [avatars, categories] = await Promise.all([
+  const [raw, categories] = await Promise.all([
     prisma.avatar.findMany({
       where: { active: true },
       orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
@@ -13,5 +13,9 @@ export async function GET() {
       select: { id: true, name: true, slug: true },
     }),
   ]);
+  const avatars = raw.map((a) => ({
+    ...a,
+    thumbnailUrl: a.imageUrl.replace(/\.png$/i, ".webp"),
+  }));
   return NextResponse.json({ avatars, categories });
 }
