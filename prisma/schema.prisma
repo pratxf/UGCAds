@@ -177,6 +177,7 @@ enum Quality {
 enum AIProvider {
   FAL
   KIE
+  POYO
 }
 
 // ─────────────────────────────────────────────────────
