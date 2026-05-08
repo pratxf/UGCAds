@@ -23,7 +23,7 @@ type AspectRatio = "9:16" | "1:1" | "16:9";
 type Duration = "5" | "8" | "10" | "15" | "20";
 
 const VIDEO_MODELS: PoyoVideoModel[] = [
-  { id: "seedance-2-fast",    name: "Seedance 2",  tag: "ByteDance · 720p",  logo: "/models/seedance-2.webp",  credits: 15, maxDuration: 10 },
+  { id: "seedance-2-fast",    name: "Seedance 2",  tag: "ByteDance · 720p",  logo: "/models/seedance-2.webp",  credits: 15, maxDuration: 15 },
   { id: "sora-2-official",    name: "Sora 2",      tag: "OpenAI · 20s",      logo: "/models/sora-2.webp",      credits: 20, maxDuration: 20 },
   { id: "kling-3.0/standard", name: "Kling 3.0",   tag: "Kling · Standard",  logo: "/models/kling-3.webp",     credits: 15, maxDuration: 15 },
   { id: "veo3.1-quality",     name: "Veo 3.1",     tag: "Google · 1080p",    logo: "/models/veo-3.webp",       credits: 20, maxDuration: 8  },
