@@ -319,6 +319,7 @@ export default function UGCStudio() {
 
   const canGenerate = prompt.trim().length > 0 && !isGenerating;
   const creditCost = duration === "15" ? 25 : duration === "10" ? 20 : 15;
+  const [isDragging, setIsDragging] = useState(false);
 
   return (
     <div className="flex flex-col items-center justify-center gap-6" style={{ minHeight: "calc(100vh - 80px)" }}>
@@ -412,8 +413,11 @@ export default function UGCStudio() {
         <div className="w-full flex-shrink-0" style={{ maxWidth: 720 }}>
 
           {/* Card: textarea left + actions right */}
-          <div className="rounded-2xl border border-[#E5E7EB] bg-white flex overflow-hidden"
-            style={{ boxShadow: "0 2px 16px rgba(0,0,0,0.06)" }}>
+          <div className="rounded-2xl border bg-white flex overflow-hidden"
+            onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+            onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setIsDragging(false); }}
+            onDrop={(e) => { e.preventDefault(); setIsDragging(false); if (e.dataTransfer.files.length) addImages(e.dataTransfer.files); }}
+            style={{ boxShadow: "0 2px 16px rgba(0,0,0,0.06)", borderColor: isDragging ? "#2563EB" : "#E5E7EB", outline: isDragging ? "2px dashed #2563EB" : "none", outlineOffset: 2 }}>
 
             {/* Left: prompt */}
             <div className="flex-1 flex flex-col min-w-0">

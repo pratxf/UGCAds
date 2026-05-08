@@ -187,6 +187,7 @@ export default function TryonCreator() {
   }
 
   const canGenerate = !!selectedModel && !!garmentRef.current && !!category && !isGenerating;
+  const [isDragging, setIsDragging] = useState(false);
 
   async function handleGenerate() {
     if (!canGenerate) return;
@@ -313,8 +314,11 @@ export default function TryonCreator() {
         {/* ── Input card ─── */}
         <div className="w-full flex-shrink-0" style={{ maxWidth: 720 }}>
 
-          <div className="rounded-2xl border border-[#E5E7EB] bg-white flex overflow-hidden"
-            style={{ boxShadow: "0 2px 16px rgba(0,0,0,0.06)" }}>
+          <div className="rounded-2xl border bg-white flex overflow-hidden"
+            onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+            onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setIsDragging(false); }}
+            onDrop={(e) => { e.preventDefault(); setIsDragging(false); const file = e.dataTransfer.files[0]; if (file && file.type.startsWith("image/")) handleGarmentFile(file); }}
+            style={{ boxShadow: "0 2px 16px rgba(0,0,0,0.06)", borderColor: isDragging ? "#2563EB" : "#E5E7EB", outline: isDragging ? "2px dashed #2563EB" : "none", outlineOffset: 2 }}>
 
             {/* Left: garment upload + category */}
             <div className="flex-1 flex flex-col min-w-0">
