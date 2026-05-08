@@ -17,9 +17,28 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { useAvatars, type LibraryItem, type LibraryCategory } from "@/lib/hooks/use-library";
 import { addActiveGeneration } from "@/lib/active-generations";
+import type { PoyoVideoModel } from "@/lib/poyo";
 
 type AspectRatio = "9:16" | "1:1" | "16:9";
-type Duration = "5" | "10" | "15";
+type Duration = "5" | "8" | "10" | "15" | "20";
+
+const VIDEO_MODELS: PoyoVideoModel[] = [
+  { id: "seedance-2-fast",    name: "Seedance 2",  tag: "ByteDance · 720p",  logo: "/models/seedance-2.webp",  credits: 15, maxDuration: 10 },
+  { id: "sora-2-official",    name: "Sora 2",      tag: "OpenAI · 20s",      logo: "/models/sora-2.webp",      credits: 20, maxDuration: 20 },
+  { id: "kling-3.0/standard", name: "Kling 3.0",   tag: "Kling · Standard",  logo: "/models/kling-3.webp",     credits: 15, maxDuration: 15 },
+  { id: "veo3.1-quality",     name: "Veo 3.1",     tag: "Google · 1080p",    logo: "/models/veo-3.webp",       credits: 20, maxDuration: 8  },
+];
+
+function getDurationOptions(maxDuration: number): { value: Duration; label: string }[] {
+  const all: { value: Duration; label: string }[] = [
+    { value: "5", label: "5s" },
+    { value: "8", label: "8s" },
+    { value: "10", label: "10s" },
+    { value: "15", label: "15s" },
+    { value: "20", label: "20s" },
+  ];
+  return all.filter((o) => parseInt(o.value) <= maxDuration);
+}
 
 const HERO_VIDEOS = ["/videos/hero-1-h264.mp4", "/videos/hero-2-h264.mp4", "/videos/hero-3-h264.mp4"];
 
@@ -211,8 +230,20 @@ export default function UGCStudio() {
   const [customAvatarPreview, setCustomAvatarPreview] = useState<string | null>(null);
 
   const [prompt, setPrompt] = useState("");
+  const [videoModel, setVideoModel] = useState<string>(VIDEO_MODELS[0].id);
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>("9:16");
   const [duration, setDuration] = useState<Duration>("5");
+
+  const activeModel = VIDEO_MODELS.find((m) => m.id === videoModel) ?? VIDEO_MODELS[0];
+
+  function handleModelChange(id: string) {
+    setVideoModel(id);
+    const model = VIDEO_MODELS.find((m) => m.id === id);
+    if (model && parseInt(duration) > model.maxDuration) {
+      const opts = getDurationOptions(model.maxDuration);
+      setDuration(opts[opts.length - 1].value);
+    }
+  }
 
   const [isGenerating, setIsGenerating] = useState(false);
   const [isWritingScript, setIsWritingScript] = useState(false);
@@ -273,6 +304,7 @@ export default function UGCStudio() {
     try {
       const fd = new FormData();
       fd.append("prompt", prompt.trim());
+      fd.append("videoModel", videoModel);
       fd.append("aspectRatio", aspectRatio === "9:16" ? "NINE_SIXTEEN" : aspectRatio === "16:9" ? "SIXTEEN_NINE" : "ONE_ONE");
       fd.append("duration", duration);
       if (selectedCharacter) fd.append("characterId", selectedCharacter);
@@ -305,7 +337,8 @@ export default function UGCStudio() {
   }
 
   const canGenerate = prompt.trim().length > 0 && !isGenerating;
-  const creditCost = duration === "15" ? 25 : duration === "10" ? 20 : 15;
+  const durationNum = parseInt(duration);
+  const creditCost = durationNum >= 15 ? 25 : durationNum >= 10 ? 20 : 15;
   const [isDragging, setIsDragging] = useState(false);
 
   return (
@@ -544,6 +577,19 @@ export default function UGCStudio() {
           {/* Settings row */}
           <div className="flex items-center gap-2 mt-3 flex-wrap">
             <DropdownPill
+              icon={activeModel.logo
+                ? <img src={activeModel.logo} alt="" className="w-4 h-4 rounded-sm object-contain" />
+                : <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/></svg>}
+              label="Model  "
+              value={videoModel}
+              options={VIDEO_MODELS.map((m) => ({
+                value: m.id,
+                label: m.name,
+                shape: <img src={m.logo} alt="" className="w-5 h-5 rounded-sm object-contain flex-shrink-0" />,
+              }))}
+              onChange={handleModelChange}
+            />
+            <DropdownPill
               icon={<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="6" y="3" width="12" height="18" rx="2"/></svg>}
               label="Aspect Ratio  "
               value={aspectRatio}
@@ -567,11 +613,7 @@ export default function UGCStudio() {
               icon={<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6V12L16 14"/></svg>}
               label="Duration  "
               value={duration}
-              options={[
-                { value: "5" as Duration, label: "5s" },
-                { value: "10" as Duration, label: "10s" },
-                { value: "15" as Duration, label: "15s" },
-              ]}
+              options={getDurationOptions(activeModel.maxDuration)}
               onChange={setDuration}
             />
           </div>

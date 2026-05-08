@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { preload } from "react-dom";
 import Image from "next/image";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -23,9 +24,9 @@ import type { PoyoModel } from "@/lib/poyo";
 type AspectRatio = "1:1" | "4:5" | "9:16" | "16:9";
 
 const PHOTOSHOOT_MODELS: PoyoModel[] = [
-  { id: "seedream-4.5-edit",       name: "Seedream 4.5",    tag: "ByteDance · 4K",     logo: "/models/seedream-4-5.webp",    credits: 5 },
+  { id: "seedream-4.5-edit",       name: "Seedream 4.5",    tag: "ByteDance · 4K",     logo: "/models/seedance-2.webp",      credits: 5 },
   { id: "nano-banana-2-new-edit",  name: "Nano Banana 2",   tag: "Gemini · Fast",      logo: "/models/nano-banana-2.webp",   credits: 5 },
-  { id: "seedream-5.0-lite-edit",  name: "Seedream 5 Lite", tag: "ByteDance · Lite",   logo: "/models/seedream-5-lite.webp", credits: 5 },
+  { id: "seedream-5.0-lite-edit",  name: "Seedream 5 Lite", tag: "ByteDance · Lite",   logo: "/models/seedance-2.webp",      credits: 5 },
   { id: "flux-2-pro-edit",         name: "Flux 2 Pro",      tag: "BFL · Pro",          logo: "/models/flux-2-pro.webp",      credits: 6 },
   { id: "gpt-image-2-edit",        name: "GPT Image 2",     tag: "OpenAI · Photoreal", logo: "/models/gpt-image-2.webp",     credits: 3 },
 ];
@@ -170,6 +171,12 @@ function TemplateModal({
 // ── Main Page ─────────────────────────────────────────────────────
 
 export default function PhotoshootCreator() {
+  preload("/images/photoshoot-samples/ps-1.avif", { as: "image" });
+  preload("/images/photoshoot-samples/ps-2.avif", { as: "image" });
+  preload("/images/photoshoot-samples/ps-3.avif", { as: "image" });
+  preload("/images/photoshoot-samples/ps-4.avif", { as: "image" });
+  preload("/images/photoshoot-samples/ps-5.avif", { as: "image" });
+
   const productFileRef = useRef<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [productImage, setProductImage] = useState<string | null>(null);

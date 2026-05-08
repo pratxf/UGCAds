@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
+import { preload } from "react-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faWandMagicSparkles,
@@ -123,6 +124,12 @@ function ModelModal({
 // ── Main Page ─────────────────────────────────────────────────────
 
 export default function TryonCreator() {
+  preload("/images/tryon-samples/to-1.avif", { as: "image" });
+  preload("/images/tryon-samples/to-2.avif", { as: "image" });
+  preload("/images/tryon-samples/to-3.avif", { as: "image" });
+  preload("/images/tryon-samples/to-4.avif", { as: "image" });
+  preload("/images/tryon-samples/to-5.avif", { as: "image" });
+
   const [models, setModels] = useState<TryonModel[]>([]);
   const [genderFilter, setGenderFilter] = useState<GenderFilter>("all");
   const [modelModalOpen, setModelModalOpen] = useState(false);

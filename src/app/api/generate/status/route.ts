@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { pollKieTask } from "@/lib/kie";
+import { pollPoyoTask } from "@/lib/poyo";
 import { mirrorToR2FromUrl } from "@/lib/r2";
 export const maxDuration = 60;
 
@@ -22,8 +23,42 @@ export async function GET(req: Request) {
       return NextResponse.json({ status: "Failed", errorMessage: gen.errorMessage });
     }
 
-    // Still processing — poll kie.ai
     const meta = (gen.metadata as Record<string, string> | null) ?? {};
+
+    // ── Poyo provider ─────────────────────────────────────────────
+    if (meta.poyoTaskId) {
+      const result = await pollPoyoTask(meta.poyoTaskId);
+
+      if (result.state === "success" && result.url) {
+        const isVideo = gen.type === "UGC_AD" || gen.type === "PRODUCT_AD";
+        const ext = isVideo ? "mp4" : "jpg";
+        const r2Key = `generations/${gen.id}/final.${ext}`;
+        const finalUrl = await mirrorToR2FromUrl(result.url, r2Key, isVideo ? "video/mp4" : "image/jpeg");
+        await prisma.generation.update({
+          where: { id: gen.id },
+          data: { status: "COMPLETED", finalVideoUrl: finalUrl, completedAt: new Date() },
+        });
+        return NextResponse.json({ status: "Complete", finalUrl });
+      }
+
+      if (result.state === "fail") {
+        await prisma.generation.update({
+          where: { id: gen.id },
+          data: { status: "FAILED", errorMessage: result.error || "Generation failed" },
+        });
+        await prisma.$transaction([
+          prisma.user.update({ where: { id: gen.userId }, data: { credits: { increment: gen.creditsUsed } } }),
+          prisma.transaction.create({
+            data: { userId: gen.userId, type: "REFUND", status: "COMPLETED", credits: gen.creditsUsed, description: `Refund: failed generation ${gen.id}` },
+          }),
+        ]);
+        return NextResponse.json({ status: "Failed", errorMessage: result.error });
+      }
+
+      return NextResponse.json({ status: "Processing", progress: 0 });
+    }
+
+    // ── KIE provider (legacy) ─────────────────────────────────────
     const kieTaskId = meta.kieTaskId;
     if (!kieTaskId) {
       return NextResponse.json({ status: "Processing", progress: 0 });
@@ -40,11 +75,7 @@ export async function GET(req: Request) {
 
       await prisma.generation.update({
         where: { id: gen.id },
-        data: {
-          status: "COMPLETED",
-          finalVideoUrl: finalUrl,
-          completedAt: new Date(),
-        },
+        data: { status: "COMPLETED", finalVideoUrl: finalUrl, completedAt: new Date() },
       });
       return NextResponse.json({ status: "Complete", finalUrl });
     }
