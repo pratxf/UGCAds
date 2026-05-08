@@ -26,7 +26,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       <div className="fixed top-4 right-4 z-[15]">
         <ConditionalOrb />
       </div>
-      <div className="relative z-10 flex flex-1 flex-col lg:ml-[252px]">
+      <div className="relative z-[20] flex flex-1 flex-col lg:ml-[252px]">
         <main className="flex-1 p-4 sm:p-6 lg:p-8">{children}</main>
       </div>
     </div>
