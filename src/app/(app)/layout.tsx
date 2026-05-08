@@ -23,7 +23,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         plan={subscription?.plan ?? undefined}
       />
       {/* Generations orb — fixed top-right of content area */}
-      <div className="fixed top-4 right-4 z-30">
+      <div className="fixed top-4 right-4 z-[15]">
         <ConditionalOrb />
       </div>
       <div className="relative z-10 flex flex-1 flex-col lg:ml-[252px]">
