@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
-import { SIGNUP_CREDITS_UNITS } from "@/lib/credits";
+import { SIGNUP_CREDITS } from "@/lib/credits";
 import type { User as PrismaUser } from "@prisma/client";
 
 /**
@@ -22,7 +22,7 @@ export async function getCurrentUser(): Promise<PrismaUser | null> {
         email: user.email!,
         name: user.user_metadata?.full_name || user.user_metadata?.name || null,
         avatar: user.user_metadata?.avatar_url || null,
-        credits: SIGNUP_CREDITS_UNITS,
+        credits: SIGNUP_CREDITS,
       },
     });
   }

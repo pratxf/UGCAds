@@ -44,11 +44,11 @@ export default async function CreditsPage() {
   const monthlyCredits = subscription?.monthlyCredits ?? 0;
   const renewal = subscription?.currentPeriodEnd ? formatRenewal(subscription.currentPeriodEnd) : "";
 
-  // Convert from tenths (DB) to display units
-  const monthUsed = Math.round(Math.abs(monthUsageAgg._sum.credits ?? 0) / 10);
+  // Usage values are already display units
+  const monthUsed = Math.abs(monthUsageAgg._sum.credits ?? 0);
 
   // Weekly bar heights as percentages (max bar = 100%), values in display units
-  const weeklyValues = weeklyRaw.map((r) => Math.round(Math.abs(r._sum.credits ?? 0) / 10));
+  const weeklyValues = weeklyRaw.map((r) => Math.abs(r._sum.credits ?? 0));
   const maxVal = Math.max(...weeklyValues, 1);
   const weeklyData = weeklyValues.map((v) => Math.round((v / maxVal) * 100));
 

@@ -55,8 +55,7 @@ const formatTime = (iso: string) => {
 };
 
 const formatCredits = (units: number) => {
-  const n = units / 10;
-  return n % 1 === 0 ? String(n) : n.toFixed(1);
+  return String(units);
 };
 
 const initials = (s: string) =>

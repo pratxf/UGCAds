@@ -45,7 +45,7 @@ export default function TopBar({ credits = 0 }: { credits?: number }) {
           className="flex items-center gap-2 rounded-full border border-[#E5E7EB] bg-[#F9FAFB] px-3 py-1.5 text-xs font-semibold text-[#111111] transition-colors hover:bg-[#F3F4F6]"
         >
           <FontAwesomeIcon icon={faWandMagicSparkles} className="text-amber" style={{ fontSize: 14 }} />
-          {credits % 10 === 0 ? credits / 10 : (credits / 10).toFixed(1)}
+          {String(credits)}
         </Link>
 
         {/* Upgrade */}

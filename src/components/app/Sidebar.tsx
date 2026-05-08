@@ -22,7 +22,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { cn } from "@/lib/utils";
-import { fromUnits, PLAN_CREDITS } from "@/lib/credits";
+import { PLAN_CREDITS } from "@/lib/credits";
 import { Logo } from "@/components/ui/logo";
 import { useMobileNav } from "@/lib/stores/mobile-nav";
 
@@ -81,7 +81,7 @@ function NavLink({ item, isActive }: { item: NavItem; isActive: boolean }) {
 }
 
 export default function Sidebar({ userName = "User", userEmail, userAvatar, credits: rawCredits = 0, plan = "BASIC" }: SidebarProps) {
-  const credits = fromUnits(rawCredits);
+  const credits = rawCredits;
   const planMax = (plan && plan in PLAN_CREDITS) ? PLAN_CREDITS[plan as keyof typeof PLAN_CREDITS] : PLAN_CREDITS.BASIC;
   const pct = Math.min(100, Math.round((credits / planMax) * 100));
   const pathname = usePathname();

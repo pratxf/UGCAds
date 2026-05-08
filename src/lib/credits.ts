@@ -1,10 +1,9 @@
 /**
- * Credits are stored as integer tenths in the DB to avoid float precision bugs.
- * 10 in DB = 1 credit displayed.
- * Display values in COSTS / PLANS are whole credits.
+ * Credits are stored as plain display values in the DB.
+ * 1 in DB = 1 credit displayed.
  */
 
-export const CREDIT_UNITS = 10;
+export const CREDIT_UNITS = 1;
 
 /** Convert display credits → DB integer tenths. */
 export function toUnits(displayCredits: number): number {

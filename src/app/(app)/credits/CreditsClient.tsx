@@ -78,7 +78,7 @@ function UpgradeParamWatcher({ onOpen }: { onOpen: () => void }) {
 }
 
 function fmt(units: number) {
-  return units % 10 === 0 ? String(units / 10) : (units / 10).toFixed(1);
+  return String(units);
 }
 
 function fmtAmount(cents: number) {
@@ -153,10 +153,10 @@ export default function CreditsClient({ currentPlanId, credits, monthlyCredits, 
   const [checkingOut, setCheckingOut] = useState<string | null>(null);
   const [showAll, setShowAll] = useState(false);
 
-  const creditsDisplay = Math.round(credits / 10);
+  const creditsDisplay = credits;
   const creditsTotalDisplay = monthlyCredits || 300;
   const remainingPct = creditsTotalDisplay > 0 ? Math.min(Math.round((creditsDisplay / creditsTotalDisplay) * 100), 100) : 0;
-  const displayRemaining = Math.round(credits / 10).toString();
+  const displayRemaining = String(credits);
   const displayUsed = monthUsed.toString();
   const currentPlanName = currentPlanId ? currentPlanId.charAt(0).toUpperCase() + currentPlanId.slice(1) : null;
 
@@ -199,7 +199,7 @@ export default function CreditsClient({ currentPlanId, credits, monthlyCredits, 
           const verify = await fetch("/api/verify-payment", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ ...response, amountPaise: pack.amountCents, type: "TOPUP", creditsTenths: pack.credits * 10, creditsDisplay: pack.credits }),
+            body: JSON.stringify({ ...response, amountPaise: pack.amountCents, type: "TOPUP", creditsTenths: pack.credits, creditsDisplay: pack.credits }),
           });
           if (verify.ok) {
             window.location.reload();

@@ -35,7 +35,7 @@ interface Props {
 }
 
 function fmt(units: number) {
-  return units % 10 === 0 ? String(units / 10) : (units / 10).toFixed(1);
+  return String(units);
 }
 
 function planLabel(p: string | null) {

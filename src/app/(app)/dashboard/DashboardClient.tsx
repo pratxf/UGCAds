@@ -169,7 +169,7 @@ export default function DashboardClient({
   const { items: characters } = useAvatars();
   const creditsPct = creditsTotal > 0 ? Math.round((credits / creditsTotal) * 100) : 0;
   const weekTotal = weeklyData.reduce((s, d) => s + d.value, 0);
-  const fmt = (units: number) => units % 10 === 0 ? String(units / 10) : (units / 10).toFixed(1);
+  const fmt = (units: number) => String(units);
   const displayCredits = fmt(credits);
   const displayTotal = fmt(creditsTotal);
 

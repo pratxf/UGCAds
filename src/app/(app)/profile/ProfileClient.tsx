@@ -35,7 +35,7 @@ function formatMemberSince(d: string | null) {
 }
 
 function fmtCredits(c: number) {
-  return c % 10 === 0 ? String(c / 10) : (c / 10).toFixed(1);
+  return String(c);
 }
 
 export default function ProfileClient({ name, email, avatar, credits, provider, memberSince }: Props) {
