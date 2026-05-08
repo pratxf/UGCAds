@@ -153,9 +153,8 @@ export default function CreditsClient({ currentPlanId, credits, monthlyCredits, 
   const [checkingOut, setCheckingOut] = useState<string | null>(null);
   const [showAll, setShowAll] = useState(false);
 
-  const creditsTotal = monthlyCredits || 300;
-  const pct = creditsTotal > 0 ? Math.min(Math.round((monthUsed / creditsTotal) * 100), 100) : 0;
-  const remainingPct = 100 - pct;
+  const creditsTotalTenths = monthlyCredits || 3000; // tenths: 3000 = 300 display credits
+  const remainingPct = creditsTotalTenths > 0 ? Math.min(Math.round((credits / creditsTotalTenths) * 100), 100) : 0;
   const displayRemaining = Math.round(credits / 10).toString();
   const displayUsed = monthUsed.toString();
   const currentPlanName = currentPlanId ? currentPlanId.charAt(0).toUpperCase() + currentPlanId.slice(1) : null;

@@ -228,7 +228,7 @@ export default function Sidebar({ userName = "User", userEmail, userAvatar, cred
           {/* Usage text */}
           <p className="text-[12px]">
             <span style={{ color: "#2563EB", fontWeight: 600 }}>{credits}</span>
-            <span style={{ color: "#9CA3AF" }}> / {planMax} credits used</span>
+            <span style={{ color: "#9CA3AF" }}> / {planMax} credits remaining</span>
           </p>
 
           {/* Upgrade button */}
