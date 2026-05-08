@@ -133,6 +133,9 @@ export default function TryonCreator() {
   const [models, setModels] = useState<TryonModel[]>([]);
   const [genderFilter, setGenderFilter] = useState<GenderFilter>("all");
   const [modelModalOpen, setModelModalOpen] = useState(false);
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent(modelModalOpen ? "app:modal-open" : "app:modal-close"));
+  }, [modelModalOpen]);
 
   const [selectedModel, setSelectedModel] = useState<string | null>(null);
   const garmentRef = useRef<File | null>(null);

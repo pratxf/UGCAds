@@ -184,6 +184,10 @@ export default function PhotoshootCreator() {
 
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const [templateModalOpen, setTemplateModalOpen] = useState(false);
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent(templateModalOpen ? "app:modal-open" : "app:modal-close"));
+  }, [templateModalOpen]);
+
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [customPrompt, setCustomPrompt] = useState("");
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>("1:1");

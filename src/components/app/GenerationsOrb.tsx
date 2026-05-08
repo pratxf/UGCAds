@@ -99,9 +99,23 @@ export default function GenerationsOrb() {
     return () => document.removeEventListener("mousedown", handler);
   }, [open]);
 
+  const [modalOpen, setModalOpen] = useState(false);
+  useEffect(() => {
+    const onOpen  = () => setModalOpen(true);
+    const onClose = () => setModalOpen(false);
+    window.addEventListener("app:modal-open",  onOpen);
+    window.addEventListener("app:modal-close", onClose);
+    return () => {
+      window.removeEventListener("app:modal-open",  onOpen);
+      window.removeEventListener("app:modal-close", onClose);
+    };
+  }, []);
+
   const liveCount = items.filter((i) => LIVE_STATUSES.has(i.status)).length;
   const isActive = liveCount > 0;
   const hasAny = items.length > 0;
+
+  if (modalOpen) return null;
 
   return (
     <>

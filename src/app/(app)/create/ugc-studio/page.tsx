@@ -208,6 +208,10 @@ function DropdownPill<T extends string>({
 
 export default function UGCStudio() {
   const [avatarModalOpen, setAvatarModalOpen] = useState(false);
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent(avatarModalOpen ? "app:modal-open" : "app:modal-close"));
+  }, [avatarModalOpen]);
+
   const [heroIdx, setHeroIdx] = useState(0);
   const heroRefs = useRef<(HTMLVideoElement | null)[]>([null, null, null]);
 
