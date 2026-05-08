@@ -587,7 +587,7 @@ export default function UGCStudio() {
               icon={<img src={VIDEO_MODELS.find(m => m.id === videoModel)?.logo} alt="" className="w-3.5 h-3.5 rounded object-cover" />}
               label="Model  "
               value={videoModel}
-              options={VIDEO_MODELS.map(m => ({ value: m.id, label: m.name }))}
+              options={VIDEO_MODELS.map(m => ({ value: m.id, label: m.name, shape: <img src={m.logo} alt="" className="w-4 h-4 rounded object-cover flex-shrink-0" /> }))}
               onChange={(v) => { setVideoModel(v); if (v === "kling-2.6/image-to-video" && duration === "15") setDuration("10"); }}
             />
           </div>
