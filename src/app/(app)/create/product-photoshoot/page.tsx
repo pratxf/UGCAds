@@ -21,12 +21,6 @@ import { addActiveGeneration } from "@/lib/active-generations";
 
 type AspectRatio = "1:1" | "4:5" | "9:16" | "16:9";
 
-const IMAGE_MODELS = [
-  { id: "seedream/4.5-edit", name: "Seedream 4.5", tag: "ByteDance · 4K Edit", logo: "/models/seedream-4-5.jpg" },
-  { id: "gpt-image-2-image-to-image", name: "GPT Image 2", tag: "OpenAI · Photoreal", logo: "/models/gpt-image-2.png" },
-  { id: "seedream/5-lite-image-to-image", name: "Seedream 5 Lite", tag: "ByteDance · Fast", logo: "/models/seedream-5-lite.png" },
-  { id: "flux-2/pro-image-to-image", name: "Flux 2 Pro", tag: "BFL · Multi-reference", logo: "/models/flux-2-pro.jpg" },
-];
 
 // ── DropdownPill ─────────────────────────────────────────────────
 
@@ -177,7 +171,6 @@ export default function PhotoshootCreator() {
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [customPrompt, setCustomPrompt] = useState("");
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>("1:1");
-  const [modelChoice, setModelChoice] = useState("seedream/4.5-edit");
 
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationId, setGenerationId] = useState<string | null>(null);
@@ -238,7 +231,6 @@ export default function PhotoshootCreator() {
 
     const fd = new FormData();
     fd.append("productImage", productFileRef.current);
-    fd.append("imageModel", modelChoice);
     fd.append("aspectRatio", aspectRatio);
     if (selectedTemplate && !selectedTemplate.startsWith("custom-")) {
       fd.append("templateId", selectedTemplate);
@@ -477,13 +469,6 @@ export default function PhotoshootCreator() {
                 { value: "16:9" as AspectRatio, label: "16:9", shape: <span className="inline-block rounded-[3px] border-[1.5px] border-current flex-shrink-0" style={{ width: 20, height: 11 }} /> },
               ]}
               onChange={setAspectRatio}
-            />
-            <DropdownPill
-              icon={<img src={IMAGE_MODELS.find(m => m.id === modelChoice)?.logo} alt="" className="w-3.5 h-3.5 rounded object-cover" />}
-              label="Model  "
-              value={modelChoice}
-              options={IMAGE_MODELS.map(m => ({ value: m.id, label: m.name, tag: m.tag, imgSrc: m.logo }))}
-              onChange={setModelChoice}
             />
           </div>
 

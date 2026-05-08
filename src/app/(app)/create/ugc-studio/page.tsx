@@ -18,14 +18,8 @@ import {
 import { useAvatars, type LibraryItem, type LibraryCategory } from "@/lib/hooks/use-library";
 import { addActiveGeneration } from "@/lib/active-generations";
 
-type VideoModel = "kling-3.0/video" | "kling-2.6/image-to-video";
 type AspectRatio = "9:16" | "1:1" | "16:9";
 type Duration = "5" | "10" | "15";
-
-const VIDEO_MODELS: { id: VideoModel; name: string; logo: string }[] = [
-  { id: "kling-3.0/video", name: "Kling 3.0", logo: "/models/kling-3.jpg" },
-  { id: "kling-2.6/image-to-video", name: "Kling 2.6", logo: "/models/kling-3.jpg" },
-];
 
 const HERO_VIDEOS = ["/videos/hero-1-h264.mp4", "/videos/hero-2-h264.mp4", "/videos/hero-3-h264.mp4"];
 
@@ -217,7 +211,6 @@ export default function UGCStudio() {
   const [customAvatarPreview, setCustomAvatarPreview] = useState<string | null>(null);
 
   const [prompt, setPrompt] = useState("");
-  const [videoModel, setVideoModel] = useState<VideoModel>("kling-3.0/video");
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>("9:16");
   const [duration, setDuration] = useState<Duration>("5");
 
@@ -280,7 +273,6 @@ export default function UGCStudio() {
     try {
       const fd = new FormData();
       fd.append("prompt", prompt.trim());
-      fd.append("videoModel", videoModel);
       fd.append("aspectRatio", aspectRatio === "9:16" ? "NINE_SIXTEEN" : aspectRatio === "16:9" ? "SIXTEEN_NINE" : "ONE_ONE");
       fd.append("duration", duration);
       if (selectedCharacter) fd.append("characterId", selectedCharacter);
@@ -578,16 +570,9 @@ export default function UGCStudio() {
               options={[
                 { value: "5" as Duration, label: "5s" },
                 { value: "10" as Duration, label: "10s" },
-                { value: "15" as Duration, label: "15s", locked: videoModel === "kling-2.6/image-to-video" },
+                { value: "15" as Duration, label: "15s" },
               ]}
               onChange={setDuration}
-            />
-            <DropdownPill
-              icon={<img src={VIDEO_MODELS.find(m => m.id === videoModel)?.logo} alt="" className="w-3.5 h-3.5 rounded object-cover" />}
-              label="Model  "
-              value={videoModel}
-              options={VIDEO_MODELS.map(m => ({ value: m.id, label: m.name, shape: <img src={m.logo} alt="" className="w-4 h-4 rounded object-cover flex-shrink-0" /> }))}
-              onChange={(v) => { setVideoModel(v); if (v === "kling-2.6/image-to-video" && duration === "15") setDuration("10"); }}
             />
           </div>
 
