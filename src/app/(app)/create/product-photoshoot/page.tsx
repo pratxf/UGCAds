@@ -103,31 +103,26 @@ function TemplateModal({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-6 lg:pl-[268px]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 lg:pl-[256px] lg:pr-3">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative z-10 flex w-full max-w-[880px] h-[600px] rounded-2xl overflow-hidden shadow-2xl"
+      <div className="relative z-10 flex w-full max-w-[1120px] h-[720px] rounded-2xl overflow-hidden shadow-2xl"
         style={{ background: "#FFFFFF", border: "1px solid #E5E7EB" }}>
 
         {/* Sidebar */}
-        <div className="w-[185px] shrink-0 flex flex-col p-5 gap-0.5" style={{ borderRight: "1px solid #E5E7EB" }}>
-          <p className="text-[14px] font-semibold text-[#111111] mb-5">Scene Templates</p>
+        <div className="w-[185px] shrink-0 flex flex-col p-4 gap-0.5 overflow-y-auto" style={{ borderRight: "1px solid #E5E7EB", scrollbarWidth: "none" }}>
+          <p className="text-[14px] font-semibold text-[#111111] mb-3">Scene Templates</p>
           <button onClick={() => setCatFilter("all")}
             className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] text-left transition-colors"
             style={{ color: catFilter === "all" ? "#2563EB" : "#6B7280", background: catFilter === "all" ? "rgba(37,99,235,0.1)" : "transparent" }}>
             All
           </button>
-          {categories.length > 0 && (
-            <>
-              <div className="my-3 h-px bg-[#E5E7EB]" />
-              {categories.map((c) => (
-                <button key={c.id} onClick={() => setCatFilter(c.id)}
-                  className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] text-left transition-colors"
-                  style={{ color: catFilter === c.id ? "#2563EB" : "#6B7280", background: catFilter === c.id ? "rgba(37,99,235,0.1)" : "transparent" }}>
-                  {c.name}
-                </button>
-              ))}
-            </>
-          )}
+          {categories.map((c) => (
+            <button key={c.id} onClick={() => setCatFilter(c.id)}
+              className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] text-left transition-colors"
+              style={{ color: catFilter === c.id ? "#2563EB" : "#6B7280", background: catFilter === c.id ? "rgba(37,99,235,0.1)" : "transparent" }}>
+              {c.name}
+            </button>
+          ))}
         </div>
 
         {/* Grid */}
@@ -144,7 +139,7 @@ function TemplateModal({
             </button>
           </div>
           <div className="flex-1 overflow-y-auto p-5">
-            <div className="grid grid-cols-4 gap-3">
+            <div className="grid grid-cols-5 gap-3">
               {filtered.map((t) => (
                 <button key={t.id} type="button" onClick={() => { onSelect(t.id); onClose(); }}
                   className="relative aspect-square rounded-xl overflow-hidden transition-all"
