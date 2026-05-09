@@ -75,7 +75,7 @@ export default function FinalCTA() {
             href="/signup"
             className="inline-flex items-center gap-2 rounded-full bg-[#2563EB] px-10 py-4 text-base font-semibold text-white shadow-lg shadow-blue-500/25 hover:bg-blue-700 hover:shadow-blue-500/35 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
           >
-            Get Started Free
+            Start for $5
             <ArrowRight className="h-4 w-4" />
           </Link>
           <Link
