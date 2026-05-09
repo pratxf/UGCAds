@@ -8,13 +8,11 @@ const links = {
     { title: "Features", href: "/#features" },
     { title: "How It Works", href: "/#how-it-works" },
     { title: "Pricing", href: "/pricing" },
-    { title: "Changelog", href: "#" },
   ],
   Company: [
     { title: "About", href: "/about" },
     { title: "Contact", href: "/contact" },
     { title: "Blog", href: "/blog" },
-    { title: "Affiliates", href: "#" },
   ],
   Legal: [
     { title: "Privacy Policy", href: "/privacy" },
@@ -125,7 +123,7 @@ export default function Footer() {
             &copy; {new Date().getFullYear()} ugcads. All rights reserved.
           </p>
           <p className="text-xs text-[#9CA3AF]">
-            support@ugcads.com
+            support@ugcads.us
           </p>
         </div>
       </div>

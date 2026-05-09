@@ -356,7 +356,7 @@ export default function UGCStudio() {
           <div className="flex flex-col items-center gap-6">
             <div className="text-center">
               <p className="text-[22px] font-bold text-[#111111]" style={{ letterSpacing: "-0.02em" }}>Generating your video</p>
-              <p className="text-[13px] text-[#9CA3AF] mt-1">Usually 2–4 minutes · start another while you wait</p>
+              <p className="text-[13px] text-[#9CA3AF] mt-1">Usually 2 to 4 minutes. Start another while you wait</p>
             </div>
             <div className="relative overflow-hidden rounded-2xl shimmer-sweep"
               style={{ width: skW, height: skH, background: "#F3F4F6", border: "1px solid #E5E7EB" }} />

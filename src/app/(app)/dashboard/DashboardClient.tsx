@@ -295,7 +295,7 @@ export default function DashboardClient({
             desc="Lip-synced creator videos with any avatar and your hook."
             icon={faVideo}
             grad="from-[#7D39EB] via-[#9B59FF] to-[#4f20c8]"
-            credits="15–25 credits"
+            credits="15 to 25 credits"
           />
           <CreationTile
             href="/create/product-photoshoot"

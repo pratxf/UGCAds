@@ -101,7 +101,7 @@ export default function PrivacyPage() {
       <p>
         <strong>UGCAds Inc.</strong><br />
         Email: privacy@ugcads.com<br />
-        Support: support@ugcads.com
+        Support: support@ugcads.us
       </p>
     </LegalLayout>
   );

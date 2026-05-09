@@ -355,13 +355,13 @@ export default function SupportPage() {
 
             <div className="mt-5 flex items-center gap-4">
               <a
-                href="mailto:support@ugcads.com?subject=Support%20Request"
+                href="mailto:support@ugcads.us?subject=Support%20Request"
                 className="inline-flex items-center gap-2 rounded-xl border border-[#2563EB] px-4 py-2.5 text-[13px] font-semibold text-[#2563EB] transition hover:bg-[#2563EB]/5"
               >
                 Send email
                 <FontAwesomeIcon icon={faArrowRight} style={{ fontSize: 12 }} />
               </a>
-              <span className="text-[12px] text-[#6B7280]">support@ugcads.com</span>
+              <span className="text-[12px] text-[#6B7280]">support@ugcads.us</span>
             </div>
           </div>
         </div>
@@ -438,7 +438,7 @@ export default function SupportPage() {
             <p className="text-[12px] text-[#6B7280]">Check out our Help Center for detailed guides and tutorials.</p>
           </div>
           <a
-            href="mailto:support@ugcads.com?subject=Support%20Request"
+            href="mailto:support@ugcads.us?subject=Support%20Request"
             className="inline-flex items-center gap-1.5 rounded-xl border border-[#E5E7EB] bg-white hover:bg-[#F9FAFB] px-4 py-2 text-[13px] font-semibold text-[#374151] transition whitespace-nowrap"
           >
             Visit Help Center

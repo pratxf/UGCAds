@@ -16,8 +16,8 @@ const channels = [
     ),
     title: "Email support",
     description: "Our team replies within 24 hours on business days.",
-    action: "support@ugcads.com",
-    href: "mailto:support@ugcads.com",
+    action: "support@ugcads.us",
+    href: "mailto:support@ugcads.us",
   },
   {
     icon: (

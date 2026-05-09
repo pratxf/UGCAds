@@ -136,7 +136,7 @@ export default function TermsPage() {
       <p>
         <strong>UGCAds Inc.</strong><br />
         Email: legal@ugcads.com<br />
-        Support: support@ugcads.com
+        Support: support@ugcads.us
       </p>
     </LegalLayout>
   );

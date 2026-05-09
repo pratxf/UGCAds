@@ -36,7 +36,7 @@ export default function RefundPage() {
       <p>To request a refund, you must:</p>
       <ol>
         <li>Submit a request within 3 calendar days of purchase.</li>
-        <li>Email <strong>support@ugcads.com</strong> with the subject line &quot;Refund Request&quot; and include your account email and the date of purchase.</li>
+        <li>Email <strong>support@ugcads.us</strong> with the subject line &quot;Refund Request&quot; and include your account email and the date of purchase.</li>
         <li>Ensure that no credits have been used during the billing period.</li>
       </ol>
       <p>
@@ -64,7 +64,7 @@ export default function RefundPage() {
       </p>
       <p>
         <strong>UGCAds Inc.</strong><br />
-        Email: support@ugcads.com
+        Email: support@ugcads.us
       </p>
     </LegalLayout>
   );

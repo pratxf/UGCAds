@@ -10,6 +10,8 @@ function ScrollReset() {
 
   useEffect(() => {
     lenis?.scrollTo(0, { immediate: true });
+    // Force Lenis to recalculate scroll height after navigation
+    setTimeout(() => lenis?.resize(), 100);
   }, [pathname, lenis]);
 
   return null;
@@ -17,7 +19,7 @@ function ScrollReset() {
 
 export function LenisProvider({ children }: { children: React.ReactNode }) {
   return (
-    <ReactLenis root options={{ lerp: 0.1, duration: 1.2 }}>
+    <ReactLenis root options={{ lerp: 0.12, smoothWheel: true, autoResize: true }}>
       <ScrollReset />
       {children}
     </ReactLenis>

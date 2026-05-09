@@ -85,7 +85,7 @@ export default function AcceptableUsePage() {
       <p>
         <strong>UGCAds Inc.</strong><br />
         Email: abuse@ugcads.com<br />
-        Support: support@ugcads.com
+        Support: support@ugcads.us
       </p>
     </LegalLayout>
   );

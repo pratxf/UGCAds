@@ -300,7 +300,7 @@ export default function PhotoshootCreator() {
             <p className="text-[22px] font-bold text-[#111111]" style={{ letterSpacing: "-0.02em" }}>
               {genStatus === "GENERATING_SCENE" ? "Compositing your scene" : "Preparing photoshoot"}
             </p>
-            <p className="text-[13px] text-[#9CA3AF] mt-1">Usually 20–60 seconds</p>
+            <p className="text-[13px] text-[#9CA3AF] mt-1">Usually 20 to 60 seconds</p>
           </div>
           <div className="relative overflow-hidden rounded-2xl shimmer-sweep"
             style={{ width: 260, height: 260, background: "#F3F4F6", border: "1px solid #E5E7EB" }} />
