@@ -114,7 +114,7 @@ export default function BlogPage() {
 
           {/* Featured post */}
           <Link
-            href={featured.slug}
+            href={`/blog/${featured.slug}`}
             className="group block overflow-hidden rounded-2xl border border-[#E5E7EB] bg-white transition-shadow hover:shadow-lg"
             style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}
           >
@@ -151,7 +151,7 @@ export default function BlogPage() {
             {posts.map((post) => (
               <Link
                 key={post.title}
-                href={post.slug}
+                href={`/blog/${post.slug}`}
                 className="group flex flex-col overflow-hidden rounded-2xl border border-[#E5E7EB] bg-white transition-shadow hover:shadow-md"
               >
                 <div className="aspect-video overflow-hidden">
