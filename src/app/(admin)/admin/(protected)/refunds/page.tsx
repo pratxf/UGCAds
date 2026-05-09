@@ -1,92 +1,67 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
-import { Loader2, RotateCcw, AlertTriangle, CheckCircle2, X, AlertCircle } from "lucide-react";
+import { motion } from "framer-motion";
+import { Loader2, RotateCcw, AlertTriangle, CheckCircle2, X, AlertCircle, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type Row = {
-  id: string;
-  type: string;
-  status?: string;
-  creditCost: number;
-  creditsUsed: number;
-  errorMessage?: string | null;
-  createdAt: string;
-  userEmail: string;
-  userName: string | null;
-  refunded: boolean;
+  id: string; type: string; status?: string; creditCost: number; creditsUsed: number;
+  errorMessage?: string | null; createdAt: string; userEmail: string; userName: string | null; refunded: boolean;
 };
 
-function formatTime(iso: string) {
-  const d = new Date(iso);
-  const ms = Date.now() - d.getTime();
-  const m = Math.round(ms / 60000);
+function fmtTime(iso: string) {
+  const m = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
   if (m < 60) return `${m}m ago`;
   const h = Math.round(m / 60);
-  if (h < 24) return `${h}h ago`;
-  return `${Math.round(h / 24)}d ago`;
+  return h < 24 ? `${h}h ago` : `${Math.round(h / 24)}d ago`;
 }
 
-function ConfirmModal({
-  title,
-  description,
-  confirmLabel = "Confirm",
-  danger = false,
-  loading = false,
-  onConfirm,
-  onClose,
-}: {
-  title: string;
-  description: string;
-  confirmLabel?: string;
-  danger?: boolean;
-  loading?: boolean;
-  onConfirm: () => void;
-  onClose: () => void;
-}) {
+function ConfirmModal({ title, description, loading, onConfirm, onClose }: { title: string; description: string; loading: boolean; onConfirm: () => void; onClose: () => void }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-      <div className="w-full max-w-sm rounded-2xl border border-white/10 bg-[#0f0f14] shadow-2xl overflow-hidden">
-        <div className="flex items-start gap-4 p-6">
-          <div className={cn(
-            "flex size-10 shrink-0 items-center justify-center rounded-xl mt-0.5",
-            danger ? "bg-destructive/10" : "bg-primary/10"
-          )}>
-            {danger ? (
-              <AlertCircle className="h-5 w-5 text-destructive" />
-            ) : (
-              <RotateCcw className="h-5 w-5 text-primary" />
-            )}
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.75)", backdropFilter: "blur(8px)" }} onClick={onClose}>
+      <motion.div initial={{ opacity: 0, scale: 0.96, y: 8 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ duration: 0.2, ease: [0.22,1,0.36,1] as any }} onClick={(e) => e.stopPropagation()} className="w-full max-w-sm rounded-2xl overflow-hidden" style={{ background: "#0D1120", border: "1px solid rgba(255,255,255,0.09)" }}>
+        <div className="h-[2px] w-full bg-gradient-to-r from-sky-500 to-blue-600" />
+        <div className="p-6">
+          <div className="flex items-start gap-4 mb-6">
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-xl" style={{ background: "rgba(14,165,233,0.1)" }}>
+              <RotateCcw className="h-5 w-5 text-sky-400" />
+            </div>
+            <div>
+              <h3 className="text-[14px] font-bold text-slate-100">{title}</h3>
+              <p className="text-sm text-slate-500 mt-1.5 leading-relaxed">{description}</p>
+            </div>
           </div>
-          <div className="flex-1 min-w-0">
-            <h3 className="text-[15px] font-bold text-foreground">{title}</h3>
-            <p className="text-sm text-muted-foreground mt-1 leading-relaxed">{description}</p>
+          <div className="flex gap-2">
+            <button onClick={onClose} className="flex-1 rounded-xl py-2.5 text-sm font-semibold text-slate-500 hover:text-slate-300 transition" style={{ border: "1px solid rgba(255,255,255,0.08)" }}>Cancel</button>
+            <button onClick={onConfirm} disabled={loading} className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-bold text-white disabled:opacity-40 transition" style={{ background: "linear-gradient(135deg, #0EA5E9, #2563EB)", boxShadow: "0 0 20px rgba(14,165,233,0.25)" }}>
+              {loading && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+              Refund Credits
+            </button>
           </div>
-          <button onClick={onClose} className="shrink-0 flex size-7 items-center justify-center rounded-lg text-muted-foreground hover:bg-white/5">
-            <X className="h-4 w-4" />
-          </button>
         </div>
-        <div className="flex gap-2 px-6 pb-6">
-          <button
-            onClick={onClose}
-            className="flex-1 rounded-xl border border-white/10 px-4 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-white/5 transition"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={onConfirm}
-            disabled={loading}
-            className={cn(
-              "flex-1 inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition disabled:opacity-50",
-              danger
-                ? "bg-destructive text-white hover:bg-destructive/90"
-                : "bg-primary text-black hover:brightness-105"
-            )}
-          >
-            {loading && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-            {confirmLabel}
-          </button>
+      </motion.div>
+    </div>
+  );
+}
+
+function StatCard({ label, value, icon: Icon, color }: { label: string; value: number; icon: typeof RotateCcw; color: "red" | "amber" | "sky" }) {
+  const styles = {
+    red:   { gradient: "from-red-500 to-rose-600",    glow: "rgba(248,113,113,0.15)",  text: "text-red-400"   },
+    amber: { gradient: "from-amber-500 to-orange-600",glow: "rgba(245,158,11,0.15)",   text: "text-amber-400" },
+    sky:   { gradient: "from-sky-500 to-blue-600",    glow: "rgba(14,165,233,0.15)",   text: "text-sky-400"   },
+  }[color];
+  return (
+    <div className="rounded-2xl overflow-hidden" style={{ background: "#0B0F1A", border: "1px solid rgba(255,255,255,0.07)" }}>
+      <div className={cn("h-[2px] bg-gradient-to-r", styles.gradient)} />
+      <div className="p-5">
+        <div className="flex items-center justify-between mb-4">
+          <span className="text-[10px] font-bold uppercase tracking-widest text-slate-600">{label}</span>
+          <div className="flex size-8 items-center justify-center rounded-xl" style={{ background: styles.glow }}>
+            <Icon className={cn("h-3.5 w-3.5", styles.text)} />
+          </div>
         </div>
+        <p className="text-[30px] font-bold text-slate-100 tabular-nums" style={{ fontFamily: "Satoshi, sans-serif" }}>{value}</p>
       </div>
     </div>
   );
@@ -102,193 +77,107 @@ export default function AdminRefundsPage() {
   async function load() {
     setLoading(true);
     const r = await fetch("/api/admin/refunds").then((r) => r.json());
-    setFailed(r.failed || []);
-    setStuck(r.stuck || []);
-    setLoading(false);
+    setFailed(r.failed || []); setStuck(r.stuck || []); setLoading(false);
   }
-
   useEffect(() => { load(); }, []);
 
   async function doRefund(id: string) {
-    setRefunding(id);
-    setConfirmRow(null);
+    setRefunding(id); setConfirmRow(null);
     try {
-      const res = await fetch("/api/admin/refunds", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ generationId: id }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data?.error || "Refund failed");
+      const res = await fetch("/api/admin/refunds", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ generationId: id }) });
+      if (!res.ok) throw new Error((await res.json()).error || "Failed");
       await load();
-    } catch (e) {
-      alert(e instanceof Error ? e.message : "Refund failed");
-    } finally {
-      setRefunding(null);
-    }
+    } catch (e) { alert(e instanceof Error ? e.message : "Refund failed"); }
+    finally { setRefunding(null); }
   }
 
-  const failedNotRefunded = failed.filter((r) => !r.refunded).length;
-  const stuckNotRefunded = stuck.filter((r) => !r.refunded).length;
+  const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.06 } } };
+  const up = { hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0, transition: { duration: 0.35, ease: [0.22,1,0.36,1] as any } } };
 
   return (
-    <div className="max-w-7xl mx-auto space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">Refunds</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Failed and stuck generations. Issue manual credit refunds where needed.
-        </p>
-      </div>
+    <motion.div variants={stagger} initial="hidden" animate="show" className="max-w-6xl mx-auto space-y-8">
+      <motion.div variants={up}>
+        <h1 className="text-[22px] font-bold text-slate-100" style={{ fontFamily: "Satoshi, sans-serif" }}>Refunds</h1>
+        <p className="text-sm text-slate-600 mt-0.5">Failed and stuck generations requiring manual credit refunds</p>
+      </motion.div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        <StatCard label="Failed Generations" value={failed.length} icon={AlertTriangle} tone="destructive" />
-        <StatCard label="Stuck (over 30 min)" value={stuck.length} icon={Loader2} tone="warning" />
-        <StatCard label="Pending Refund" value={failedNotRefunded + stuckNotRefunded} icon={RotateCcw} tone="primary" />
-      </div>
+      <motion.div variants={up} className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <StatCard label="Failed Generations"  value={failed.length}                                                        icon={AlertTriangle} color="red"   />
+        <StatCard label="Stuck Over 30 min"   value={stuck.length}                                                         icon={Clock}         color="amber" />
+        <StatCard label="Pending Refund"      value={[...failed,...stuck].filter((r)=>!r.refunded).length}                 icon={RotateCcw}     color="sky"   />
+      </motion.div>
 
       {loading ? (
-        <div className="flex items-center justify-center py-20 text-muted-foreground">
-          <Loader2 className="h-5 w-5 animate-spin" />
-        </div>
+        <div className="flex items-center justify-center py-16"><Loader2 className="h-4 w-4 animate-spin text-sky-400" /></div>
       ) : (
-        <>
-          <Section
-            title="Stuck generations"
-            subtitle="Older than 30 minutes and never finished. Likely pipeline delivery issues."
-            rows={stuck}
-            onRefund={setConfirmRow}
-            refunding={refunding}
-            emptyText="No stuck generations right now"
-          />
-          <Section
-            title="Failed generations"
-            subtitle="Pipeline errors. Refund users whose credits were not auto-returned."
-            rows={failed}
-            onRefund={setConfirmRow}
-            refunding={refunding}
-            emptyText="No failed generations"
-          />
-        </>
+        <motion.div variants={up} className="space-y-8">
+          <RefundSection title="Stuck Generations" subtitle="Older than 30 minutes, never completed" rows={stuck} onRefund={setConfirmRow} refunding={refunding} emptyText="No stuck generations right now" />
+          <RefundSection title="Failed Generations" subtitle="Pipeline errors requiring manual review" rows={failed} onRefund={setConfirmRow} refunding={refunding} emptyText="No failed generations" />
+        </motion.div>
       )}
 
       {confirmRow && (
         <ConfirmModal
           title="Issue Credit Refund"
           description={`Refund ${confirmRow.creditCost ?? confirmRow.creditsUsed} credits to ${confirmRow.userEmail}? This cannot be undone.`}
-          confirmLabel="Refund Credits"
           loading={refunding === confirmRow.id}
           onConfirm={() => doRefund(confirmRow.id)}
           onClose={() => setConfirmRow(null)}
         />
       )}
-    </div>
+    </motion.div>
   );
 }
 
-function StatCard({
-  label,
-  value,
-  icon: Icon,
-  tone,
-}: {
-  label: string;
-  value: number;
-  icon: typeof RotateCcw;
-  tone: "destructive" | "warning" | "primary";
-}) {
-  const colors = {
-    destructive: "text-destructive bg-destructive/10",
-    warning: "text-amber-400 bg-amber-400/10",
-    primary: "text-primary bg-primary/10",
-  }[tone];
-  return (
-    <div className="rounded-2xl border border-border bg-card p-5">
-      <div className="flex items-center justify-between mb-3">
-        <span className="text-xs text-muted-foreground">{label}</span>
-        <div className={cn("flex size-8 items-center justify-center rounded-xl", colors)}>
-          <Icon className="h-4 w-4" />
-        </div>
-      </div>
-      <p className="text-3xl font-bold text-foreground">{value}</p>
-    </div>
-  );
-}
-
-function Section({
-  title,
-  subtitle,
-  rows,
-  onRefund,
-  refunding,
-  emptyText,
-}: {
-  title: string;
-  subtitle: string;
-  rows: Row[];
-  onRefund: (row: Row) => void;
-  refunding: string | null;
-  emptyText: string;
+function RefundSection({ title, subtitle, rows, onRefund, refunding, emptyText }: {
+  title: string; subtitle: string; rows: Row[];
+  onRefund: (r: Row) => void; refunding: string | null; emptyText: string;
 }) {
   return (
-    <section>
+    <div>
       <div className="mb-3">
-        <h2 className="text-sm font-bold text-foreground">{title}</h2>
-        <p className="text-[12px] text-muted-foreground mt-0.5">{subtitle}</p>
+        <h2 className="text-[13px] font-bold text-slate-200">{title}</h2>
+        <p className="text-[11px] text-slate-600 mt-0.5">{subtitle}</p>
       </div>
       {rows.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
+        <div className="rounded-2xl flex items-center justify-center py-12 text-sm text-slate-700" style={{ border: "1px dashed rgba(255,255,255,0.07)" }}>
           {emptyText}
         </div>
       ) : (
-        <div className="rounded-2xl border border-border bg-card overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-white/[0.02] text-[11px] uppercase tracking-wider text-white/40">
-              <tr>
-                <th className="text-left px-4 py-3 font-medium">User</th>
-                <th className="text-left px-4 py-3 font-medium">Type</th>
-                <th className="text-left px-4 py-3 font-medium">Credits</th>
-                <th className="text-left px-4 py-3 font-medium">Age</th>
-                <th className="text-left px-4 py-3 font-medium">Status</th>
-                <th className="text-right px-4 py-3 font-medium">Action</th>
+        <div className="rounded-2xl overflow-hidden" style={{ background: "#0B0F1A", border: "1px solid rgba(255,255,255,0.07)" }}>
+          <table className="w-full">
+            <thead>
+              <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+                {["User", "Type", "Credits", "Age", "Status", ""].map((h, i) => (
+                  <th key={i} className="text-left px-5 py-3 text-[10px] font-bold uppercase tracking-widest text-slate-700">{h}</th>
+                ))}
               </tr>
             </thead>
             <tbody>
-              {rows.map((r) => (
-                <tr key={r.id} className="border-t border-border hover:bg-white/[0.02]">
-                  <td className="px-4 py-3">
-                    <div className="text-[13px] font-medium text-foreground">{r.userName || "—"}</div>
-                    <div className="text-[11px] text-muted-foreground truncate max-w-[200px]">{r.userEmail}</div>
+              {rows.map((r, i) => (
+                <tr key={r.id} className="hover:bg-white/[0.02] transition-colors" style={{ borderTop: i === 0 ? "none" : "1px solid rgba(255,255,255,0.04)" }}>
+                  <td className="px-5 py-3.5">
+                    <p className="text-[13px] font-semibold text-slate-200">{r.userName || "—"}</p>
+                    <p className="text-[11px] text-slate-600 truncate max-w-[180px]">{r.userEmail}</p>
                   </td>
-                  <td className="px-4 py-3 text-white/70 text-xs">{r.type}</td>
-                  <td className="px-4 py-3 font-mono text-white/70 text-xs">
-                    {r.creditCost ?? r.creditsUsed}
-                  </td>
-                  <td className="px-4 py-3 text-white/55 text-xs">{formatTime(r.createdAt)}</td>
-                  <td className="px-4 py-3">
+                  <td className="px-5 py-3.5 text-[12px] text-slate-500">{r.type}</td>
+                  <td className="px-5 py-3.5 text-sm font-bold text-slate-300 tabular-nums">{r.creditCost ?? r.creditsUsed}</td>
+                  <td className="px-5 py-3.5 text-[12px] text-slate-600">{fmtTime(r.createdAt)}</td>
+                  <td className="px-5 py-3.5">
                     {r.refunded ? (
-                      <span className="inline-flex items-center gap-1 text-[11px] text-emerald-400">
+                      <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-emerald-400">
                         <CheckCircle2 className="h-3.5 w-3.5" /> Refunded
                       </span>
                     ) : r.status ? (
-                      <span className="text-[11px] text-amber-400">{r.status}</span>
+                      <span className="text-[11px] font-semibold text-amber-400">{r.status}</span>
                     ) : (
-                      <span className="text-[11px] text-destructive">FAILED</span>
+                      <span className="text-[11px] font-semibold text-red-400">FAILED</span>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-right">
-                    {r.refunded ? (
-                      <span className="text-[11px] text-white/30">—</span>
-                    ) : (
-                      <button
-                        onClick={() => onRefund(r)}
-                        disabled={refunding === r.id}
-                        className="inline-flex items-center gap-1.5 rounded-lg bg-primary/10 border border-primary/30 px-3 py-1.5 text-[11px] font-semibold text-primary hover:bg-primary/20 transition disabled:opacity-50"
-                      >
-                        {refunding === r.id ? (
-                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                        ) : (
-                          <RotateCcw className="h-3.5 w-3.5" />
-                        )}
+                  <td className="px-5 py-3.5 text-right">
+                    {!r.refunded && (
+                      <button onClick={() => onRefund(r)} disabled={refunding === r.id} className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-bold text-sky-300 disabled:opacity-40 transition-all hover:text-sky-200" style={{ background: "rgba(14,165,233,0.08)", border: "1px solid rgba(14,165,233,0.2)" }}>
+                        {refunding === r.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <RotateCcw className="h-3 w-3" />}
                         Refund
                       </button>
                     )}
@@ -299,6 +188,6 @@ function Section({
           </table>
         </div>
       )}
-    </section>
+    </div>
   );
 }
