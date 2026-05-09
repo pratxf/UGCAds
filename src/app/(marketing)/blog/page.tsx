@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 };
 
 const featured = {
-  slug: "#",
+  slug: "ugcads-2-0-faster-smarter-more-human",
   category: "Product",
   title: "Introducing UGCAds 2.0: Faster, smarter, more human",
   excerpt:

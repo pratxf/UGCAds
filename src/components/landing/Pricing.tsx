@@ -127,7 +127,7 @@ export default function Pricing() {
         <PricingSection
           plans={PLANS}
           heading="Simple, Transparent Pricing"
-          description="Start with a $5 trial or commit to a monthly plan. No hidden fees, cancel anytime."
+          description="Start at $5 or commit to a monthly plan. No subscription trap. Just pay for what you create."
         />
       </div>
     </section>

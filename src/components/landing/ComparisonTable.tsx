@@ -22,25 +22,25 @@ function useInView(ref: React.RefObject<HTMLElement | null>, margin = "-100px") 
 const rows = [
   {
     category: "UGC Video Ad (1 ad)",
-    agency: "$300 – $1,000",
+    agency: "$300 to $1,000",
     ugcads: "From $5",
     agencyBad: true,
   },
   {
     category: "Product Photoshoot (20 photos)",
-    agency: "$500 – $2,000",
+    agency: "$500 to $2,000",
     ugcads: "From $5",
     agencyBad: true,
   },
   {
     category: "Full Campaign (10 video ads)",
-    agency: "$3,000 – $10,000",
+    agency: "$3,000 to $10,000",
     ugcads: "$39 / month",
     agencyBad: true,
   },
   {
     category: "Turnaround Time",
-    agency: "1 – 4 weeks",
+    agency: "1 to 4 weeks",
     ugcads: "Under 2 minutes",
     agencyBad: true,
   },
@@ -208,7 +208,7 @@ export default function ComparisonTable() {
             Start saving today
             <span className="text-base leading-none">→</span>
           </Link>
-          <p className="mt-3 text-sm text-[#6B7280]">No contract. No hidden fees. Cancel anytime.</p>
+          <p className="mt-3 text-sm text-[#6B7280]">No subscription trap. Just pay for what you create.</p>
         </div>
       </div>
     </section>
