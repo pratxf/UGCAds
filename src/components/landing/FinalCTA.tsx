@@ -93,7 +93,7 @@ export default function FinalCTA() {
           )}
           style={{ transitionDelay: "320ms" }}
         >
-          No credit card required. Cancel anytime.
+          No credit card required. No monthly plan. Cancel anytime.
         </p>
       </div>
     </section>

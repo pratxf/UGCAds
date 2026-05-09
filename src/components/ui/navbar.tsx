@@ -11,9 +11,9 @@ import { cn } from '@/lib/utils'
 import { Logo } from '@/components/ui/logo'
 
 const NAV_LINKS = [
-    { href: '#features',    label: 'Features' },
-    { href: '#how-it-works', label: 'How It Works' },
-    { href: '#pricing',     label: 'Pricing' },
+    { href: '/#features',    label: 'Features' },
+    { href: '/#how-it-works', label: 'How It Works' },
+    { href: '/pricing',     label: 'Pricing' },
 ]
 
 function MobileNav({ open, setOpen }: { open: boolean; setOpen: (v: boolean) => void }) {
