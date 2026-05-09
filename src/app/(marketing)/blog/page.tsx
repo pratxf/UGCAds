@@ -137,10 +137,8 @@ export default function BlogPage() {
                 <img src={featured.authorImg} alt={featured.author} className="h-8 w-8 rounded-full object-cover" />
                 <div className="text-sm">
                   <span className="font-medium text-[#111111]">{featured.author}</span>
-                  <span className="mx-1.5 text-[#D1D5DB]">·</span>
-                  <span className="text-[#9CA3AF]">{featured.date}</span>
-                  <span className="mx-1.5 text-[#D1D5DB]">·</span>
-                  <span className="text-[#9CA3AF]">{featured.readTime}</span>
+                  <span className="mx-2 text-[#9CA3AF] text-xs">{featured.date}</span>
+                  <span className="text-[#9CA3AF] text-xs">{featured.readTime}</span>
                 </div>
               </div>
             </div>
@@ -169,12 +167,8 @@ export default function BlogPage() {
                     {post.title}
                   </h3>
                   <p className="mt-2 text-xs text-[#6B7280] leading-relaxed line-clamp-2">{post.excerpt}</p>
-                  <div className="mt-auto pt-4 flex items-center gap-1.5 text-xs text-[#9CA3AF]">
-                    <span>{post.author}</span>
-                    <span>·</span>
-                    <span>{post.date}</span>
-                    <span>·</span>
-                    <span>{post.readTime}</span>
+                  <div className="mt-auto pt-4 text-xs text-[#9CA3AF]">
+                    {post.author} &nbsp;{post.date} &nbsp;{post.readTime}
                   </div>
                 </div>
               </Link>

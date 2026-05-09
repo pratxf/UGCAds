@@ -74,7 +74,7 @@ export default function BlogPostPage() {
               />
               <div>
                 <div className="text-sm font-semibold text-[#111111]">Alex Rivera</div>
-                <div className="text-xs text-[#9CA3AF]">CEO · May 7, 2026 · 5 min read</div>
+                <div className="text-xs text-[#9CA3AF]">CEO &nbsp; May 7, 2026 &nbsp; 5 min read</div>
               </div>
             </div>
           </div>
@@ -233,7 +233,7 @@ export default function BlogPostPage() {
                       {post.title}
                     </h3>
                     <div className="mt-auto pt-3 text-xs text-[#9CA3AF]">
-                      {post.date} · {post.readTime}
+                      {post.date} &nbsp; {post.readTime}
                     </div>
                   </div>
                 </Link>
