@@ -96,7 +96,7 @@ export default function Hero() {
                 href="/signup"
                 className="inline-flex items-center gap-2 rounded-2xl bg-[#2563EB] px-8 py-3.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/30 hover:bg-blue-700 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
               >
-                Start for Free
+                Start at $5
                 <span className="text-base leading-none">→</span>
               </Link>
               <Link

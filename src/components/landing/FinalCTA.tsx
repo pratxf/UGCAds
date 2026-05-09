@@ -61,7 +61,7 @@ export default function FinalCTA() {
           )}
           style={{ transitionDelay: "160ms" }}
         >
-          Start with a $5 trial. No subscription required, no credit card to remember, no commitment.
+          Your first AI ad costs $5. No monthly plan required, cancel or upgrade anytime.
         </p>
 
         <div
@@ -75,7 +75,7 @@ export default function FinalCTA() {
             href="/signup"
             className="inline-flex items-center gap-2 rounded-full bg-[#2563EB] px-10 py-4 text-base font-semibold text-white shadow-lg shadow-blue-500/25 hover:bg-blue-700 hover:shadow-blue-500/35 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
           >
-            Start for $5
+            Start at $5
             <ArrowRight className="h-4 w-4" />
           </Link>
           <Link
