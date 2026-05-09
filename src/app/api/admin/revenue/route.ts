@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/admin-auth";
 
-// Hard-coded plan prices (USD cents/month) — keep in sync with /pricing
 const PLAN_PRICE_CENTS: Record<string, number> = {
   BASIC: 3900,
   CREATOR: 7900,
@@ -12,10 +11,21 @@ const PLAN_PRICE_CENTS: Record<string, number> = {
 export async function GET() {
   try {
     await requireAdmin();
-    const subs = await prisma.subscription.findMany({
-      where: { status: "ACTIVE" },
-      select: { plan: true, billingCycle: true },
-    });
+
+    const [subs, subscriptionTxns, topupTxns] = await Promise.all([
+      prisma.subscription.findMany({
+        where: { status: "ACTIVE" },
+        select: { plan: true, billingCycle: true },
+      }),
+      prisma.transaction.aggregate({
+        where: { type: "SUBSCRIPTION", status: "COMPLETED" },
+        _sum: { amountCents: true },
+      }),
+      prisma.transaction.aggregate({
+        where: { type: "TOPUP", status: "COMPLETED" },
+        _sum: { amountCents: true },
+      }),
+    ]);
 
     let mrrCents = 0;
     const tally: Record<string, { subs: number; mrrCents: number }> = {};
@@ -35,7 +45,18 @@ export async function GET() {
       mrrCents: v.mrrCents,
     }));
 
-    return NextResponse.json({ mrrCents, activeSubs: subs.length, breakdown });
+    const subscriptionRevenueCents = subscriptionTxns._sum.amountCents ?? 0;
+    const topupRevenueCents = topupTxns._sum.amountCents ?? 0;
+    const totalRevenueCents = subscriptionRevenueCents + topupRevenueCents;
+
+    return NextResponse.json({
+      mrrCents,
+      activeSubs: subs.length,
+      breakdown,
+      totalRevenueCents,
+      subscriptionRevenueCents,
+      topupRevenueCents,
+    });
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Server error";
     return NextResponse.json({ error: msg }, { status: msg === "Forbidden" ? 403 : 500 });

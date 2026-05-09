@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import Sidebar from "@/components/app/Sidebar";
 import ConditionalOrb from "@/components/app/ConditionalOrb";
+import SupportWidget from "@/components/app/SupportWidget";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
@@ -29,6 +30,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       <div className="relative z-[20] flex flex-1 flex-col lg:ml-[252px]">
         <main className="flex-1 p-4 sm:p-6 lg:p-8">{children}</main>
       </div>
+      <SupportWidget />
     </div>
   );
 }

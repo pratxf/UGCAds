@@ -23,9 +23,10 @@ model User {
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 
-  subscription  Subscription?
-  generations   Generation[]
-  transactions  Transaction[]
+  subscription    Subscription?
+  generations     Generation[]
+  transactions    Transaction[]
+  supportTickets  SupportTicket[]
 
   @@index([supabaseId])
   @@index([email])
@@ -330,6 +331,42 @@ model Voice {
 
   @@index([gender])
   @@index([isActive])
+}
+
+// ─────────────────────────────────────────────────────
+//  SUPPORT TICKETS
+// ─────────────────────────────────────────────────────
+
+model SupportTicket {
+  id        String              @id @default(cuid())
+  userId    String
+  user      User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subject   String
+  status    SupportTicketStatus @default(OPEN)
+  createdAt DateTime            @default(now())
+  updatedAt DateTime            @updatedAt
+
+  messages  SupportMessage[]
+
+  @@index([userId])
+  @@index([status])
+}
+
+enum SupportTicketStatus {
+  OPEN
+  REPLIED
+  CLOSED
+}
+
+model SupportMessage {
+  id        String        @id @default(cuid())
+  ticketId  String
+  ticket    SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  fromAdmin Boolean       @default(false)
+  body      String
+  createdAt DateTime      @default(now())
+
+  @@index([ticketId])
 }
 
 model PhotoshootTemplate {
