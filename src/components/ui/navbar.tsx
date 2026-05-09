@@ -2,7 +2,6 @@
 
 import React from 'react'
 import Link from 'next/link'
-import { ChevronDown } from 'lucide-react'
 import {
     Popover,
     PopoverContent,
@@ -43,12 +42,6 @@ function MobileNav({ open, setOpen }: { open: boolean; setOpen: (v: boolean) => 
                             {link.label}
                         </Link>
                     ))}
-                    <Link href="#"
-                        className="text-base font-medium text-[#111111] py-2.5"
-                        onClick={() => setOpen(false)}
-                    >
-                        Resources
-                    </Link>
                 </div>
             </PopoverContent>
         </Popover>
@@ -85,10 +78,6 @@ export default function SiteNavbar({
                             {link.label}
                         </Link>
                     ))}
-                    <button className="flex items-center gap-1 px-4 py-2 text-sm font-medium text-[#6B7280] hover:text-[#111111] transition-colors rounded-lg hover:bg-[#F9FAFB]">
-                        Resources
-                        <ChevronDown className="h-3.5 w-3.5 mt-px" />
-                    </button>
                 </div>
 
                 {/* Right — auth buttons */}

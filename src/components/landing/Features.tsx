@@ -94,7 +94,7 @@ export default function Features() {
             <span className="gradient-text">scale</span> winning ads
           </h2>
           <p className="mt-4 text-[1.0625rem] text-[#6B7280] max-w-xl leading-relaxed">
-            Generate high-converting UGC videos, try products on models, and create studio-quality photos — all powered by AI.
+            Generate high-converting UGC videos, try products on models, and create studio-quality photos. All powered by AI.
           </p>
         </motion.div>
 

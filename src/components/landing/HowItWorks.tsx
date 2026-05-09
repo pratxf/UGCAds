@@ -68,7 +68,7 @@ export default function HowItWorksSection() {
             videos in minutes
           </h2>
           <p className="mt-4 text-[1.0625rem] text-[#6B7280]">
-            From idea to video in minutes — ready to use instantly.
+            From idea to video in minutes. Ready to use instantly.
           </p>
         </motion.div>
 
@@ -121,7 +121,7 @@ export default function HowItWorksSection() {
             <div className={CELL}>
               <p className="text-xs font-semibold text-[#9CA3AF] uppercase tracking-widest mb-3">Step 02</p>
               <h3 className="text-2xl font-bold text-[#111111] mb-3" style={{ fontFamily: "Satoshi, sans-serif" }}>
-                Choose from 500+ AI actors
+                Choose from 100+ AI actors
               </h3>
               <p className="text-sm text-[#6B7280] leading-relaxed">
                 Select the perfect AI actor to represent your message and build visual consistency across every campaign.

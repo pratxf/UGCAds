@@ -21,7 +21,7 @@ const avatars = [
 ];
 
 const stats = [
-  { icon: Zap,    bold: "200+",         muted: "ads generated" },
+  { icon: Zap,    bold: "10K+",         muted: "ads generated" },
   { icon: Clock,  bold: "Ready in",        muted: "under 2 minutes" },
   { icon: Shield, bold: "Cancel",          muted: "anytime" },
 ];
@@ -60,7 +60,6 @@ export default function Hero() {
                     />
                   ))}
                 </div>
-                <span className="ml-2 text-sm font-semibold text-[#6B7280]">+200</span>
               </div>
             </motion.div>
 

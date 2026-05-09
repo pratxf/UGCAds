@@ -32,7 +32,7 @@ const faqs = [
   },
   {
     question: "Are there any limits on the use of ads made with ugcads?",
-    answer: "You own the ads you create. You can use them on any platform — TikTok, Instagram, Facebook, YouTube, and more — for both organic and paid campaigns with no extra licensing fees.",
+    answer: "You own the ads you create. You can use them on any platform including TikTok, Instagram, Facebook, YouTube, and more for both organic and paid campaigns with no extra licensing fees.",
   },
 ];
 

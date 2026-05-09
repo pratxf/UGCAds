@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState, useEffect } from "react";
-import { Check, X, TrendingDown, Clock, DollarSign, RefreshCw } from "lucide-react";
+import { Check, X, TrendingDown, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 
@@ -45,12 +45,6 @@ const rows = [
     agencyBad: true,
   },
   {
-    category: "Revision Rounds",
-    agency: "$50 – $200 each",
-    ugcads: "Unlimited",
-    agencyBad: true,
-  },
-  {
     category: "Scale to 100 ads / month",
     agency: "$30,000+",
     ugcads: "$129 / month",
@@ -87,22 +81,6 @@ const highlights = [
     color: "text-[#2563EB]",
     bg: "bg-blue-50",
   },
-  {
-    icon: RefreshCw,
-    label: "Unlimited revisions",
-    value: "∞",
-    sub: "no extra charges",
-    color: "text-[#06B6D4]",
-    bg: "bg-cyan-50",
-  },
-  {
-    icon: DollarSign,
-    label: "Starting at",
-    value: "$5",
-    sub: "for 1 video + 20 photos",
-    color: "text-[#F59E0B]",
-    bg: "bg-amber-50",
-  },
 ];
 
 export default function ComparisonTable() {
@@ -138,7 +116,7 @@ export default function ComparisonTable() {
         {/* Highlight stats */}
         <div
           className={cn(
-            "grid grid-cols-2 md:grid-cols-4 gap-4 mb-10 transition-all duration-700 ease-out",
+            "grid grid-cols-2 gap-4 mb-10 transition-all duration-700 ease-out",
             headingInView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
           )}
           style={{ transitionDelay: "150ms" }}
@@ -227,7 +205,7 @@ export default function ComparisonTable() {
             href="/signup"
             className="inline-flex items-center gap-2 rounded-full bg-[#2563EB] px-8 py-3.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/25 hover:bg-blue-700 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
           >
-            Start saving today for $5
+            Start saving today
             <span className="text-base leading-none">→</span>
           </Link>
           <p className="mt-3 text-sm text-[#6B7280]">No contract. No hidden fees. Cancel anytime.</p>
