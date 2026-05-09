@@ -25,7 +25,7 @@ const cards = [
     iconBg: "#DBEAFE",
     Icon: Video,
     media: { type: "video" as const, src: "/videos/feature-ugc.mp4" },
-    description: "Create realistic UGC-style videos with AI characters and authentic voiceovers in minutes.",
+    description: "Create realistic UGC style videos with AI characters and authentic voiceovers in minutes.",
     tags: [
       { icon: Zap,       label: "AI Characters" },
       { icon: AlignLeft, label: "AI Script"     },
@@ -35,7 +35,7 @@ const cards = [
   {
     num: "2.",
     title: "Try On",
-    subtitle: "AI Model Try-On",
+    subtitle: "AI Model Try On",
     accentColor: "#7D39EB",
     accentBg: "#F5F3FF",
     iconBg: "#EDE9FE",
@@ -44,7 +44,7 @@ const cards = [
     description: "Showcase apparel and accessories with realistic AI model try-ons in any setting.",
     tags: [
       { icon: Upload,   label: "Upload Product" },
-      { icon: Sparkles, label: "AI Try-On"      },
+      { icon: Sparkles, label: "AI Try On"      },
       { icon: Download, label: "Download"        },
     ],
   },
@@ -57,7 +57,7 @@ const cards = [
     iconBg: "#D1FAE5",
     Icon: Camera,
     media: { type: "image" as const, src: "/images/product-mockup.webp" },
-    description: "Generate stunning, studio-quality product photos in seconds with AI.",
+    description: "Generate stunning, studio quality product photos in seconds with AI.",
     tags: [
       { icon: LayoutGrid, label: "AI Scenes"   },
       { icon: Sun,        label: "AI Lighting" },
@@ -85,7 +85,7 @@ export default function Features() {
         >
           <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#E5E7EB] bg-white px-4 py-1.5 text-sm font-medium text-[#374151] shadow-sm">
             <Star className="h-3.5 w-3.5 fill-[#2563EB] text-[#2563EB]" />
-            Three AI-powered tools. Endless ad possibilities.
+            Three AI powered tools. Endless ad possibilities.
           </div>
           <h2 className="text-[2.25rem] sm:text-[2.75rem] font-bold tracking-tight text-[#111111] leading-[1.1] max-w-2xl"
               style={{ fontFamily: "Satoshi, sans-serif" }}>

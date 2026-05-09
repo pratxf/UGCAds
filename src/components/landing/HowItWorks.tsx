@@ -89,7 +89,7 @@ export default function HowItWorksSection() {
                 Write or generate your script
               </h3>
               <p className="text-sm text-[#6B7280] leading-relaxed">
-                Enter or automatically generate a script that aligns with your brand&apos;s message to personalize your AI-generated video.
+                Enter or automatically generate a script that aligns with your brand&apos;s message to personalize your AI generated video.
               </p>
             </div>
             {/* Mockup cell — card1 */}
@@ -174,7 +174,7 @@ export default function HowItWorksSection() {
             <div className="text-center">
               <p className="text-base font-bold text-[#111111]">50+ Languages</p>
               <p className="text-sm text-[#6B7280] mt-0.5">
-                Instantly localize your videos with native voices and perfect lip-sync.
+                Instantly localize your videos with native voices and perfect lip sync.
               </p>
             </div>
           </div>

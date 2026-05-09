@@ -19,7 +19,7 @@ const testimonials = [
     role: "Creative Director, ScaleUp Agency",
   },
   {
-    text: "We tested 40 ad variations in a single afternoon. The product ad mode is a game-changer for e-commerce.",
+    text: "We tested 40 ad variations in a single afternoon. The product ad mode is a game changer for ecommerce.",
     image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=150&h=150",
     name: "Priya Kapoor",
     role: "Head of Growth, NovaBrands",
@@ -43,7 +43,7 @@ const testimonials = [
     role: "Marketing Director, GrowthLab",
   },
   {
-    text: "Being able to pick the perfect character for each ad means every piece of content feels on-brand. Conversion rates jumped 34%.",
+    text: "Being able to pick the perfect character for each ad means every piece of content feels on brand. Conversion rates jumped 34%.",
     image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=150&h=150",
     name: "David Kim",
     role: "Performance Marketer, AdVentures",
@@ -55,10 +55,10 @@ const testimonials = [
     role: "VP Marketing, QuickCommerce",
   },
   {
-    text: "Credits rolling over is a huge plus. We scale up during launches and relax during off-season without wasting money.",
+    text: "Credits rolling over is a huge plus. We scale up during launches and relax during off season without wasting money.",
     image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=150&h=150",
     name: "Ryan Torres",
-    role: "E-commerce Manager, FreshBrands",
+    role: "Ecommerce Manager, FreshBrands",
   },
 ];
 

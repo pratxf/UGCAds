@@ -83,7 +83,7 @@ export default function Hero() {
               custom={2} variants={FADE_UP} initial="hidden" animate="show"
               className="mt-5 text-[1.0625rem] text-[#6B7280] leading-relaxed max-w-lg"
             >
-              AI video ads with real-looking characters and authentic voices.
+              AI video ads with real looking characters and authentic voices.
               No studio, no actors, no editing skills needed.
             </motion.p>
 
