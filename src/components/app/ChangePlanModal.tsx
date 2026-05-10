@@ -147,7 +147,9 @@ export function ChangePlanModal({ open, onClose, currentPlanId }: Props) {
                 >
                   Yearly
                   <span className="rounded-full px-2 py-0.5 text-[10px] font-bold"
-                    style={{ background: "rgba(245,158,11,0.15)", color: "#D97706" }}>
+                    style={billing === "yearly"
+                      ? { background: "rgba(255,255,255,0.22)", color: "#fff" }
+                      : { background: "#FEF3C7", color: "#92400E" }}>
                     20% OFF
                   </span>
                 </button>

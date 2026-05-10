@@ -1,6 +1,6 @@
 @AGENTS.md
 
-# Project State — UGCAds (as of May 9, 2026)
+# Project State — UGCAds (as of May 11, 2026)
 
 ## Stack
 - Next.js 16.2.1 with Turbopack (has breaking changes — read `node_modules/next/dist/docs/` before writing code)
@@ -133,7 +133,8 @@
 
 ## Environment Variables
 - `POYO_API_KEY` — Poyo AI API key (regenerate; was shared in chat)
-- All other keys: Supabase, DATABASE_URL, FAL_KEY, INNGEST keys, R2 keys, Razorpay keys
+- All other keys: Supabase, DATABASE_URL, INNGEST keys, R2 keys, Razorpay keys
+- `@anthropic-ai/sdk` was uninstalled — it was unused after Poyo API migration, do NOT re-add it
 
 ## Known Patterns
 - File uploads: `fileInputRef` + `onChange` + `FormData` → API route → R2
@@ -144,3 +145,48 @@
 - Supabase server-side: `import { createClient } from "@/lib/supabase/server"`
 - Git commit then `vercel --prod` to deploy
 - PowerShell: `git add "src/app/(app)/..."` — must quote paths containing parentheses
+
+## Pricing (`src/lib/pricing.ts`)
+Single source of truth for all plan prices — edit once, updates everywhere (OnboardingModal, ChangePlanModal, landing Pricing component, admin pricing page).
+- `STARTER_PLAN` — $5 one-time, 25 credits
+- `SUBSCRIPTION_PLANS` — Basic $39/mo (100cr), Creator $79/mo (300cr), Agency $129/mo (500cr)
+- `TOPUP_PACKS` — 50cr/$30, 100cr/$55, 250cr/$125
+- Yearly = 20% off (monthlyPriceUsd × 0.8, rounded); `yearlyAmountCents` stored as full annual total
+
+## ChangePlanModal (`src/components/app/ChangePlanModal.tsx`)
+- Width: `max-w-5xl` (widened from max-w-3xl)
+- Billing toggle: active pill is blue (`bg-[#2563EB] text-white`) for both Monthly and Yearly buttons
+- Yearly button always shows amber "20% OFF" badge regardless of active state
+- No blur overlay (uses `bg-black/50` solid overlay)
+
+## OnboardingModal (`src/components/app/OnboardingModal.tsx`)
+- Same billing toggle fix as ChangePlanModal: active pill is blue (`bg-[#2563EB] text-white`)
+- Hard-gate shown to users with no plan (`!hasPlan` check in `src/app/(app)/layout.tsx`)
+
+## SupportWidget (`src/components/app/SupportWidget.tsx`)
+- Intercom-style floating widget, bottom-right corner
+- Width: `w-[400px]`, maxHeight: `min(680px, calc(100vh - 120px))`
+- Two views: **home** (branded header + feature rows + CTA) and **conversation** (chat messages + input)
+- Header gradient: `linear-gradient(135deg, #4F46E5 0%, #2563EB 100%)`
+- `AiAvatar` component: dark rounded square (`#1E1B4B`, `rounded-[10px]`) with white ArrowUpRight icon
+- Home view: logo, "Support" title, "Hi there! 👋" greeting, 3 feature rows (UGC Video / Product Photos / AI Try-On), "Start a conversation" CTA, "View pricing" outlined button, "We typically reply in a few minutes" footer
+- Conversation view: back arrow + logo header, gray left-aligned bubbles (admin) + gradient right-aligned bubbles (user), paperclip + send input bar, "Powered by UGCads" footer
+- Floating button: gradient `linear-gradient(135deg, #4F46E5 0%, #2563EB 100%)`, `boxShadow: "0 8px 24px rgba(79,70,229,0.4)"`
+
+## Support Page (`src/app/(app)/support/page.tsx`)
+- Two contact cards: Live chat (opens `LiveChatWidget`) + Email support (`support@ugcads.us`)
+- `LiveChatWidget`: fixed bottom-right, `w-360px`, minimizable, agent avatars (E/M/J), simulated reply after 1.2s
+- FAQ accordion: 6 questions with icon + AnimatePresence expand/collapse
+- Uses framer-motion for FAQ animations (exception to no-framer-motion rule)
+
+## Billing Page (`src/app/(app)/billing/`)
+- `BillingClient.tsx`: Plan card + Current usage card (side by side), cancel subscription section, recent invoices
+- Cancel flow: confirm step → `cancelled` state (TODO: wire to `/api/billing/cancel`)
+- Invoices: credit purchases only (plans + top-ups), download receipt button (UI only)
+
+## Git / Repository
+- Remote: `https://github.com/pratxf/UGCAds.git`
+- All 130 commits rewritten to author `pratxf <mehhprat@gmail.com>` — no Claude/Anthropic co-author lines
+- Local git config: `user.name = pratxf`, `user.email = mehhprat@gmail.com`
+- `.gitignore` includes `.claude` — Claude Code internals are never committed
+- No mention of Claude/Anthropic anywhere in user-facing code or commit messages
