@@ -189,6 +189,6 @@ Please keep PRs focused — one feature or fix per PR.
 
 <div align="center">
 
-Built by the UGCAds team &nbsp;·&nbsp; [ugcads.us](https://ugcads.us) &nbsp;·&nbsp; [support@ugcads.us](mailto:support@ugcads.us)
+Built by [pratxf](https://github.com/pratxf) &nbsp;·&nbsp; [ugcads.us](https://ugcads.us) &nbsp;·&nbsp; [mehhprat@gmail.com](mailto:mehhprat@gmail.com)
 
 </div>
