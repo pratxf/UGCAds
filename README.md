@@ -174,14 +174,6 @@ Access at `/admin` — requires `role = ADMIN` on the user record.
 
 ---
 
-## Deployment
-
-```bash
-vercel --prod
-```
-
-Prisma Client is regenerated automatically on every Vercel build. Blog listing pages use ISR with a 60-second revalidation window.
-
 ---
 
 ## Contributing
