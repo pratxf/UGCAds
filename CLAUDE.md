@@ -2,6 +2,17 @@
 
 # Project State — UGCAds (as of May 11, 2026)
 
+## Recent Changes (May 11, 2026)
+- `ChangePlanModal` width widened to `max-w-5xl`
+- Billing toggle active pill fixed to blue (`bg-[#2563EB] text-white`) in both `ChangePlanModal` and `OnboardingModal`
+- "20% OFF" badge: white text + frosted bg when Yearly active (blue), amber `#FEF3C7`/`#92400E` when inactive
+- `SupportWidget` fully redesigned to Intercom-style (two-view: home + conversation, gradient header)
+- `@anthropic-ai/sdk` uninstalled — was unused after Poyo migration
+- `.gitignore` now includes `.claude`
+- `README.md` rewritten as comprehensive project README
+- All 130 git commits rewritten to author `pratxf <mehhprat@gmail.com>`
+- Git remote: `https://github.com/pratxf/UGCAds.git`
+
 ## Stack
 - Next.js 16.2.1 with Turbopack (has breaking changes — read `node_modules/next/dist/docs/` before writing code)
 - Tailwind CSS v4
@@ -156,11 +167,11 @@ Single source of truth for all plan prices — edit once, updates everywhere (On
 ## ChangePlanModal (`src/components/app/ChangePlanModal.tsx`)
 - Width: `max-w-5xl` (widened from max-w-3xl)
 - Billing toggle: active pill is blue (`bg-[#2563EB] text-white`) for both Monthly and Yearly buttons
-- Yearly button always shows amber "20% OFF" badge regardless of active state
+- "20% OFF" badge: white text + `rgba(255,255,255,0.22)` bg when Yearly active; `#FEF3C7` bg + `#92400E` text when inactive
 - No blur overlay (uses `bg-black/50` solid overlay)
 
 ## OnboardingModal (`src/components/app/OnboardingModal.tsx`)
-- Same billing toggle fix as ChangePlanModal: active pill is blue (`bg-[#2563EB] text-white`)
+- Same billing toggle and "20% OFF" badge logic as ChangePlanModal
 - Hard-gate shown to users with no plan (`!hasPlan` check in `src/app/(app)/layout.tsx`)
 
 ## SupportWidget (`src/components/app/SupportWidget.tsx`)
