@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   BarChart3, Users, Film, DollarSign, Shield, ChevronLeft,
-  UserCircle, ImageIcon, Shirt, RotateCcw, MessageCircle, Tag, Layers,
+  UserCircle, ImageIcon, Shirt, RotateCcw, MessageCircle, Tag, Layers, BookOpen,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -41,8 +41,9 @@ const SECTIONS: Section[] = [
   {
     label: "Business", dotColor: "bg-emerald-400",
     items: [
-      { label: "Revenue", href: "/admin/revenue", icon: DollarSign, ...em },
-      { label: "Pricing", href: "/admin/pricing", icon: Tag,        ...em },
+      { label: "Revenue",       href: "/admin/revenue",  icon: DollarSign, ...em },
+      { label: "Grant Credits", href: "/admin/pricing",  icon: Tag,        ...em },
+      { label: "Blog",          href: "/admin/blog",     icon: BookOpen,   ...em },
     ],
   },
 ];
@@ -57,7 +58,8 @@ const PAGE_TITLES: Record<string, string> = {
   "/admin/photoshoot-templates": "Photoshoot Templates",
   "/admin/tryon-models":         "Try-On Models",
   "/admin/revenue":              "Revenue",
-  "/admin/pricing":              "Pricing",
+  "/admin/pricing":              "Grant Credits",
+  "/admin/blog":                 "Blog",
 };
 
 export default function AdminShell({ children }: { children: React.ReactNode }) {
