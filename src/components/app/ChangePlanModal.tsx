@@ -12,6 +12,7 @@ import {
   faBriefcase,
 } from "@fortawesome/free-solid-svg-icons";
 import { cn } from "@/lib/utils";
+import { SUBSCRIPTION_PLANS } from "@/lib/pricing";
 
 declare global {
   interface Window {
@@ -19,55 +20,6 @@ declare global {
     Razorpay: new (options: Record<string, unknown>) => { open(): void };
   }
 }
-
-const plans = [
-  {
-    id: "basic",
-    name: "Basic",
-    description: "For individuals getting started with AI ads",
-    monthlyPrice: "$39",
-    yearlyPrice: "$31",
-    monthlyAmountCents: 3900,
-    yearlyAmountCents: 37400,
-    credits: 100,
-    features: ["100 credits/month", "5 video generations", "Standard speed rendering", "Basic templates", "Email support", "Watermark on videos"],
-    cta: "Get Started",
-    iconBg: "rgba(16,185,129,0.12)",
-    iconColor: "#10B981",
-    checkColor: "#10B981",
-  },
-  {
-    id: "creator",
-    name: "Creator",
-    description: "For creators and small businesses scaling ads",
-    monthlyPrice: "$79",
-    yearlyPrice: "$63",
-    monthlyAmountCents: 7900,
-    yearlyAmountCents: 75800,
-    credits: 300,
-    popular: true,
-    features: ["300 credits/month", "15 video generations", "Faster rendering", "Premium templates", "No watermark", "Priority email support"],
-    cta: "Start Creating",
-    iconBg: "rgba(37,99,235,0.12)",
-    iconColor: "#2563EB",
-    checkColor: "#2563EB",
-  },
-  {
-    id: "agency",
-    name: "Agency",
-    description: "For agencies and teams producing ads at scale",
-    monthlyPrice: "$129",
-    yearlyPrice: "$103",
-    monthlyAmountCents: 12900,
-    yearlyAmountCents: 123800,
-    credits: 500,
-    features: ["500 credits/month", "25 video generations", "Priority rendering", "All templates", "No watermark", "API access (coming soon)", "Team seats (3 users)", "Priority+ support"],
-    cta: "Go Pro",
-    iconBg: "rgba(245,158,11,0.12)",
-    iconColor: "#F59E0B",
-    checkColor: "#F59E0B",
-  },
-];
 
 const planIcons = { basic: faUser, creator: faStar, agency: faBriefcase } as const;
 
@@ -137,7 +89,7 @@ export function ChangePlanModal({ open, onClose, currentPlanId }: Props) {
 
   function getPlanAction(planId: string) {
     if (!currentPlanId) return "upgrade";
-    const order = ["basic", "creator", "agency"];
+    const order = ["starter", "basic", "creator", "agency"];
     const ci = order.indexOf(currentPlanId);
     const ti = order.indexOf(planId);
     if (ti === ci) return "current";
@@ -151,7 +103,7 @@ export function ChangePlanModal({ open, onClose, currentPlanId }: Props) {
       <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="afterInteractive" />
       <div className="fixed inset-0 z-50 flex items-center justify-center lg:pl-[252px]">
         <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-        <div className="relative w-full max-w-3xl mx-4 max-h-[92vh] overflow-y-auto rounded-3xl bg-white shadow-2xl">
+        <div className="relative w-full max-w-5xl mx-4 max-h-[92vh] overflow-y-auto rounded-3xl bg-white shadow-2xl">
           {/* Header */}
           <div className="flex items-center justify-between px-7 pt-7 pb-5">
             <div className="flex items-center gap-4">
@@ -204,11 +156,18 @@ export function ChangePlanModal({ open, onClose, currentPlanId }: Props) {
 
             {/* Plan cards */}
             <div className="grid gap-4 sm:grid-cols-3">
-              {plans.map((p) => {
+              {SUBSCRIPTION_PLANS.map((p) => {
                 const action = getPlanAction(p.id);
                 const isCurrent = action === "current";
-                const price = billing === "monthly" ? p.monthlyPrice : p.yearlyPrice;
+                const price = billing === "monthly" ? `$${p.monthlyPriceUsd}` : `$${p.yearlyMonthlyPriceUsd}`;
+                const amountCents = billing === "monthly" ? p.monthlyAmountCents : p.yearlyAmountCents;
                 const PlanIcon = planIcons[p.id as keyof typeof planIcons];
+                const iconStyles = {
+                  basic:   { iconBg: "rgba(16,185,129,0.12)",  iconColor: "#10B981", checkColor: "#10B981" },
+                  creator: { iconBg: "rgba(37,99,235,0.12)",   iconColor: "#2563EB", checkColor: "#2563EB" },
+                  agency:  { iconBg: "rgba(245,158,11,0.12)",  iconColor: "#F59E0B", checkColor: "#F59E0B" },
+                }[p.id] ?? { iconBg: "rgba(37,99,235,0.12)", iconColor: "#2563EB", checkColor: "#2563EB" };
+
                 return (
                   <div
                     key={p.id}
@@ -217,7 +176,7 @@ export function ChangePlanModal({ open, onClose, currentPlanId }: Props) {
                       ? { border: "2px solid #2563EB", background: "#FFFFFF", boxShadow: "0 4px 20px rgba(37,99,235,0.10)" }
                       : { border: "1px solid #E5E7EB", background: "#FFFFFF" }}
                   >
-                    {p.popular && (
+                    {p.highlighted && (
                       <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 z-10">
                         <span className="rounded-full px-3 py-1 text-[11px] font-bold text-white"
                           style={{ background: "#2563EB" }}>Popular</span>
@@ -226,8 +185,8 @@ export function ChangePlanModal({ open, onClose, currentPlanId }: Props) {
                     <div className="p-5 flex-1 flex flex-col">
                       <div className="flex items-start gap-3 mb-4">
                         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
-                          style={{ background: p.iconBg }}>
-                          <FontAwesomeIcon icon={PlanIcon} style={{ fontSize: 16, color: p.iconColor }} />
+                          style={{ background: iconStyles.iconBg }}>
+                          <FontAwesomeIcon icon={PlanIcon} style={{ fontSize: 16, color: iconStyles.iconColor }} />
                         </div>
                         <div className="min-w-0">
                           <div className="flex items-center gap-2">
@@ -257,7 +216,7 @@ export function ChangePlanModal({ open, onClose, currentPlanId }: Props) {
                         {p.features.map((f) => (
                           <li key={f} className="flex items-center gap-2.5 text-[12px] text-[#374151]">
                             <FontAwesomeIcon icon={faCheck}
-                              style={{ fontSize: 11, color: p.checkColor, flexShrink: 0 }} />
+                              style={{ fontSize: 11, color: iconStyles.checkColor, flexShrink: 0 }} />
                             {f}
                           </li>
                         ))}
@@ -273,12 +232,7 @@ export function ChangePlanModal({ open, onClose, currentPlanId }: Props) {
                       ) : action === "upgrade" ? (
                         <button
                           disabled={!!checkingOut}
-                          onClick={() => handleCheckout(
-                            billing === "monthly" ? p.monthlyAmountCents : p.yearlyAmountCents,
-                            `${p.name} Plan (${billing})`,
-                            `plan-${p.id}`,
-                            { type: "SUBSCRIPTION", planId: p.id, billingCycle: billing }
-                          )}
+                          onClick={() => handleCheckout(amountCents, `${p.name} Plan (${billing})`, `plan-${p.id}`, { type: "SUBSCRIPTION", planId: p.id, billingCycle: billing })}
                           className="w-full h-11 rounded-2xl text-[13px] font-bold text-white transition hover:brightness-110 disabled:opacity-60"
                           style={{ background: "#2563EB" }}
                         >
@@ -287,12 +241,7 @@ export function ChangePlanModal({ open, onClose, currentPlanId }: Props) {
                       ) : (
                         <button
                           disabled={!!checkingOut}
-                          onClick={() => handleCheckout(
-                            billing === "monthly" ? p.monthlyAmountCents : p.yearlyAmountCents,
-                            `${p.name} Plan (${billing})`,
-                            `plan-${p.id}`,
-                            { type: "SUBSCRIPTION", planId: p.id, billingCycle: billing }
-                          )}
+                          onClick={() => handleCheckout(amountCents, `${p.name} Plan (${billing})`, `plan-${p.id}`, { type: "SUBSCRIPTION", planId: p.id, billingCycle: billing })}
                           className="w-full h-11 rounded-2xl text-[13px] font-bold text-[#374151] border border-[#E5E7EB] transition hover:bg-[#F3F4F6] disabled:opacity-60"
                         >
                           {checkingOut === `plan-${p.id}` ? "Processing..." : "Downgrade"}
