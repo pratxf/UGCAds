@@ -1,10 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef, useCallback } from "react";
-import {
-  MessageCircle, X, Plus, Send, Loader2, ChevronLeft,
-  CheckCircle2, Clock, Wifi, WifiOff,
-} from "lucide-react";
+import { MessageCircle, X, Send, Loader2, ChevronLeft, ImageIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type Message = { id: string; fromAdmin: boolean; body: string; createdAt: string };
@@ -16,122 +13,162 @@ type Ticket = {
   messages: Message[];
 };
 
+const PREMADE = [
+  { label: "Generation failed", subject: "My generation failed or errored" },
+  { label: "Credits not working", subject: "Credits issue" },
+  { label: "Billing issue", subject: "Billing or payment problem" },
+  { label: "Request a refund", subject: "I need a refund" },
+  { label: "How does pricing work?", subject: "Question about pricing" },
+  { label: "Something else", subject: "General question" },
+];
+
 function relTime(iso: string) {
-  const ms = Date.now() - new Date(iso).getTime();
-  const m = Math.round(ms / 60000);
+  const m = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
   if (m < 1) return "just now";
   if (m < 60) return `${m}m ago`;
   const h = Math.round(m / 60);
-  if (h < 24) return `${h}h ago`;
-  return `${Math.round(h / 24)}d ago`;
+  return h < 24 ? `${h}h ago` : `${Math.round(h / 24)}d ago`;
 }
 
-function statusBadge(s: string) {
-  if (s === "OPEN") return "bg-amber-100 text-amber-700";
-  if (s === "REPLIED") return "bg-blue-100 text-[#2563EB]";
-  return "bg-gray-100 text-gray-500";
+function isImageUrl(text: string) {
+  return /^https?:\/\/.+\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i.test(text.trim());
+}
+
+function MessageBubble({ msg }: { msg: Message }) {
+  const isImg = isImageUrl(msg.body);
+  return (
+    <div className={cn("flex", msg.fromAdmin ? "justify-start" : "justify-end")}>
+      {msg.fromAdmin && (
+        <div className="flex size-6 shrink-0 items-center justify-center rounded-full bg-[#2563EB] text-[9px] font-bold text-white mr-2 mt-0.5">S</div>
+      )}
+      <div className={cn("max-w-[80%] rounded-2xl overflow-hidden", msg.fromAdmin ? "bg-[#F3F4F6] rounded-tl-sm" : "bg-[#2563EB] rounded-tr-sm")}>
+        {isImg ? (
+          <img src={msg.body} alt="attachment" className="max-w-full max-h-48 object-contain" />
+        ) : (
+          <div className="px-3.5 py-2.5">
+            <p className={cn("text-sm leading-relaxed whitespace-pre-wrap", msg.fromAdmin ? "text-[#111111]" : "text-white")}>{msg.body}</p>
+            <p className={cn("text-[10px] mt-1", msg.fromAdmin ? "text-[#9CA3AF]" : "text-white/60")}>{relTime(msg.createdAt)}</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }
 
 export default function SupportWidget() {
   const [open, setOpen] = useState(false);
-  const [view, setView] = useState<"list" | "conversation" | "new">("list");
+  const [view, setView] = useState<"home" | "conversation">("home");
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
   const [adminOnline, setAdminOnline] = useState(false);
-  const [loadingTickets, setLoadingTickets] = useState(false);
-  const [newSubject, setNewSubject] = useState("");
-  const [newBody, setNewBody] = useState("");
-  const [submitting, setSubmitting] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [reply, setReply] = useState("");
   const [sending, setSending] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [starting, setStarting] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const hasUnread = tickets.some((t) => t.status === "REPLIED");
 
   const loadTickets = useCallback(async () => {
-    setLoadingTickets(true);
     try {
       const [ticketsRes, statusRes] = await Promise.all([
         fetch("/api/support/tickets").then((r) => r.json()),
         fetch("/api/admin/support/status").then((r) => r.json()),
       ]);
-      setTickets(ticketsRes.tickets || []);
+      const list: Ticket[] = ticketsRes.tickets || [];
+      setTickets(list);
       setAdminOnline(statusRes.online ?? false);
       if (selectedTicket) {
-        const updated = (ticketsRes.tickets || []).find((t: Ticket) => t.id === selectedTicket.id);
+        const updated = list.find((t) => t.id === selectedTicket.id);
         if (updated) setSelectedTicket(updated);
       }
-    } catch {
-      // silent
-    } finally {
-      setLoadingTickets(false);
-    }
+    } catch { /* silent */ }
   }, [selectedTicket]);
 
-  useEffect(() => {
-    if (open) { loadTickets(); }
-  }, [open]);
-
+  useEffect(() => { if (open) { setLoading(true); loadTickets().finally(() => setLoading(false)); } }, [open]);
   useEffect(() => {
     if (!open) return;
     const t = setInterval(loadTickets, 12000);
     return () => clearInterval(t);
   }, [open, loadTickets]);
-
   useEffect(() => {
-    if (view === "conversation") {
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    }
+    if (view === "conversation") messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [selectedTicket?.messages.length, view]);
 
-  async function createTicket() {
-    if (!newSubject.trim() || !newBody.trim()) return;
-    setSubmitting(true);
+  async function startConversation(subject: string) {
+    setStarting(true);
     try {
       const res = await fetch("/api/support/tickets", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ subject: newSubject.trim(), body: newBody.trim() }),
+        body: JSON.stringify({ subject, body: subject }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      setNewSubject("");
-      setNewBody("");
-      setView("list");
       await loadTickets();
-    } catch {
-      // silent
-    } finally {
-      setSubmitting(false);
-    }
-  }
-
-  async function sendReply() {
-    if (!selectedTicket || !reply.trim()) return;
-    setSending(true);
-    try {
-      await fetch(`/api/support/tickets/${selectedTicket.id}/messages`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ body: reply.trim() }),
-      });
-      setReply("");
-      await loadTickets();
-    } catch {
-      // silent
-    } finally {
-      setSending(false);
-    }
+      const ticket = data.ticket || { id: data.id, subject, status: "OPEN", updatedAt: new Date().toISOString(), messages: [] };
+      setSelectedTicket(ticket);
+      setView("conversation");
+    } catch { /* silent */ }
+    finally { setStarting(false); }
   }
 
   function openTicket(t: Ticket) {
     fetch(`/api/support/tickets/${t.id}/messages`)
       .then((r) => r.json())
-      .then((data) => {
-        if (data.ticket) setSelectedTicket(data.ticket);
-        else setSelectedTicket(t);
-      });
+      .then((data) => { if (data.ticket) setSelectedTicket(data.ticket); else setSelectedTicket(t); });
     setView("conversation");
+  }
+
+  function pickImage(e: React.ChangeEvent<HTMLInputElement>) {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    setImageFile(f);
+    setImagePreview(URL.createObjectURL(f));
+  }
+
+  function removeImage() {
+    setImageFile(null);
+    setImagePreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }
+
+  async function sendReply() {
+    if (!selectedTicket) return;
+    if (!reply.trim() && !imageFile) return;
+    setSending(true);
+    try {
+      if (imageFile) {
+        setUploading(true);
+        const fd = new FormData();
+        fd.append("image", imageFile);
+        const upRes = await fetch("/api/support/upload", { method: "POST", body: fd });
+        const upData = await upRes.json();
+        setUploading(false);
+        if (upRes.ok && upData.url) {
+          await fetch(`/api/support/tickets/${selectedTicket.id}/messages`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ body: upData.url }),
+          });
+        }
+        removeImage();
+      }
+      if (reply.trim()) {
+        await fetch(`/api/support/tickets/${selectedTicket.id}/messages`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ body: reply.trim() }),
+        });
+        setReply("");
+      }
+      await loadTickets();
+    } catch { /* silent */ }
+    finally { setSending(false); setUploading(false); }
   }
 
   return (
@@ -139,15 +176,10 @@ export default function SupportWidget() {
       {/* Floating button */}
       <button
         onClick={() => setOpen(!open)}
-        className={cn(
-          "fixed bottom-6 right-6 z-[200] flex size-14 items-center justify-center rounded-full shadow-lg transition-all duration-200",
-          "bg-[#2563EB] text-white hover:bg-blue-700 hover:scale-105 active:scale-95",
-        )}
+        className="fixed bottom-6 right-6 z-[200] flex size-14 items-center justify-center rounded-full bg-[#2563EB] text-white shadow-lg shadow-blue-500/25 transition-all hover:bg-blue-700 hover:scale-105 active:scale-95"
         aria-label="Support"
       >
-        {open ? (
-          <X className="h-5 w-5" />
-        ) : (
+        {open ? <X className="h-5 w-5" /> : (
           <>
             <MessageCircle className="h-5 w-5" />
             {hasUnread && (
@@ -161,193 +193,154 @@ export default function SupportWidget() {
 
       {/* Panel */}
       {open && (
-        <div
-          className={cn(
-            "fixed bottom-24 right-6 z-[199] w-[380px] max-w-[calc(100vw-1.5rem)] rounded-2xl",
-            "bg-white border border-[#E5E7EB] shadow-2xl shadow-black/10 overflow-hidden",
-            "flex flex-col",
-          )}
-          style={{ maxHeight: "min(580px, calc(100vh - 120px))" }}
-        >
+        <div className="fixed bottom-24 right-6 z-[199] w-[440px] max-w-[calc(100vw-1.5rem)] rounded-2xl bg-white border border-[#E5E7EB] shadow-2xl shadow-black/10 overflow-hidden flex flex-col" style={{ maxHeight: "min(680px, calc(100vh - 120px))" }}>
+
           {/* Header */}
-          <div className="flex items-center justify-between px-5 py-4 bg-[#2563EB]">
-            <div className="flex items-center gap-3">
-              <div className="flex size-9 items-center justify-center rounded-full bg-white/20">
-                <MessageCircle className="h-4 w-4 text-white" />
+          <div className="flex items-center justify-between px-6 py-5 bg-[#2563EB] shrink-0">
+            <div className="flex items-center gap-3.5">
+              <div className="flex size-11 items-center justify-center rounded-full bg-white/20">
+                <MessageCircle className="h-5 w-5 text-white" />
               </div>
               <div>
-                <p className="text-sm font-bold text-white">Support</p>
-                <div className="flex items-center gap-1.5">
-                  <span className={cn("size-1.5 rounded-full", adminOnline ? "bg-green-400" : "bg-white/40")} />
-                  <p className="text-[11px] text-white/80">{adminOnline ? "Online now" : "We'll reply soon"}</p>
+                <p className="text-[15px] font-bold text-white">Support</p>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <span className={cn("size-2 rounded-full", adminOnline ? "bg-green-400" : "bg-white/40")} />
+                  <p className="text-[12px] text-white/80">{adminOnline ? "Online now" : "We'll reply soon"}</p>
                 </div>
               </div>
             </div>
-            {view !== "list" && (
-              <button
-                onClick={() => { setView("list"); setSelectedTicket(null); }}
-                className="flex size-8 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition"
-              >
-                <ChevronLeft className="h-4 w-4" />
+            {view === "conversation" && (
+              <button onClick={() => { setView("home"); setSelectedTicket(null); }} className="flex size-9 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition">
+                <ChevronLeft className="h-5 w-5" />
               </button>
             )}
           </div>
 
-          {/* Body */}
-          <div className="flex-1 overflow-hidden flex flex-col min-h-0">
+          {/* Home view */}
+          {view === "home" && (
+            <div className="flex-1 overflow-y-auto">
+              {/* Greeting */}
+              <div className="px-6 pt-6 pb-5">
+                <p className="text-[17px] font-bold text-[#111111]">How can we help?</p>
+                <p className="text-[13px] text-[#6B7280] mt-1">Pick a topic and we'll get back to you.</p>
+              </div>
 
-            {/* List view */}
-            {view === "list" && (
-              <div className="flex-1 overflow-y-auto flex flex-col">
-                <div className="px-5 pt-4 pb-2">
+              {/* Premade questions */}
+              <div className="px-5 pb-5 grid grid-cols-2 gap-2.5">
+                {PREMADE.map((q) => (
                   <button
-                    onClick={() => setView("new")}
-                    className="w-full flex items-center justify-center gap-2 rounded-xl bg-[#2563EB] px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 transition"
+                    key={q.subject}
+                    onClick={() => startConversation(q.subject)}
+                    disabled={starting}
+                    className="text-left rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] px-4 py-3.5 text-[13px] font-semibold text-[#374151] hover:border-[#2563EB]/40 hover:bg-blue-50/50 hover:text-[#2563EB] transition-all disabled:opacity-50"
                   >
-                    <Plus className="h-4 w-4" />
-                    New conversation
+                    {q.label}
                   </button>
-                </div>
-
-                {loadingTickets && tickets.length === 0 ? (
-                  <div className="flex items-center justify-center py-10 text-[#9CA3AF]">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  </div>
-                ) : tickets.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center flex-1 px-5 py-10 text-center">
-                    <MessageCircle className="h-8 w-8 text-[#E5E7EB] mb-3" />
-                    <p className="text-sm font-medium text-[#374151]">No conversations yet</p>
-                    <p className="text-xs text-[#9CA3AF] mt-1">Start a new conversation above</p>
-                  </div>
-                ) : (
-                  <div className="flex-1">
-                    <p className="px-5 py-2 text-[11px] font-semibold text-[#9CA3AF] uppercase tracking-wide">
-                      Your conversations
-                    </p>
-                    {tickets.map((t) => (
-                      <button
-                        key={t.id}
-                        onClick={() => openTicket(t)}
-                        className="w-full text-left px-5 py-3.5 hover:bg-[#F9FAFB] transition border-b border-[#F3F4F6] last:border-0"
-                      >
-                        <div className="flex items-start justify-between gap-2">
-                          <p className="text-sm font-semibold text-[#111111] truncate flex-1">{t.subject}</p>
-                          {t.status === "REPLIED" && (
-                            <span className="shrink-0 size-2 rounded-full bg-[#2563EB] mt-1.5" />
-                          )}
-                        </div>
-                        {t.messages[0] && (
-                          <p className="text-xs text-[#6B7280] mt-0.5 truncate">{t.messages[0].body}</p>
-                        )}
-                        <div className="flex items-center justify-between mt-1.5">
-                          <span className={cn("text-[10px] font-medium px-1.5 py-0.5 rounded-full", statusBadge(t.status))}>
-                            {t.status === "REPLIED" ? "Reply received" : t.status === "OPEN" ? "Awaiting reply" : "Closed"}
-                          </span>
-                          <span className="text-[10px] text-[#9CA3AF]">{relTime(t.updatedAt)}</span>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                )}
+                ))}
               </div>
-            )}
 
-            {/* New ticket view */}
-            {view === "new" && (
-              <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
+              {/* Existing conversations */}
+              {loading ? (
+                <div className="flex items-center justify-center py-6">
+                  <Loader2 className="h-4 w-4 animate-spin text-[#9CA3AF]" />
+                </div>
+              ) : tickets.length > 0 && (
                 <div>
-                  <p className="text-sm font-bold text-[#111111] mb-0.5">New conversation</p>
-                  <p className="text-xs text-[#6B7280]">We typically reply within a few hours</p>
-                </div>
-                <div>
-                  <label className="text-xs font-medium text-[#374151] mb-1 block">Subject</label>
-                  <input
-                    value={newSubject}
-                    onChange={(e) => setNewSubject(e.target.value)}
-                    placeholder="What is this about?"
-                    className="w-full h-10 rounded-xl border border-[#E5E7EB] bg-white px-3 text-sm text-[#111111] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 focus:border-[#2563EB]/50 transition-all"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs font-medium text-[#374151] mb-1 block">Message</label>
-                  <textarea
-                    value={newBody}
-                    onChange={(e) => setNewBody(e.target.value)}
-                    placeholder="Describe your issue..."
-                    rows={5}
-                    className="w-full rounded-xl border border-[#E5E7EB] bg-white px-3 py-2.5 text-sm text-[#111111] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 focus:border-[#2563EB]/50 transition-all resize-none"
-                  />
-                </div>
-                <button
-                  onClick={createTicket}
-                  disabled={!newSubject.trim() || !newBody.trim() || submitting}
-                  className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-[#2563EB] px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50 hover:bg-blue-700 transition"
-                >
-                  {submitting && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-                  {submitting ? "Sending..." : "Send message"}
-                </button>
-              </div>
-            )}
-
-            {/* Conversation view */}
-            {view === "conversation" && selectedTicket && (
-              <div className="flex-1 flex flex-col min-h-0">
-                <div className="px-4 py-2.5 border-b border-[#F3F4F6] bg-[#F9FAFB] shrink-0">
-                  <p className="text-xs font-semibold text-[#374151] truncate">{selectedTicket.subject}</p>
-                  <p className="text-[10px] text-[#9CA3AF] mt-0.5">
-                    {selectedTicket.status === "CLOSED" ? "Closed" : selectedTicket.status === "REPLIED" ? "Admin replied" : "Awaiting reply"}
-                  </p>
-                </div>
-
-                <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
-                  {selectedTicket.messages.map((msg) => (
-                    <div key={msg.id} className={cn("flex", msg.fromAdmin ? "justify-start" : "justify-end")}>
-                      {msg.fromAdmin && (
-                        <div className="flex size-6 shrink-0 items-center justify-center rounded-full bg-[#2563EB] text-[9px] font-bold text-white mr-2 mt-0.5">
-                          S
-                        </div>
-                      )}
-                      <div className={cn(
-                        "max-w-[80%] rounded-2xl px-3.5 py-2.5",
-                        msg.fromAdmin
-                          ? "bg-[#F3F4F6] text-[#111111] rounded-tl-sm"
-                          : "bg-[#2563EB] text-white rounded-tr-sm"
-                      )}>
-                        <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.body}</p>
-                        <p className={cn("text-[10px] mt-1", msg.fromAdmin ? "text-[#9CA3AF]" : "text-white/60")}>
-                          {relTime(msg.createdAt)}
-                        </p>
+                  <p className="px-6 py-2.5 text-[11px] font-semibold text-[#9CA3AF] uppercase tracking-wide border-t border-[#F3F4F6]">Previous conversations</p>
+                  {tickets.map((t) => (
+                    <button
+                      key={t.id}
+                      onClick={() => openTicket(t)}
+                      className="w-full text-left px-6 py-4 hover:bg-[#F9FAFB] transition border-b border-[#F3F4F6] last:border-0"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="text-[14px] font-semibold text-[#111111] truncate flex-1">{t.subject}</p>
+                        {t.status === "REPLIED" && <span className="shrink-0 size-2 rounded-full bg-[#2563EB]" />}
                       </div>
-                    </div>
+                      <div className="flex items-center justify-between mt-1">
+                        <span className={cn("text-[10px] font-medium px-1.5 py-0.5 rounded-full",
+                          t.status === "REPLIED" ? "bg-blue-100 text-[#2563EB]" :
+                          t.status === "CLOSED" ? "bg-gray-100 text-gray-500" :
+                          "bg-amber-100 text-amber-700"
+                        )}>
+                          {t.status === "REPLIED" ? "Reply received" : t.status === "CLOSED" ? "Resolved" : "Awaiting reply"}
+                        </span>
+                        <span className="text-[10px] text-[#9CA3AF]">{relTime(t.updatedAt)}</span>
+                      </div>
+                    </button>
                   ))}
-                  <div ref={messagesEndRef} />
                 </div>
+              )}
+            </div>
+          )}
 
-                {selectedTicket.status !== "CLOSED" ? (
-                  <div className="px-4 py-3 border-t border-[#F3F4F6] shrink-0 flex gap-2">
-                    <input
-                      value={reply}
-                      onChange={(e) => setReply(e.target.value)}
-                      onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && (e.preventDefault(), sendReply())}
-                      placeholder="Type a message..."
-                      className="flex-1 h-9 rounded-xl border border-[#E5E7EB] bg-white px-3 text-sm text-[#111111] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 transition-all"
-                    />
+          {/* Conversation view */}
+          {view === "conversation" && selectedTicket && (
+            <div className="flex-1 flex flex-col min-h-0">
+              {/* Ticket sub-header */}
+              <div className="px-5 py-3 border-b border-[#F3F4F6] bg-[#F9FAFB] shrink-0">
+                <p className="text-[13px] font-semibold text-[#374151] truncate">{selectedTicket.subject}</p>
+                <p className="text-[11px] text-[#9CA3AF] mt-0.5">
+                  {selectedTicket.status === "CLOSED" ? "Resolved" : selectedTicket.status === "REPLIED" ? "Admin replied" : "Awaiting reply"}
+                </p>
+              </div>
+
+              {/* Messages */}
+              <div className="flex-1 overflow-y-auto px-5 py-5 space-y-4">
+                {selectedTicket.messages.length === 0 && (
+                  <p className="text-center text-xs text-[#9CA3AF] py-4">Send your first message below.</p>
+                )}
+                {selectedTicket.messages.map((msg) => <MessageBubble key={msg.id} msg={msg} />)}
+                <div ref={messagesEndRef} />
+              </div>
+
+              {/* Reply bar or closed state */}
+              {selectedTicket.status === "CLOSED" ? (
+                <div className="px-5 py-5 border-t border-[#F3F4F6] text-center shrink-0">
+                  <p className="text-[13px] text-[#9CA3AF]">This conversation has been resolved.</p>
+                </div>
+              ) : (
+                <div className="px-5 py-4 border-t border-[#F3F4F6] shrink-0">
+                  {/* Image preview */}
+                  {imagePreview && (
+                    <div className="relative mb-2 inline-block">
+                      <img src={imagePreview} alt="preview" className="h-16 w-16 rounded-lg object-cover border border-[#E5E7EB]" />
+                      <button onClick={removeImage} className="absolute -top-1.5 -right-1.5 flex size-4 items-center justify-center rounded-full bg-gray-600 text-white text-[8px]">✕</button>
+                    </div>
+                  )}
+                  <div className="flex items-end gap-2">
+                    <div className="flex-1 flex items-end gap-1 rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] px-3 py-2 focus-within:border-[#2563EB]/50 focus-within:ring-2 focus-within:ring-[#2563EB]/20 transition-all">
+                      <textarea
+                        value={reply}
+                        onChange={(e) => setReply(e.target.value)}
+                        onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendReply(); } }}
+                        placeholder="Type a message..."
+                        rows={1}
+                        className="flex-1 bg-transparent text-sm text-[#111111] placeholder:text-[#9CA3AF] focus:outline-none resize-none max-h-24 leading-5"
+                        style={{ minHeight: "20px" }}
+                        onInput={(e) => {
+                          const t = e.currentTarget;
+                          t.style.height = "auto";
+                          t.style.height = Math.min(t.scrollHeight, 96) + "px";
+                        }}
+                      />
+                      <button onClick={() => fileInputRef.current?.click()} className="shrink-0 text-[#9CA3AF] hover:text-[#2563EB] transition-colors pb-0.5">
+                        <ImageIcon className="h-4 w-4" />
+                      </button>
+                    </div>
                     <button
                       onClick={sendReply}
-                      disabled={!reply.trim() || sending}
-                      className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-[#2563EB] text-white disabled:opacity-50 hover:bg-blue-700 transition"
+                      disabled={(!reply.trim() && !imageFile) || sending}
+                      className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[#2563EB] text-white disabled:opacity-40 hover:bg-blue-700 transition"
                     >
-                      {sending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
+                      {(sending || uploading) ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
                     </button>
                   </div>
-                ) : (
-                  <div className="px-4 py-3 border-t border-[#F3F4F6] text-center shrink-0">
-                    <p className="text-xs text-[#9CA3AF]">This conversation is closed.</p>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
+                  <input ref={fileInputRef} type="file" accept="image/*" className="sr-only" onChange={pickImage} />
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
     </>
