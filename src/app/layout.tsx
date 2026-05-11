@@ -23,6 +23,9 @@ export const metadata: Metadata = {
   title: "UGCAds | AI Powered Ad Generation",
   description:
     "Create human-looking video ads in minutes with AI characters and authentic voices.",
+  verification: {
+    google: "9GlbaL7zZN7Mo59Jvf3hMaVOdxptB4DZaW_TG2WxQcg",
+  },
 };
 
 export default function RootLayout({
