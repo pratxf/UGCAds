@@ -10,7 +10,7 @@ const posts = [
       "Looking for the best AI video generator? We compared 10 top tools on quality, speed, and price so you can pick the right one for your brand.",
     category: "Guide",
     coverImage:
-      "https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?auto=format&fit=crop&w=1200&h=630&q=80",
+      "/blog/best-ai-video-generator-2026.png",
     author: "UGCAds Team",
     authorRole: "Content",
     authorImage: "",
@@ -105,7 +105,7 @@ const posts = [
       "Want to generate AI videos for free? Here are the best free AI video generator tools in 2026, what they can actually do, and when you should upgrade.",
     category: "Guide",
     coverImage:
-      "https://images.unsplash.com/photo-1533750349088-cd871a92f312?auto=format&fit=crop&w=1200&h=630&q=80",
+      "/blog/free-ai-video-generator-2026.png",
     author: "UGCAds Team",
     authorRole: "Content",
     authorImage: "",
@@ -190,7 +190,7 @@ const posts = [
       "UGC ads drive 4x higher click-through rates than polished brand ads. Here is everything you need to know to create and scale UGC advertising in 2026.",
     category: "Guide",
     coverImage:
-      "https://images.unsplash.com/photo-1611162617474-5b21e879e113?auto=format&fit=crop&w=1200&h=630&q=80",
+      "/blog/ugc-ads-complete-guide-2026.png",
     author: "UGCAds Team",
     authorRole: "Content",
     authorImage: "",
@@ -289,7 +289,7 @@ const posts = [
       "Traditional video ad production costs $300-$1,000 per video and takes weeks. AI video makers cut that to under $10 and under 2 minutes. Here is why the switch is inevitable.",
     category: "Case Study",
     coverImage:
-      "https://images.unsplash.com/photo-1492619375914-88005aa9e8fb?auto=format&fit=crop&w=1200&h=630&q=80",
+      "/blog/ai-video-maker-for-ads.png",
     author: "UGCAds Team",
     authorRole: "Content",
     authorImage: "",
@@ -368,7 +368,7 @@ const posts = [
       "How does AI video generation actually work? We break down the technology behind the best AI video models — Seedance 2, Sora 2, Kling 3.0, and Veo 3.1 — in plain English.",
     category: "Product",
     coverImage:
-      "https://images.unsplash.com/photo-1677442135703-1787eea5ce01?auto=format&fit=crop&w=1200&h=630&q=80",
+      "/blog/ai-video-generation-explained.png",
     author: "UGCAds Team",
     authorRole: "Content",
     authorImage: "",
@@ -448,7 +448,7 @@ const posts = [
       "Agencies charge $300-$1,000 per video and take 2-4 weeks. AI video creators charge under $10 and deliver in 2 minutes. Here is the full honest comparison.",
     category: "Case Study",
     coverImage:
-      "https://images.unsplash.com/photo-1553877522-43269d4ea984?auto=format&fit=crop&w=1200&h=630&q=80",
+      "/blog/ai-video-creator-vs-agency.png",
     author: "UGCAds Team",
     authorRole: "Content",
     authorImage: "",
@@ -526,7 +526,7 @@ const posts = [
       "A practical, step-by-step guide to creating your first AI video ad — from writing the script to downloading a finished, platform-ready ad in under 10 minutes.",
     category: "Guide",
     coverImage:
-      "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&w=1200&h=630&q=80",
+      "/blog/create-ai-video-ads-guide.png",
     author: "UGCAds Team",
     authorRole: "Content",
     authorImage: "",
