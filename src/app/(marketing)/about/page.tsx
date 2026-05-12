@@ -38,26 +38,8 @@ const values = [
 ];
 
 const team = [
-  {
-    name: "Alex Rivera",
-    role: "Co-founder and CEO",
-    img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=160&h=160",
-  },
-  {
-    name: "Priya Nair",
-    role: "Co-founder and CTO",
-    img: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=160&h=160",
-  },
-  {
-    name: "Marcus Chen",
-    role: "Head of Product",
-    img: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=160&h=160",
-  },
-  {
-    name: "Sofia Andersen",
-    role: "Head of Design",
-    img: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=160&h=160",
-  },
+  { name: "Aman Rana", role: "Co-founder and CEO", color: "bg-blue-100 text-blue-700" },
+  { name: "Prateek", role: "Co-founder and CTO", color: "bg-cyan-100 text-cyan-700" },
 ];
 
 export default function AboutPage() {
@@ -151,14 +133,12 @@ export default function AboutPage() {
           <h2 className="text-3xl font-bold text-[#111111] tracking-tight text-center mb-12">
             The team
           </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-8">
+          <div className="flex justify-center gap-12">
             {team.map((member) => (
               <div key={member.name} className="text-center">
-                <img
-                  src={member.img}
-                  alt={member.name}
-                  className="mx-auto h-20 w-20 rounded-full object-cover border-2 border-[#E5E7EB]"
-                />
+                <div className={`mx-auto h-20 w-20 rounded-full flex items-center justify-center text-2xl font-bold border-2 border-[#E5E7EB] ${member.color}`}>
+                  {member.name.charAt(0).toUpperCase()}
+                </div>
                 <div className="mt-3 text-sm font-semibold text-[#111111]">{member.name}</div>
                 <div className="text-xs text-[#6B7280] mt-0.5">{member.role}</div>
               </div>

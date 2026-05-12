@@ -79,7 +79,7 @@ export default function Footer() {
           <div className="md:col-span-2">
             <Logo href="/" />
             <p className="mt-4 text-sm text-[#6B7280] leading-relaxed max-w-xs">
-              AI powered video ads with real looking characters and authentic voices. From idea to live ad in under 2 minutes.
+              Create AI video ads in minutes. No studio, no actors, no hassle.
             </p>
             <div className="mt-5 flex items-center gap-2">
               {socials.map((s) => (
