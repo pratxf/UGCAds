@@ -37,15 +37,13 @@ export async function POST(req: NextRequest) {
       content: body.content,
       category: body.category,
       author: body.author,
-      authorRole: body.authorRole,
+      authorRole: body.authorRole ?? "",
+      authorImage: body.authorImage ?? "",
       coverImage: body.coverImage,
-      readTime: body.readTime,
+      readTime: body.readTime ?? "5 min read",
       published: body.published ?? false,
       featured: body.featured ?? false,
       publishedAt: body.publishedAt ? new Date(body.publishedAt) : new Date(),
-      tags: body.tags,
-      metaTitle: body.metaTitle,
-      metaDescription: body.metaDescription,
     },
   });
   return NextResponse.json(post, { status: 201 });

@@ -9,7 +9,7 @@ const POYO_BASE = "https://api.poyo.ai";
 export async function POST(req: Request) {
   try {
     const user = await requireUser();
-    const sub = await prisma.subscription.findUnique({ where: { userId: user.id }, select: { plan: true } });
+    const sub = await prisma.subscription.findUnique({ where: { userId: user.id }, select: { plan: true, status: true } });
     if (!sub || sub.status !== "ACTIVE") return NextResponse.json({ error: "Active subscription required" }, { status: 403 });
     const blocked = await rateLimitOrResponse(`ai-assist-direction:${user.id}`, { windowSec: 60, max: 20 });
     if (blocked) return blocked;

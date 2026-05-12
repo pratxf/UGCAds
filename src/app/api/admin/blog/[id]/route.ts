@@ -29,8 +29,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const allowed: Record<string, unknown> = {};
   const fields = [
     "slug", "title", "excerpt", "content", "category", "author", "authorRole",
-    "coverImage", "readTime", "published", "featured", "publishedAt",
-    "tags", "metaTitle", "metaDescription",
+    "authorImage", "coverImage", "readTime", "published", "featured", "publishedAt",
   ];
   for (const key of fields) {
     if (key in body) allowed[key] = key === "publishedAt" && body[key] ? new Date(body[key]) : body[key];
