@@ -159,7 +159,7 @@ function TestimonialCard({ item }: { item: typeof testimonials[0] }) {
         <Avatar name={item.name} color={item.color} />
         <div>
           <div className="text-[13px] font-semibold text-[#111111] leading-tight">{item.name}</div>
-          <div className="text-[12px] text-[#9CA3AF] mt-0.5">{item.role}</div>
+          <div className="text-[12px] text-[#6B7280] mt-0.5">{item.role}</div>
         </div>
       </div>
     </div>

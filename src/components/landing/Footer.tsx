@@ -98,9 +98,9 @@ export default function Footer() {
           {/* Link columns */}
           {Object.entries(links).map(([section, items]) => (
             <div key={section}>
-              <h4 className="text-xs font-semibold text-[#111111] uppercase tracking-wider mb-4">
+              <h3 className="text-xs font-semibold text-[#111111] uppercase tracking-wider mb-4">
                 {section}
-              </h4>
+              </h3>
               <ul className="space-y-3">
                 {items.map((item) => (
                   <li key={item.title}>
@@ -119,7 +119,7 @@ export default function Footer() {
 
         {/* Bottom bar */}
         <div className="mt-12 pt-8 border-t border-[#E5E7EB] flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-[#9CA3AF]">
+          <p className="text-xs text-[#6B7280]">
             &copy; {new Date().getFullYear()} ugcads. All rights reserved.
           </p>
           <p className="text-xs text-[#9CA3AF]">

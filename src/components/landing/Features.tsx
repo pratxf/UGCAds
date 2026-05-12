@@ -119,15 +119,16 @@ export default function Features() {
                     <p className="text-sm font-bold text-[#111111] leading-tight">
                       {card.num} {card.title}
                     </p>
-                    <p className="text-xs text-[#9CA3AF]">{card.subtitle}</p>
+                    <p className="text-xs text-[#6B7280]">{card.subtitle}</p>
                   </div>
                 </div>
-                <button
-                  className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full transition-opacity hover:opacity-80"
+                <div
+                  aria-hidden="true"
+                  className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full"
                   style={{ background: card.accentColor }}
                 >
                   <ArrowUpRight className="h-3.5 w-3.5 text-white" />
-                </button>
+                </div>
               </div>
 
               {/* Media */}
@@ -141,19 +142,21 @@ export default function Features() {
                 ) : card.media.type === "tryon" ? (
                   <div className="flex h-full w-full">
                     <div className="flex-1 relative">
-                      <img src={card.media.before} alt="Before" className="w-full h-full object-cover" />
+                      <img src={card.media.before} alt="Before try-on" width={400} height={250} className="w-full h-full object-cover" />
                     </div>
-                    <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white shadow-md border border-[#E5E7EB]">
+                    <div aria-hidden="true" className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white shadow-md border border-[#E5E7EB]">
                       <ArrowUpRight className="h-3.5 w-3.5 text-[#7D39EB]" />
                     </div>
                     <div className="flex-1 relative">
-                      <img src={card.media.after} alt="After" className="w-full h-full object-cover" />
+                      <img src={card.media.after} alt="After try-on" width={400} height={250} className="w-full h-full object-cover" />
                     </div>
                   </div>
                 ) : (
                   <img
                     src={card.media.src}
                     alt={card.title}
+                    width={800}
+                    height={500}
                     className="w-full h-full object-cover"
                   />
                 )}

@@ -53,15 +53,17 @@ export default function HomePage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareSchema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
       <Navbar />
-      <Hero />
-      <LogoStrip />
-      <Features />
-      <HowItWorks />
-      <Pricing />
-      <ComparisonTable />
-      <Testimonials />
-      <FAQ />
-      <FinalCTA />
+      <main>
+        <Hero />
+        <LogoStrip />
+        <Features />
+        <HowItWorks />
+        <Pricing />
+        <ComparisonTable />
+        <Testimonials />
+        <FAQ />
+        <FinalCTA />
+      </main>
       <Footer />
     </>
   );

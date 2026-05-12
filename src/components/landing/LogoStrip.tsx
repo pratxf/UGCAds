@@ -20,7 +20,7 @@ export default function LogoStrip() {
   return (
     <section className="py-14 bg-white border-y border-[#E5E7EB]">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <p className="mb-6 text-center text-sm font-medium text-[#9CA3AF] uppercase tracking-widest">
+        <p className="mb-6 text-center text-sm font-medium text-[#6B7280] uppercase tracking-widest">
           Trusted by 200+ businesses worldwide
         </p>
         <LogoCloud logos={logos} />

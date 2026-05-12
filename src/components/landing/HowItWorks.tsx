@@ -16,7 +16,7 @@ function ScriptEditorMockup() {
       <div className="h-16" />
       <div className="px-4 py-2.5 border-t border-[#F3F4F6] flex items-center justify-between">
         <span className="text-xs text-[#2563EB] font-medium">+ Credits <span className="text-[#6B7280]">6</span></span>
-        <span className="text-xs text-[#9CA3AF]">0/1000</span>
+        <span className="text-xs text-[#6B7280]">0/1000</span>
       </div>
       <div className="px-4 py-3 flex items-center gap-2">
         <button className="inline-flex items-center gap-1.5 rounded-lg border border-[#E5E7EB] bg-white px-3 py-1.5 text-xs text-[#374151]">
@@ -84,7 +84,7 @@ export default function HowItWorksSection() {
           <div className="grid grid-cols-2 divide-x divide-[#E5E7EB]">
             {/* Text cell */}
             <div className={CELL}>
-              <p className="text-xs font-semibold text-[#9CA3AF] uppercase tracking-widest mb-3">Step 01</p>
+              <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-widest mb-3">Step 01</p>
               <h3 className="text-2xl font-bold text-[#111111] mb-3" style={{ fontFamily: "Satoshi, sans-serif" }}>
                 Write or generate your script
               </h3>
@@ -119,7 +119,7 @@ export default function HowItWorksSection() {
             </div>
             {/* Text cell */}
             <div className={CELL}>
-              <p className="text-xs font-semibold text-[#9CA3AF] uppercase tracking-widest mb-3">Step 02</p>
+              <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-widest mb-3">Step 02</p>
               <h3 className="text-2xl font-bold text-[#111111] mb-3" style={{ fontFamily: "Satoshi, sans-serif" }}>
                 Choose from 100+ AI actors
               </h3>
@@ -136,7 +136,7 @@ export default function HowItWorksSection() {
           <div className="grid grid-cols-2 divide-x divide-[#E5E7EB]">
             {/* Text cell */}
             <div className={CELL}>
-              <p className="text-xs font-semibold text-[#9CA3AF] uppercase tracking-widest mb-3">Step 03</p>
+              <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-widest mb-3">Step 03</p>
               <h3 className="text-2xl font-bold text-[#111111] mb-3" style={{ fontFamily: "Satoshi, sans-serif" }}>
                 Generate your video
               </h3>

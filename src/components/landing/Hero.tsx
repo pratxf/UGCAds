@@ -55,6 +55,8 @@ export default function Hero() {
                       key={i}
                       src={src}
                       alt=""
+                      width={32}
+                      height={32}
                       className="h-8 w-8 rounded-full border-2 border-white object-cover"
                       style={{ zIndex: avatars.length - i }}
                     />
@@ -120,7 +122,7 @@ export default function Hero() {
                   </div>
                   <div className="flex flex-col leading-tight">
                     <span className="text-sm font-bold text-[#111111]">{bold}</span>
-                    <span className="text-xs text-[#9CA3AF]">{muted}</span>
+                    <span className="text-xs text-[#6B7280]">{muted}</span>
                   </div>
                 </div>
               ))}

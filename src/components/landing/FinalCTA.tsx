@@ -88,7 +88,7 @@ export default function FinalCTA() {
 
         <p
           className={cn(
-            "mt-5 text-sm text-[#9CA3AF] transition-all duration-700 ease-out",
+            "mt-5 text-sm text-[#6B7280] transition-all duration-700 ease-out",
             inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
           )}
           style={{ transitionDelay: "320ms" }}
