@@ -29,6 +29,24 @@ export async function POST(req: NextRequest) {
   if (!admin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json();
-  const post = await prisma.blogPost.create({ data: body });
+  const post = await prisma.blogPost.create({
+    data: {
+      slug: body.slug,
+      title: body.title,
+      excerpt: body.excerpt,
+      content: body.content,
+      category: body.category,
+      author: body.author,
+      authorRole: body.authorRole,
+      coverImage: body.coverImage,
+      readTime: body.readTime,
+      published: body.published ?? false,
+      featured: body.featured ?? false,
+      publishedAt: body.publishedAt ? new Date(body.publishedAt) : new Date(),
+      tags: body.tags,
+      metaTitle: body.metaTitle,
+      metaDescription: body.metaDescription,
+    },
+  });
   return NextResponse.json(post, { status: 201 });
 }

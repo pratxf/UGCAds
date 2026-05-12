@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import Razorpay from "razorpay";
+import { getCurrentUser } from "@/lib/auth";
+import { rateLimitOrResponse } from "@/lib/rate-limit";
 
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID!,
@@ -8,6 +10,12 @@ const razorpay = new Razorpay({
 
 export async function POST(request: Request) {
   try {
+    const user = await getCurrentUser();
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const blocked = await rateLimitOrResponse(`create-order:${user.id}`, { windowSec: 60, max: 10 });
+    if (blocked) return blocked;
+
     const { amount, currency = "INR", receipt } = await request.json();
 
     if (!amount || typeof amount !== "number" || amount < 100) {

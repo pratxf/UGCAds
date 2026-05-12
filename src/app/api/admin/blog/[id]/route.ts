@@ -26,7 +26,16 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   const { id } = await params;
   const body = await req.json();
-  const post = await prisma.blogPost.update({ where: { id }, data: body });
+  const allowed: Record<string, unknown> = {};
+  const fields = [
+    "slug", "title", "excerpt", "content", "category", "author", "authorRole",
+    "coverImage", "readTime", "published", "featured", "publishedAt",
+    "tags", "metaTitle", "metaDescription",
+  ];
+  for (const key of fields) {
+    if (key in body) allowed[key] = key === "publishedAt" && body[key] ? new Date(body[key]) : body[key];
+  }
+  const post = await prisma.blogPost.update({ where: { id }, data: allowed });
   return NextResponse.json(post);
 }
 
