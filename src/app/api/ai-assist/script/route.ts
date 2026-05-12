@@ -1,12 +1,15 @@
 import { NextResponse } from "next/server";
 import { requireUser } from "@/lib/auth";
 import { rateLimitOrResponse } from "@/lib/rate-limit";
+import { prisma } from "@/lib/prisma";
 
 const POYO_BASE = "https://api.poyo.ai";
 
 export async function POST(req: Request) {
   try {
     const user = await requireUser();
+    const sub = await prisma.subscription.findUnique({ where: { userId: user.id }, select: { plan: true } });
+    if (!sub) return NextResponse.json({ error: "Subscription required" }, { status: 403 });
     const blocked = await rateLimitOrResponse(`ai-assist:${user.id}`, { windowSec: 60, max: 20 });
     if (blocked) return blocked;
 
