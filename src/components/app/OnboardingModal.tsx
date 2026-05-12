@@ -88,7 +88,7 @@ export function OnboardingModal() {
       <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="afterInteractive" />
       <div className="fixed inset-0 z-[200] flex items-center justify-center overflow-y-auto py-8"
         style={{ background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)" }}>
-        <div className="relative w-full max-w-4xl mx-4 rounded-3xl bg-white shadow-2xl overflow-hidden">
+        <div className="relative w-full max-w-5xl mx-4 rounded-3xl bg-white shadow-2xl overflow-hidden">
 
           {/* Header */}
           <div className="px-8 pt-8 pb-6 text-center border-b border-[#F3F4F6]">
