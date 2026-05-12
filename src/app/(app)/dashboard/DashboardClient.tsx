@@ -184,9 +184,9 @@ export default function DashboardClient({
         <div className="pointer-events-none absolute -bottom-32 -right-16 h-96 w-96 rounded-full bg-violet opacity-30 blur-3xl" />
         <div className="pointer-events-none absolute -right-24 -top-24 h-96 w-96 rounded-full bg-primary opacity-10 blur-3xl" />
 
-        <div className="relative grid gap-8 md:grid-cols-5">
+        <div className="relative grid gap-8 sm:grid-cols-5">
           {/* Left: greeting + CTAs */}
-          <div className="md:col-span-3 flex flex-col justify-between gap-8">
+          <div className="sm:col-span-3 flex flex-col justify-between gap-8">
             <div>
               <div className="inline-flex items-center gap-2 rounded-full border border-[#E5E7EB] bg-[#F9FAFB] px-3 py-1 text-xs text-[#374151]">
                 <span className="relative flex h-2 w-2">
@@ -196,7 +196,7 @@ export default function DashboardClient({
                 All systems generating. avg 47s
               </div>
 
-              <h2 className="mt-5 text-4xl font-semibold leading-tight tracking-tight text-[#111111] lg:text-5xl">
+              <h2 className="mt-5 text-2xl font-semibold leading-tight tracking-tight text-[#111111] sm:text-4xl lg:text-5xl">
                 {getGreeting()}, {userName}. What are we{" "}
                 <span className="gradient-text">making today?</span>
               </h2>
@@ -240,7 +240,7 @@ export default function DashboardClient({
           </div>
 
           {/* Right: 2x2 MiniStats */}
-          <div className="md:col-span-2 grid grid-cols-2 gap-3 self-center">
+          <div className="sm:col-span-2 grid grid-cols-2 gap-3 self-center">
             <MiniStat
               label="Credits left"
               value={displayCredits}
@@ -279,16 +279,9 @@ export default function DashboardClient({
               Pick a format. We will handle the heavy lifting and hand you a finished asset.
             </p>
           </div>
-          <Link
-            href="/create/ugc-studio"
-            className="inline-flex items-center gap-1.5 text-xs font-medium text-[#4B5563] transition-colors hover:text-[#111111]"
-          >
-            Browse all formats
-            <FontAwesomeIcon icon={faChevronRight} style={{ fontSize: 12 }} />
-          </Link>
         </div>
 
-        <div className="grid gap-5 md:grid-cols-3">
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           <CreationTile
             href="/create/ugc-studio"
             title="UGC Studio"
@@ -356,13 +349,6 @@ export default function DashboardClient({
                 >
                   <FontAwesomeIcon icon={faWandMagicSparkles} style={{ fontSize: 14 }} />
                   Create your first ad
-                </Link>
-                <Link
-                  href="/create/ugc-studio"
-                  className="inline-flex items-center gap-2 rounded-full border border-[#E5E7EB] bg-[#F9FAFB] px-5 py-2.5 text-sm font-medium text-[#1F2937] transition-all hover:border-[#D1D5DB] hover:bg-[#F3F4F6] hover:text-[#111111]"
-                >
-                  <FontAwesomeIcon icon={faBookOpen} style={{ fontSize: 14 }} />
-                  See examples
                 </Link>
               </div>
             </div>

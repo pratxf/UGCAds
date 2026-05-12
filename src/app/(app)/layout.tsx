@@ -1,7 +1,9 @@
 import { redirect } from "next/navigation";
 import Sidebar from "@/components/app/Sidebar";
+import TopBar from "@/components/app/TopBar";
 import ConditionalOrb from "@/components/app/ConditionalOrb";
 import SupportWidget from "@/components/app/SupportWidget";
+import { OnboardingModal } from "@/components/app/OnboardingModal";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
@@ -13,6 +15,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     where: { userId: user.id },
     select: { plan: true },
   });
+
+  const hasPlan = !!subscription;
 
   return (
     <div className="relative flex min-h-screen" style={{ background: "#F7F9FC" }}>
@@ -28,9 +32,11 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         <ConditionalOrb />
       </div>
       <div className="relative z-[20] flex flex-1 flex-col lg:ml-[252px]">
+        <TopBar credits={user.credits} />
         <main className="flex-1 p-4 sm:p-6 lg:p-8">{children}</main>
       </div>
       <SupportWidget />
+      {!hasPlan && <OnboardingModal />}
     </div>
   );
 }
