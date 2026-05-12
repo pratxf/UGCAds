@@ -162,20 +162,6 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
 
           {/* Sidebar */}
           <aside className="space-y-8 lg:pt-0">
-
-            {/* Author card */}
-            <div className="rounded-2xl border border-[#E5E7EB] bg-[#F9FAFB] p-6">
-              {post.authorImage && (
-                <img
-                  src={post.authorImage}
-                  alt={post.author}
-                  className="h-14 w-14 rounded-full object-cover mb-3"
-                />
-              )}
-              <div className="text-sm font-semibold text-[#111111]">{post.author}</div>
-              {post.authorRole && <div className="text-xs text-[#9CA3AF] mb-3">{post.authorRole} at UGCAds</div>}
-            </div>
-
             {/* Share */}
             <div className="rounded-2xl border border-[#E5E7EB] bg-white p-6">
               <h4 className="text-sm font-semibold text-[#111111] mb-4">Share this post</h4>
@@ -196,7 +182,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                     href={`/blog/${related.slug}`}
                     className="group flex flex-col overflow-hidden rounded-2xl border border-[#E5E7EB] bg-white transition-shadow hover:shadow-md"
                   >
-                    <div className="aspect-video overflow-hidden bg-[#F6F8FF] flex items-center justify-center">
+                    <div className="aspect-video overflow-hidden bg-white flex items-center justify-center p-2">
                       <img src={related.coverImage} alt={related.title} className="h-full w-full object-contain transition-transform duration-500 group-hover:scale-105" />
                     </div>
                     <div className="flex flex-1 flex-col p-5">
