@@ -56,7 +56,7 @@ const cards = [
     accentBg: "#ECFDF5",
     iconBg: "#D1FAE5",
     Icon: Camera,
-    media: { type: "image" as const, src: "/images/product-mockup.webp" },
+    media: { type: "image" as const, src: "/images/ai-product-photoshoot-example.png" },
     description: "Generate stunning, studio quality product photos in seconds with AI.",
     tags: [
       { icon: LayoutGrid, label: "AI Scenes"   },
