@@ -60,17 +60,27 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
             "@type": "BlogPosting",
             headline: post.title,
             description: post.excerpt,
-            image: post.coverImage,
+            image: { "@type": "ImageObject", url: post.coverImage, width: 1200, height: 630 },
             url: postUrl,
+            inLanguage: "en-US",
             datePublished: post.publishedAt.toISOString(),
             dateModified: post.updatedAt.toISOString(),
             author: {
               "@type": "Person",
               name: post.author,
               ...(post.authorRole && { jobTitle: post.authorRole }),
+              ...(post.authorImage && { image: { "@type": "ImageObject", url: post.authorImage } }),
             },
             publisher: { "@id": "https://www.ugcads.us/#organization" },
             mainEntityOfPage: { "@type": "WebPage", "@id": postUrl },
+            breadcrumb: {
+              "@type": "BreadcrumbList",
+              itemListElement: [
+                { "@type": "ListItem", position: 1, name: "Home", item: "https://www.ugcads.us" },
+                { "@type": "ListItem", position: 2, name: "Blog", item: "https://www.ugcads.us/blog" },
+                { "@type": "ListItem", position: 3, name: post.title, item: postUrl },
+              ],
+            },
             isPartOf: {
               "@type": "Blog",
               "@id": "https://www.ugcads.us/blog",

@@ -20,6 +20,38 @@ export const metadata: Metadata = {
 export default function PricingPage() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify([
+            {
+              "@context": "https://schema.org",
+              "@type": "BreadcrumbList",
+              itemListElement: [
+                { "@type": "ListItem", position: 1, name: "Home", item: "https://www.ugcads.us" },
+                { "@type": "ListItem", position: 2, name: "Pricing", item: "https://www.ugcads.us/pricing" },
+              ],
+            },
+            {
+              "@context": "https://schema.org",
+              "@type": "SoftwareApplication",
+              "@id": "https://www.ugcads.us/#software",
+              name: "UGCAds",
+              description: "AI-powered platform to generate UGC-style video ads, product photoshoots, and AI model try-ons in under 2 minutes.",
+              url: "https://www.ugcads.us",
+              applicationCategory: "BusinessApplication",
+              operatingSystem: "Web",
+              publisher: { "@id": "https://www.ugcads.us/#organization" },
+              offers: [
+                { "@type": "Offer", name: "Starter", price: "5.00", priceCurrency: "USD", description: "One-time purchase, 25 credits" },
+                { "@type": "Offer", name: "Basic", price: "39.00", priceCurrency: "USD", description: "100 credits per month" },
+                { "@type": "Offer", name: "Creator", price: "79.00", priceCurrency: "USD", description: "300 credits per month" },
+                { "@type": "Offer", name: "Agency", price: "129.00", priceCurrency: "USD", description: "500 credits per month" },
+              ],
+            },
+          ]),
+        }}
+      />
       <Navbar />
 
       {/* Pricing component */}

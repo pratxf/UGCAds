@@ -7,6 +7,7 @@ import { prisma } from "@/lib/prisma";
 export const metadata: Metadata = {
   title: "Blog — UGCAds",
   description: "Tips, tutorials, and insights on AI-powered video ads and creative marketing.",
+  alternates: { canonical: "https://www.ugcads.us/blog" },
 };
 
 export const revalidate = 60;
@@ -35,8 +36,25 @@ export default async function BlogPage() {
   const fmt = (d: Date) =>
     new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 
+  const itemListSchema = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "@id": "https://www.ugcads.us/blog#list",
+    name: "UGCAds Blog",
+    description: "Tips, tutorials, and insights on AI-powered video ads and creative marketing.",
+    url: "https://www.ugcads.us/blog",
+    numberOfItems: allPosts.length,
+    itemListElement: allPosts.map((p, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      url: `https://www.ugcads.us/blog/${p.slug}`,
+      name: p.title,
+    })),
+  };
+
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListSchema) }} />
       <Navbar />
 
       {/* Hero */}

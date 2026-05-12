@@ -83,9 +83,13 @@ export default function RootLayout({
                   "@id": "https://www.ugcads.us/#organization",
                   name: "UGCAds",
                   url: "https://www.ugcads.us",
+                  description: "AI-powered platform for generating UGC-style video ads, product photoshoots, and AI model try-ons in under 2 minutes.",
+                  foundingDate: "2024",
                   logo: {
                     "@type": "ImageObject",
-                    url: "https://www.ugcads.us/icon.svg",
+                    url: "https://www.ugcads.us/og-image.png",
+                    width: 1200,
+                    height: 630,
                   },
                   contactPoint: {
                     "@type": "ContactPoint",
