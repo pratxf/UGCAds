@@ -89,11 +89,11 @@ export default async function BlogPage() {
               className="group block overflow-hidden rounded-2xl border border-[#E5E7EB] bg-white transition-shadow hover:shadow-lg"
               style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}
             >
-              <div className="aspect-[2/1] overflow-hidden">
+              <div className="aspect-[2/1] overflow-hidden bg-[#F6F8FF] flex items-center justify-center">
                 <img
                   src={featured.coverImage}
                   alt={featured.title}
-                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  className="h-full w-full object-contain transition-transform duration-500 group-hover:scale-105"
                 />
               </div>
               <div className="p-8">
@@ -127,11 +127,11 @@ export default async function BlogPage() {
                   href={`/blog/${post.slug}`}
                   className="group flex flex-col overflow-hidden rounded-2xl border border-[#E5E7EB] bg-white transition-shadow hover:shadow-md"
                 >
-                  <div className="aspect-video overflow-hidden">
+                  <div className="aspect-video overflow-hidden bg-[#F6F8FF] flex items-center justify-center">
                     <img
                       src={post.coverImage}
                       alt={post.title}
-                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      className="h-full w-full object-contain transition-transform duration-500 group-hover:scale-105"
                     />
                   </div>
                   <div className="flex flex-1 flex-col p-5">

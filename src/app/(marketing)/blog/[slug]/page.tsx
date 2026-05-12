@@ -131,11 +131,11 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
 
         {/* Cover image */}
         <div className="mx-auto max-w-5xl px-4 -mt-2 pb-12">
-          <div className="overflow-hidden rounded-2xl shadow-lg">
+          <div className="overflow-hidden rounded-2xl shadow-lg bg-[#F6F8FF] flex items-center justify-center">
             <img
               src={post.coverImage}
               alt={post.title}
-              className="w-full object-cover"
+              className="w-full object-contain"
             />
           </div>
         </div>
@@ -196,8 +196,8 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                     href={`/blog/${related.slug}`}
                     className="group flex flex-col overflow-hidden rounded-2xl border border-[#E5E7EB] bg-white transition-shadow hover:shadow-md"
                   >
-                    <div className="aspect-video overflow-hidden">
-                      <img src={related.coverImage} alt={related.title} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                    <div className="aspect-video overflow-hidden bg-[#F6F8FF] flex items-center justify-center">
+                      <img src={related.coverImage} alt={related.title} className="h-full w-full object-contain transition-transform duration-500 group-hover:scale-105" />
                     </div>
                     <div className="flex flex-1 flex-col p-5">
                       <span className={`self-start rounded-full px-2.5 py-1 text-xs font-semibold mb-2 ${categoryColors[related.category] ?? "bg-gray-100 text-gray-600"}`}>
