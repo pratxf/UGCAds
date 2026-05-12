@@ -2,15 +2,7 @@
 
 import { useState } from "react";
 import Script from "next/script";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faCheck,
-  faRocket,
-  faUser,
-  faStar,
-  faBriefcase,
-  faBolt,
-} from "@fortawesome/free-solid-svg-icons";
+import { Check, Zap, Sparkles, Users, Rocket } from "lucide-react";
 import { Logo } from "@/components/ui/logo";
 import { cn } from "@/lib/utils";
 import { STARTER_PLAN, SUBSCRIPTION_PLANS } from "@/lib/pricing";
@@ -22,8 +14,12 @@ declare global {
   }
 }
 
-const planIcons = { basic: faUser, creator: faStar, agency: faBriefcase } as const;
-
+const planMeta = {
+  starter: { icon: Rocket,   color: "#06B6D4", bg: "rgba(6,182,212,0.1)",  border: "#06B6D4" },
+  basic:   { icon: Zap,      color: "#10B981", bg: "rgba(16,185,129,0.1)", border: "#E5E7EB" },
+  creator: { icon: Sparkles, color: "#2563EB", bg: "rgba(37,99,235,0.1)",  border: "#2563EB" },
+  agency:  { icon: Users,    color: "#F59E0B", bg: "rgba(245,158,11,0.1)", border: "#E5E7EB" },
+} as const;
 
 export function OnboardingModal() {
   const [billing, setBilling] = useState<"monthly" | "yearly">("yearly");
@@ -83,72 +79,34 @@ export function OnboardingModal() {
     }
   }
 
+  const starterMeta = planMeta.starter;
+
   return (
     <>
       <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="afterInteractive" />
-      <div className="fixed inset-0 z-[200] flex flex-col bg-white overflow-hidden">
 
-        {/* Header */}
-        <div className="flex items-center justify-between px-8 py-4 border-b border-[#F3F4F6] shrink-0">
-          <Logo />
-          <div className="text-center flex-1">
-            <h1 className="text-[18px] font-bold text-[#111111]">Choose a plan to get started</h1>
-            <p className="text-[12px] text-[#6B7280]">Pick any plan to unlock AI-powered ad generation</p>
+      <div className="fixed inset-0 z-[200] bg-[#F7F9FC] overflow-y-auto">
+        <div className="min-h-full flex flex-col items-center px-4 py-10">
+
+          {/* Logo */}
+          <div className="mb-8">
+            <Logo />
           </div>
-          <div className="w-[80px]" />
-        </div>
 
-        {/* Body */}
-        <div className="flex-1 flex flex-col px-8 py-5 gap-4 min-h-0">
-
-          {/* Starter pack */}
-          <div className="rounded-2xl px-5 py-4 flex items-center gap-5 shrink-0"
-            style={{ background: "linear-gradient(135deg, rgba(6,182,212,0.06) 0%, rgba(37,99,235,0.06) 100%)", border: "2px solid #06B6D4" }}>
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl"
-              style={{ background: "rgba(6,182,212,0.12)" }}>
-              <FontAwesomeIcon icon={faRocket} style={{ fontSize: 18, color: "#06B6D4" }} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-0.5">
-                <span className="text-[15px] font-bold text-[#111111]">{STARTER_PLAN.name}</span>
-                <span className="rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide"
-                  style={{ background: "rgba(6,182,212,0.12)", color: "#0891B2" }}>One-time</span>
-              </div>
-              <p className="text-[12px] text-[#6B7280] mb-1.5">Try it out — no commitment</p>
-              <div className="flex flex-wrap gap-x-4 gap-y-0.5">
-                {STARTER_PLAN.features.map((f) => (
-                  <span key={f} className="flex items-center gap-1.5 text-[11px] text-[#374151]">
-                    <FontAwesomeIcon icon={faCheck} style={{ fontSize: 9, color: "#06B6D4" }} />
-                    {f}
-                  </span>
-                ))}
-              </div>
-            </div>
-            <div className="shrink-0 flex items-center gap-4">
-              <div>
-                <span className="text-[28px] font-bold text-[#111111] leading-none">${STARTER_PLAN.priceUsd}</span>
-                <span className="text-[12px] text-[#9CA3AF] ml-1">one-time</span>
-              </div>
-              <button
-                disabled={!!checkingOut}
-                onClick={() => handleCheckout(STARTER_PLAN.amountCents, "Starter Pack (one-time)", "starter", { type: "STARTER" })}
-                className="rounded-xl px-5 py-2 text-[12px] font-bold text-white transition hover:brightness-110 disabled:opacity-60 flex items-center gap-1.5 whitespace-nowrap"
-                style={{ background: "#06B6D4" }}
-              >
-                <FontAwesomeIcon icon={faBolt} style={{ fontSize: 10 }} />
-                {checkingOut === "starter" ? "Processing..." : `Get Started — $${STARTER_PLAN.priceUsd}`}
-              </button>
-            </div>
+          {/* Heading */}
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold text-[#111111] tracking-tight">Choose your plan</h1>
+            <p className="mt-2 text-[15px] text-[#6B7280]">Start free or go straight to monthly — cancel anytime</p>
           </div>
 
           {/* Billing toggle */}
-          <div className="flex justify-center shrink-0">
+          <div className="mb-8">
             <div className="inline-flex items-center rounded-full p-1 gap-1"
-              style={{ background: "#F3F4F6", border: "1px solid #E5E7EB" }}>
+              style={{ background: "#fff", border: "1px solid #E5E7EB", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
               <button
                 onClick={() => setBilling("monthly")}
                 className={cn(
-                  "rounded-full px-5 py-1.5 text-[12px] font-semibold transition-all",
+                  "rounded-full px-6 py-2 text-[13px] font-semibold transition-all",
                   billing === "monthly" ? "bg-[#2563EB] text-white shadow-sm" : "text-[#6B7280] hover:text-[#374151]"
                 )}
               >
@@ -157,71 +115,120 @@ export function OnboardingModal() {
               <button
                 onClick={() => setBilling("yearly")}
                 className={cn(
-                  "rounded-full px-5 py-1.5 text-[12px] font-semibold transition-all flex items-center gap-2",
+                  "rounded-full px-6 py-2 text-[13px] font-semibold transition-all flex items-center gap-2",
                   billing === "yearly" ? "bg-[#2563EB] text-white shadow-sm" : "text-[#6B7280] hover:text-[#374151]"
                 )}
               >
                 Yearly
-                <span className="rounded-full px-2 py-0.5 text-[10px] font-bold"
+                <span className="rounded-full px-2 py-0.5 text-[11px] font-bold"
                   style={billing === "yearly"
-                    ? { background: "rgba(255,255,255,0.22)", color: "#fff" }
+                    ? { background: "rgba(255,255,255,0.25)", color: "#fff" }
                     : { background: "#FEF3C7", color: "#92400E" }}>
-                  20% OFF
+                  20% off
                 </span>
               </button>
             </div>
           </div>
 
-          {/* Plan cards */}
-          <div className="grid gap-4 grid-cols-3 flex-1 min-h-0">
+          {/* 4 Plan cards */}
+          <div className="w-full max-w-5xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+
+            {/* Starter */}
+            <div className="relative rounded-2xl bg-white flex flex-col overflow-hidden"
+              style={{ border: `2px solid ${starterMeta.border}`, boxShadow: "0 2px 12px rgba(6,182,212,0.10)" }}>
+              <div className="p-5 flex-1 flex flex-col">
+                <div className="flex items-center gap-2.5 mb-4">
+                  <div className="h-9 w-9 rounded-xl flex items-center justify-center shrink-0"
+                    style={{ background: starterMeta.bg }}>
+                    <starterMeta.icon className="h-4 w-4" style={{ color: starterMeta.color }} />
+                  </div>
+                  <div>
+                    <p className="text-[14px] font-bold text-[#111111]">{STARTER_PLAN.name}</p>
+                    <p className="text-[11px] text-[#9CA3AF]">One-time purchase</p>
+                  </div>
+                </div>
+
+                <div className="mb-1">
+                  <span className="text-[36px] font-bold text-[#111111] leading-none">${STARTER_PLAN.priceUsd}</span>
+                  <span className="text-[13px] text-[#9CA3AF] ml-1">one-time</span>
+                </div>
+                <p className="text-[12px] text-[#6B7280] mb-4">No commitment, try it out</p>
+
+                <div className="h-px bg-[#F3F4F6] mb-4" />
+
+                <ul className="space-y-2 flex-1 mb-5">
+                  {STARTER_PLAN.features.map((f) => (
+                    <li key={f} className="flex items-center gap-2 text-[12px] text-[#374151]">
+                      <Check className="h-3.5 w-3.5 shrink-0" style={{ color: starterMeta.color }} />
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+
+                <button
+                  disabled={!!checkingOut}
+                  onClick={() => handleCheckout(STARTER_PLAN.amountCents, "Starter Pack (one-time)", "starter", { type: "STARTER" })}
+                  className="w-full h-10 rounded-xl text-[13px] font-bold text-white transition hover:brightness-110 disabled:opacity-60"
+                  style={{ background: starterMeta.color }}
+                >
+                  {checkingOut === "starter" ? "Processing..." : "Get Started — $5"}
+                </button>
+              </div>
+            </div>
+
+            {/* Subscription plans */}
             {SUBSCRIPTION_PLANS.map((p) => {
-              const price = billing === "monthly" ? `$${p.monthlyPriceUsd}` : `$${p.yearlyMonthlyPriceUsd}`;
+              const price = billing === "monthly" ? p.monthlyPriceUsd : p.yearlyMonthlyPriceUsd;
               const amountCents = billing === "monthly" ? p.monthlyAmountCents : p.yearlyAmountCents;
-              const PlanIcon = planIcons[p.id as keyof typeof planIcons];
-              const iconStyles = {
-                basic:   { iconBg: "rgba(16,185,129,0.12)",  iconColor: "#10B981", checkColor: "#10B981" },
-                creator: { iconBg: "rgba(37,99,235,0.12)",   iconColor: "#2563EB", checkColor: "#2563EB" },
-                agency:  { iconBg: "rgba(245,158,11,0.12)",  iconColor: "#F59E0B", checkColor: "#F59E0B" },
-              }[p.id] ?? { iconBg: "rgba(37,99,235,0.12)", iconColor: "#2563EB", checkColor: "#2563EB" };
+              const meta = planMeta[p.id as keyof typeof planMeta];
+              const Icon = meta.icon;
 
               return (
                 <div key={p.id}
-                  className="relative rounded-2xl flex flex-col"
+                  className="relative rounded-2xl bg-white flex flex-col overflow-hidden"
                   style={p.highlighted
-                    ? { border: "2px solid #2563EB", background: "#FFFFFF", boxShadow: "0 4px 20px rgba(37,99,235,0.10)" }
-                    : { border: "1px solid #E5E7EB", background: "#FFFFFF" }}>
+                    ? { border: `2px solid ${meta.border}`, boxShadow: "0 4px 24px rgba(37,99,235,0.13)" }
+                    : { border: "1.5px solid #E5E7EB", boxShadow: "0 2px 8px rgba(0,0,0,0.05)" }}>
+
                   {p.highlighted && (
-                    <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 z-10">
-                      <span className="rounded-full px-3 py-1 text-[11px] font-bold text-white"
-                        style={{ background: "#2563EB" }}>Popular</span>
+                    <div className="absolute top-0 left-0 right-0 h-1 rounded-t-2xl" style={{ background: meta.color }} />
+                  )}
+
+                  {p.highlighted && (
+                    <div className="absolute top-3 right-3">
+                      <span className="rounded-full px-2.5 py-1 text-[10px] font-bold text-white"
+                        style={{ background: meta.color }}>
+                        Popular
+                      </span>
                     </div>
                   )}
+
                   <div className="p-5 flex-1 flex flex-col">
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
-                        style={{ background: iconStyles.iconBg }}>
-                        <FontAwesomeIcon icon={PlanIcon} style={{ fontSize: 14, color: iconStyles.iconColor }} />
+                    <div className="flex items-center gap-2.5 mb-4">
+                      <div className="h-9 w-9 rounded-xl flex items-center justify-center shrink-0"
+                        style={{ background: meta.bg }}>
+                        <Icon className="h-4 w-4" style={{ color: meta.color }} />
                       </div>
                       <div>
-                        <p className="text-[15px] font-bold text-[#111111]">{p.name}</p>
-                        <p className="text-[11px] text-[#6B7280] leading-snug">{p.description}</p>
+                        <p className="text-[14px] font-bold text-[#111111]">{p.name}</p>
+                        <p className="text-[11px] text-[#9CA3AF] leading-snug">{p.description}</p>
                       </div>
                     </div>
 
-                    <div className="flex items-end gap-1 mb-1">
-                      <span className="text-[30px] font-bold text-[#111111] leading-none">{price}</span>
-                      <span className="text-[12px] text-[#9CA3AF] mb-0.5">/mo</span>
+                    <div className="mb-1">
+                      <span className="text-[36px] font-bold text-[#111111] leading-none">${price}</span>
+                      <span className="text-[13px] text-[#9CA3AF] ml-1">/mo</span>
                     </div>
-                    {billing === "yearly" && (
-                      <p className="text-[11px] mb-1" style={{ color: "#2563EB" }}>Billed annually</p>
-                    )}
+                    <p className="text-[12px] text-[#6B7280] mb-4">
+                      {billing === "yearly" ? "Billed annually" : "Billed monthly"}
+                    </p>
 
-                    <div className="my-2.5 h-px" style={{ background: "#F3F4F6" }} />
+                    <div className="h-px bg-[#F3F4F6] mb-4" />
 
-                    <ul className="space-y-1.5 flex-1 mb-4">
+                    <ul className="space-y-2 flex-1 mb-5">
                       {p.features.map((f) => (
                         <li key={f} className="flex items-center gap-2 text-[12px] text-[#374151]">
-                          <FontAwesomeIcon icon={faCheck} style={{ fontSize: 9, color: iconStyles.checkColor, flexShrink: 0 }} />
+                          <Check className="h-3.5 w-3.5 shrink-0" style={{ color: meta.color }} />
                           {f}
                         </li>
                       ))}
@@ -230,8 +237,11 @@ export function OnboardingModal() {
                     <button
                       disabled={!!checkingOut}
                       onClick={() => handleCheckout(amountCents, `${p.name} Plan (${billing})`, `plan-${p.id}`, { type: "SUBSCRIPTION", planId: p.id, billingCycle: billing })}
-                      className="w-full h-9 rounded-xl text-[13px] font-bold text-white transition hover:brightness-110 disabled:opacity-60"
-                      style={{ background: "#2563EB" }}
+                      className={cn(
+                        "w-full h-10 rounded-xl text-[13px] font-bold transition hover:brightness-110 disabled:opacity-60",
+                        p.highlighted ? "text-white" : "text-white"
+                      )}
+                      style={{ background: meta.color }}
                     >
                       {checkingOut === `plan-${p.id}` ? "Processing..." : `Get ${p.name}`}
                     </button>
@@ -240,6 +250,11 @@ export function OnboardingModal() {
               );
             })}
           </div>
+
+          {/* Footer note */}
+          <p className="mt-8 text-[12px] text-[#9CA3AF] text-center">
+            All plans include full commercial rights. No watermarks. Cancel anytime.
+          </p>
 
         </div>
       </div>
