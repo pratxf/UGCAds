@@ -1,14 +1,13 @@
 import { NextResponse } from "next/server";
-import Anthropic from "@anthropic-ai/sdk";
 import { requireUser } from "@/lib/auth";
 import { rateLimitOrResponse } from "@/lib/rate-limit";
 
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+const POYO_BASE = "https://api.poyo.ai";
 
 export async function POST(req: Request) {
   try {
     const user = await requireUser();
-    const blocked = rateLimitOrResponse(`ai-assist:${user.id}`, { windowSec: 60, max: 20 });
+    const blocked = await rateLimitOrResponse(`ai-assist:${user.id}`, { windowSec: 60, max: 20 });
     if (blocked) return blocked;
 
     const body = await req.json();
@@ -17,31 +16,38 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "existingScript is required" }, { status: 400 });
     }
 
-    const prompt = `You are a UGC ad script writer for social media video ads.
-
-The user has written this rough idea or short sentence:
-"${existingScript}"
-
-Rewrite and expand this into a complete, punchy UGC ad script.
-Rules:
-- 3-4 sentences only, no more
-- Hook first (grab attention in first 2 seconds)
-- Problem second (relate to the viewer's pain point)
-- Solution third (introduce the product as the fix)
-- CTA last (tell them exactly what to do)
-- Sound like a real person talking to a friend
-- Conversational tone, not marketing speak
-- No hashtags, no emojis, no brackets, no labels
-- Do not number the sentences
-- Just return the script text, nothing else`;
-
-    const message = await client.messages.create({
-      model: "claude-haiku-4-5-20251001",
-      max_tokens: 300,
-      messages: [{ role: "user", content: prompt }],
+    const res = await fetch(`${POYO_BASE}/v1/chat/completions`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${process.env.POYO_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: "claude-haiku-4-5-20251001",
+        messages: [
+          {
+            role: "system",
+            content: "You are a UGC ad script writer for social media video ads.",
+          },
+          {
+            role: "user",
+            content: `The user has written this rough idea or short sentence:\n"${existingScript}"\n\nRewrite and expand this into a complete, punchy UGC ad script.\nRules:\n- 3-4 sentences only, no more\n- Hook first (grab attention in first 2 seconds)\n- Problem second (relate to the viewer's pain point)\n- Solution third (introduce the product as the fix)\n- CTA last (tell them exactly what to do)\n- Sound like a real person talking to a friend\n- Conversational tone, not marketing speak\n- No hashtags, no emojis, no brackets, no labels\n- Do not number the sentences\n- Just return the script text, nothing else`,
+          },
+        ],
+        temperature: 1,
+        max_tokens: 300,
+        top_p: 1,
+      }),
     });
 
-    const script = (message.content[0] as { text: string }).text.trim();
+    if (!res.ok) {
+      const err = await res.text();
+      console.error("[ai-assist/script] Poyo error:", err);
+      return NextResponse.json({ error: "AI service error" }, { status: 502 });
+    }
+
+    const data = await res.json() as { choices?: { message?: { content?: string } }[] };
+    const script = data.choices?.[0]?.message?.content?.trim();
     if (!script) return NextResponse.json({ error: "Empty response from AI" }, { status: 502 });
 
     return NextResponse.json({ script });

@@ -9,7 +9,7 @@ const ALLOWED = ["image/jpeg", "image/png", "image/webp"];
 export async function POST(req: Request) {
   try {
     const user = await requireUser();
-    const blocked = rateLimitOrResponse(`upload-avatar:${user.id}`, { windowSec: 60, max: 10 });
+    const blocked = await rateLimitOrResponse(`upload-avatar:${user.id}`, { windowSec: 60, max: 10 });
     if (blocked) return blocked;
     const form = await req.formData();
     const file = form.get("image") as File | null;

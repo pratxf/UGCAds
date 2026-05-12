@@ -25,7 +25,7 @@ const ASPECT_MAP: Record<string, string> = {
 export async function POST(request: Request) {
   try {
     const user = await requireUser();
-    const blocked = rateLimitOrResponse(`gen-ugc:${user.id}`, { windowSec: 60, max: 5 });
+    const blocked = await rateLimitOrResponse(`gen-ugc:${user.id}`, { windowSec: 60, max: 5 });
     if (blocked) return blocked;
     const body = Body.parse(await request.json());
 

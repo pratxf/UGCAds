@@ -4,7 +4,7 @@ import { rateLimitOrResponse } from "@/lib/rate-limit";
 
 export async function POST(req: Request) {
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim() || "unknown";
-  const blocked = rateLimitOrResponse(`admin-login:${ip}`, { windowSec: 60, max: 5 });
+  const blocked = await rateLimitOrResponse(`admin-login:${ip}`, { windowSec: 60, max: 5 });
   if (blocked) return blocked;
 
   const { password } = await req.json();

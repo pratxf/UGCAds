@@ -20,7 +20,7 @@ const Schema = z.object({
 export async function POST(request: Request) {
   try {
     const user = await requireUser();
-    const blocked = rateLimitOrResponse(`gen-tryon:${user.id}`, { windowSec: 60, max: 5 });
+    const blocked = await rateLimitOrResponse(`gen-tryon:${user.id}`, { windowSec: 60, max: 5 });
     if (blocked) return blocked;
     const formData = await request.formData();
     const parsed = Schema.parse({

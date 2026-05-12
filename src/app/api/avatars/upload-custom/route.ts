@@ -6,7 +6,7 @@ import { rateLimitOrResponse } from "@/lib/rate-limit";
 export async function POST(req: Request) {
   try {
     const user = await requireUser();
-    const blocked = rateLimitOrResponse(`upload-custom:${user.id}`, { windowSec: 60, max: 10 });
+    const blocked = await rateLimitOrResponse(`upload-custom:${user.id}`, { windowSec: 60, max: 10 });
     if (blocked) return blocked;
     const form = await req.formData();
     const file = form.get("image") as File | null;

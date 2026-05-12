@@ -42,7 +42,7 @@ const POLL_TIMEOUT_MS = 110_000;
 export async function POST(request: Request) {
   try {
     const user = await requireUser();
-    const blocked = rateLimitOrResponse(`gen-mockup:${user.id}`, { windowSec: 60, max: 10 });
+    const blocked = await rateLimitOrResponse(`gen-mockup:${user.id}`, { windowSec: 60, max: 10 });
     if (blocked) return blocked;
 
     const formData = await request.formData();
