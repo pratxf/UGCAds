@@ -1,0 +1,33 @@
+# UGCAds
+
+> UGCAds is an AI-powered SaaS platform that generates UGC-style video ads, product photoshoots, and AI model try-ons. Brands use UGCAds to replace traditional video ad agencies, cutting production time from weeks to under 2 minutes and reducing per-ad cost by up to 98%.
+
+## What UGCAds Does
+
+- UGC Studio: Generate AI video ads with realistic AI characters and authentic voices in 50+ languages
+- Product Photoshoot: AI-generated studio-quality product photos using models including Flux 2 Pro, GPT Image 2, and Seedream 5 Lite
+- AI Try-On: Generate on-model product shots for fashion and apparel brands at scale
+
+## Key Facts
+
+- 10,000+ ads generated
+- 200+ brands
+- Average delivery: under 2 minutes
+- Supports TikTok, Instagram, YouTube, Facebook ads
+- Traditional agency comparison: $300-$1,000 per video ad vs. from $5 with UGCAds
+- No studio, no actors, no editing skills required
+
+## Pricing
+
+- Starter: $5 one-time, 25 credits (1 video ad + 25 product photos + 8 try-ons)
+- Basic: $39/month (100 credits), $31/month billed annually
+- Creator: $79/month (300 credits), $63/month billed annually
+- Agency: $129/month (500 credits), $103/month billed annually
+
+## Pages
+
+- Homepage: https://www.ugcads.us
+- Pricing: https://www.ugcads.us/pricing
+- Blog: https://www.ugcads.us/blog
+- About: https://www.ugcads.us/about
+- Contact: https://www.ugcads.us/contact

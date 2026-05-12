@@ -3,8 +3,9 @@ import Navbar from "@/components/landing/Navbar";
 import Footer from "@/components/landing/Footer";
 
 export const metadata: Metadata = {
-  title: "Contact — UGCAds",
-  description: "Get in touch with the UGCAds team. We are here to help.",
+  title: "Contact UGCAds — AI Video Ad Generator Support",
+  description: "Get in touch with the UGCAds team. Live chat support or email us at support@ugcads.us. Monday to Friday, 9am to 6pm EST.",
+  alternates: { canonical: "https://www.ugcads.us/contact" },
 };
 
 export default function ContactPage() {

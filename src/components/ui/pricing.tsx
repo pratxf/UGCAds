@@ -37,12 +37,14 @@ interface PricingSectionProps extends React.ComponentProps<'div'> {
 	plans: Plan[];
 	heading: string;
 	description?: string;
+	headingAs?: "h1" | "h2";
 }
 
 export function PricingSection({
 	plans,
 	heading,
 	description,
+	headingAs: Heading = "h2",
 	...props
 }: PricingSectionProps) {
 	const [frequency, setFrequency] = React.useState<FREQUENCY>('yearly');
@@ -57,9 +59,9 @@ export function PricingSection({
 		>
 			{/* Header */}
 			<div className="mx-auto max-w-2xl space-y-3 text-center">
-				<h2 className="text-3xl font-bold tracking-tight text-[#111111] md:text-4xl lg:text-5xl">
+				<Heading className="text-3xl font-bold tracking-tight text-[#111111] md:text-4xl lg:text-5xl">
 					{heading}
-				</h2>
+				</Heading>
 				{description && (
 					<p className="text-[#6B7280] text-sm md:text-base">
 						{description}

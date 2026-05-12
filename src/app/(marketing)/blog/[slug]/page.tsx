@@ -12,7 +12,16 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const post = await prisma.blogPost.findUnique({ where: { slug, published: true }, select: { title: true, excerpt: true } });
   if (!post) return {};
-  return { title: `${post.title} — UGCAds Blog`, description: post.excerpt };
+  return {
+    title: `${post.title} — UGCAds Blog`,
+    description: post.excerpt,
+    openGraph: {
+      title: post.title,
+      description: post.excerpt,
+      type: "article",
+      url: `https://www.ugcads.us/blog/${slug}`,
+    },
+  };
 }
 
 const categoryColors: Record<string, string> = {
@@ -37,11 +46,40 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
   const fmt = (d: Date) =>
     new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 
-  const postUrl = `https://ugcads.us/blog/${post.slug}`;
+  const postUrl = `https://www.ugcads.us/blog/${post.slug}`;
 
   return (
     <>
       <Navbar />
+
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BlogPosting",
+            headline: post.title,
+            description: post.excerpt,
+            image: post.coverImage,
+            url: postUrl,
+            datePublished: post.publishedAt.toISOString(),
+            dateModified: post.updatedAt.toISOString(),
+            author: {
+              "@type": "Person",
+              name: post.author,
+              ...(post.authorRole && { jobTitle: post.authorRole }),
+            },
+            publisher: { "@id": "https://www.ugcads.us/#organization" },
+            mainEntityOfPage: { "@type": "WebPage", "@id": postUrl },
+            isPartOf: {
+              "@type": "Blog",
+              "@id": "https://www.ugcads.us/blog",
+              name: "UGCAds Blog",
+              publisher: { "@id": "https://www.ugcads.us/#organization" },
+            },
+          }),
+        }}
+      />
 
       <main className="bg-white">
         {/* Hero */}

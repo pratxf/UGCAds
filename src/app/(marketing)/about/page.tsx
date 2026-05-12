@@ -4,8 +4,9 @@ import Footer from "@/components/landing/Footer";
 import { Logo } from "@/components/ui/logo";
 
 export const metadata: Metadata = {
-  title: "About — UGCAds",
-  description: "Learn about UGCAds, our mission, and the team building the future of AI-powered video ads.",
+  title: "About UGCAds — AI UGC Video Ad Generator for Brands",
+  description: "UGCAds is an AI-powered platform that lets any brand create UGC-style video ads, product photos, and AI try-on shots in under 2 minutes. No studio, no actors.",
+  alternates: { canonical: "https://www.ugcads.us/about" },
 };
 
 const values = [
