@@ -28,7 +28,7 @@ const VIDEO_MODELS: FalVideoModel[] = [
   { id: "fal-ai/kling-video/v3/standard/image-to-video", name: "Kling 3.0",  tag: "Kling · Standard", logo: "/models/kling-3.webp",    credits: 15, maxDuration: 10 },
 ];
 
-function getDurationOptions(maxDuration: number): { value: Duration; label: string }[] {
+function getDurationOptions(model: FalVideoModel): { value: Duration; label: string }[] {
   const all: { value: Duration; label: string }[] = [
     { value: "5", label: "5s" },
     { value: "8", label: "8s" },
@@ -36,7 +36,7 @@ function getDurationOptions(maxDuration: number): { value: Duration; label: stri
     { value: "15", label: "15s" },
     { value: "20", label: "20s" },
   ];
-  return all.filter((o) => parseInt(o.value) <= maxDuration);
+  return all.filter((o) => parseInt(o.value) <= model.maxDuration);
 }
 
 const HERO_VIDEOS = ["/videos/hero-1-h264.mp4", "/videos/hero-2-h264.mp4", "/videos/hero-3-h264.mp4"];
@@ -243,7 +243,7 @@ export default function UGCStudio() {
     setVideoModel(id);
     const model = VIDEO_MODELS.find((m) => m.id === id);
     if (model && parseInt(duration) > model.maxDuration) {
-      const opts = getDurationOptions(model.maxDuration);
+      const opts = getDurationOptions(model);
       setDuration(opts[opts.length - 1].value);
     }
   }
@@ -620,7 +620,7 @@ export default function UGCStudio() {
               icon={<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6V12L16 14"/></svg>}
               label="Duration  "
               value={duration}
-              options={getDurationOptions(activeModel.maxDuration)}
+              options={getDurationOptions(activeModel)}
               onChange={setDuration}
             />
           </div>
