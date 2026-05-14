@@ -114,6 +114,10 @@ export default function GenerationsOrb() {
   const liveCount = items.filter((i) => LIVE_STATUSES.has(i.status)).length;
   const isActive = liveCount > 0;
   const hasAny = items.length > 0;
+  const latestCompleted = items.find((i) => i.status === "COMPLETED" && (i.finalVideoUrl || i.thumbnailUrl));
+  const pillPreview = isActive
+    ? items.find((i) => LIVE_STATUSES.has(i.status) && i.thumbnailUrl)?.thumbnailUrl
+    : latestCompleted?.finalVideoUrl || latestCompleted?.thumbnailUrl;
 
   if (modalOpen) return null;
 
@@ -132,14 +136,25 @@ export default function GenerationsOrb() {
             boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
           }}
         >
-          {/* Status dot */}
-          <span
-            className="h-2 w-2 rounded-full flex-shrink-0"
-            style={{
-              background: isActive ? "#10B981" : "#D1D5DB",
-              boxShadow: isActive ? "0 0 0 3px rgba(16,185,129,0.18)" : "none",
-            }}
-          />
+          {/* Thumbnail or status dot */}
+          {pillPreview ? (
+            <div className="relative w-6 h-6 rounded-full overflow-hidden flex-shrink-0 border border-[#E5E7EB]">
+              <img src={pillPreview} alt="" className="w-full h-full object-cover object-top" />
+              {isActive && (
+                <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                  <FontAwesomeIcon icon={faSpinner} className="animate-spin text-white" style={{ fontSize: 9 }} />
+                </div>
+              )}
+            </div>
+          ) : (
+            <span
+              className="h-2 w-2 rounded-full flex-shrink-0"
+              style={{
+                background: isActive ? "#10B981" : "#D1D5DB",
+                boxShadow: isActive ? "0 0 0 3px rgba(16,185,129,0.18)" : "none",
+              }}
+            />
+          )}
           <span className="text-[13px] font-semibold text-[#374151]">{hasAny ? items.length : "0"}</span>
           <span className="hidden sm:inline text-[12px] text-[#9CA3AF]">
             {isActive ? "Generating" : hasAny ? "Jobs" : "No jobs"}
