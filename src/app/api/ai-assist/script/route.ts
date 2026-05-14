@@ -49,8 +49,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "AI service error" }, { status: 502 });
     }
 
-    const data = await res.json() as { choices?: { message?: { content?: string } }[] };
-    const script = data.choices?.[0]?.message?.content?.trim();
+    const data = await res.json() as { content?: { type: string; text: string }[]; choices?: { message?: { content?: string } }[] };
+    const script = (data.content?.[0]?.text || data.choices?.[0]?.message?.content || "").trim();
     if (!script) return NextResponse.json({ error: "Empty response from AI" }, { status: 502 });
 
     return NextResponse.json({ script });

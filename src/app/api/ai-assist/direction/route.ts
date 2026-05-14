@@ -51,8 +51,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "AI service error" }, { status: 502 });
     }
 
-    const data = await res.json() as { choices?: { message?: { content?: string } }[] };
-    const direction = data.choices?.[0]?.message?.content?.trim().slice(0, CREATIVE_DIRECTION_CHARACTER_LIMIT);
+    const data = await res.json() as { content?: { type: string; text: string }[]; choices?: { message?: { content?: string } }[] };
+    const direction = (data.content?.[0]?.text || data.choices?.[0]?.message?.content || "").trim().slice(0, CREATIVE_DIRECTION_CHARACTER_LIMIT);
     if (!direction) return NextResponse.json({ error: "Empty response from AI" }, { status: 502 });
 
     return NextResponse.json({ direction });

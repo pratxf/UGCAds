@@ -321,8 +321,14 @@ export default function UGCStudio() {
       if (!res.ok || !data.id) { setError(data.error || "Failed"); setIsGenerating(false); return; }
       setGenerationId(data.id);
       addActiveGeneration({ id: data.id, type: "Video Ad", status: "GENERATING_VIDEO", thumbnailUrl: selectedChar?.thumbnailUrl || selectedChar?.imageUrl || customAvatarPreview || null });
-      // Reset to idle — orb in top-right tracks the queue
+      // Reset inputs — orb in top-right tracks the queue
       setIsGenerating(false);
+      setPrompt("");
+      setSelectedCharacter(null);
+      setCustomAvatarFile(null);
+      setCustomAvatarPreview(null);
+      setUploadedFiles([]);
+      setUploadedPreviews([]);
       startPolling(data.id);
     } catch { setError("Network error. Please try again."); setIsGenerating(false); }
   }
