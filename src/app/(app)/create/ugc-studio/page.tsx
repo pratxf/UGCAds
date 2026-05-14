@@ -354,7 +354,7 @@ export default function UGCStudio() {
 
   const canGenerate = prompt.trim().length > 0 && !isGenerating;
   const durationNum = parseInt(duration);
-  const creditCost = durationNum >= 20 ? 30 : durationNum >= 15 ? 25 : durationNum >= 10 ? 20 : 15;
+  const creditCost = durationNum >= 15 ? 25 : durationNum >= 10 ? 20 : 15;
   const [isDragging, setIsDragging] = useState(false);
 
   return (
