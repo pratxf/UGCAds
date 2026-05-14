@@ -194,6 +194,15 @@ export default function GenerationsOrb() {
                               <span className="text-white text-[9px] font-bold">PLAY</span>
                             </div>
                           </>
+                        ) : item.thumbnailUrl ? (
+                          <>
+                            <img src={item.thumbnailUrl} alt="" className="w-full h-full object-cover object-top" />
+                            {isLive && (
+                              <div className="absolute inset-0 bg-black/40 flex items-center justify-center rounded-xl">
+                                <FontAwesomeIcon icon={faSpinner} className="animate-spin" style={{ fontSize: 12, color: "white" }} />
+                              </div>
+                            )}
+                          </>
                         ) : (
                           <FontAwesomeIcon
                             icon={isFailed ? faTriangleExclamation : isLive ? faSpinner : faCheck}

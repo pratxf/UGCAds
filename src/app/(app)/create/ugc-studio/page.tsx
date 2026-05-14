@@ -320,7 +320,7 @@ export default function UGCStudio() {
       const data = await res.json() as { id?: string; error?: string };
       if (!res.ok || !data.id) { setError(data.error || "Failed"); setIsGenerating(false); return; }
       setGenerationId(data.id);
-      addActiveGeneration({ id: data.id, type: "Video Ad", status: "GENERATING_VIDEO" });
+      addActiveGeneration({ id: data.id, type: "Video Ad", status: "GENERATING_VIDEO", thumbnailUrl: selectedChar?.thumbnailUrl || selectedChar?.imageUrl || customAvatarPreview || null });
       // Reset to idle — orb in top-right tracks the queue
       setIsGenerating(false);
       startPolling(data.id);

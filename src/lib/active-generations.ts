@@ -5,6 +5,7 @@ export type ActiveGeneration = {
   type: ActiveGenerationType;
   status: string;
   finalVideoUrl?: string | null;
+  thumbnailUrl?: string | null;
   errorMessage?: string | null;
   createdAt: number;
 };
