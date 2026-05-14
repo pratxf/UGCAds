@@ -41,11 +41,13 @@ export async function POST(request: Request) {
     const modelMeta = VIDEO_MODELS.find((m) => m.id === parsed.videoModel);
     const durationNum = Math.min(parseInt(parsed.duration), modelMeta?.maxDuration ?? 20);
 
-    const CREDIT_COST = durationNum >= 15
-      ? COSTS_UNITS.UGC_AD_15S
-      : durationNum >= 10
-        ? COSTS_UNITS.UGC_AD_10S
-        : COSTS_UNITS.UGC_AD_5S;
+    const CREDIT_COST = durationNum >= 20
+      ? COSTS_UNITS.UGC_AD_20S
+      : durationNum >= 15
+        ? COSTS_UNITS.UGC_AD_15S
+        : durationNum >= 10
+          ? COSTS_UNITS.UGC_AD_10S
+          : COSTS_UNITS.UGC_AD_5S;
 
     if (user.credits < CREDIT_COST) {
       return NextResponse.json({ error: "Insufficient credits" }, { status: 402 });
