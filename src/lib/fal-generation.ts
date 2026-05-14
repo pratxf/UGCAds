@@ -35,8 +35,8 @@ const SEEDREAM_IMAGE_SIZE: Record<string, string> = {
 };
 
 const GPT_IMAGE_SIZE: Record<string, string> = {
-  "1:1":  "square_1024",
-  "4:5":  "portrait_4_5",
+  "1:1":  "square_hd",
+  "4:5":  "portrait_4_3",
   "9:16": "portrait_16_9",
   "16:9": "landscape_16_9",
 };
