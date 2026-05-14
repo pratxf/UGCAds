@@ -20,22 +20,28 @@ import { addActiveGeneration } from "@/lib/active-generations";
 import type { FalVideoModel } from "@/lib/fal-generation";
 
 type AspectRatio = "9:16" | "16:9";
-type Duration = "5" | "8" | "10" | "15" | "20";
+type Duration = "4" | "5" | "8" | "10" | "12" | "15" | "16" | "20";
 
-const VIDEO_MODELS: FalVideoModel[] = [
+type VideoModel = FalVideoModel & { allowedDurations?: Duration[] };
+
+const VIDEO_MODELS: VideoModel[] = [
   { id: "bytedance/seedance-2.0/fast/image-to-video",    name: "Seedance 2", tag: "ByteDance · 720p", logo: "/models/seedance-2.webp", credits: 15, maxDuration: 15 },
-  { id: "fal-ai/sora-2/image-to-video",                  name: "Sora 2",     tag: "OpenAI · 720p",    logo: "/models/sora-2.webp",     credits: 20, maxDuration: 20 },
-  { id: "fal-ai/kling-video/v3/standard/image-to-video", name: "Kling 3.0",  tag: "Kling · Standard", logo: "/models/kling-3.webp",    credits: 15, maxDuration: 10 },
+  { id: "fal-ai/sora-2/image-to-video",                  name: "Sora 2",     tag: "OpenAI · 720p",    logo: "/models/sora-2.webp",     credits: 20, maxDuration: 20, allowedDurations: ["4", "8", "12", "16", "20"] },
+  { id: "fal-ai/kling-video/v3/standard/image-to-video", name: "Kling 3.0",  tag: "Kling · Standard", logo: "/models/kling-3.webp",    credits: 15, maxDuration: 10, allowedDurations: ["5", "10"] },
 ];
 
-function getDurationOptions(model: FalVideoModel): { value: Duration; label: string }[] {
+function getDurationOptions(model: VideoModel): { value: Duration; label: string }[] {
   const all: { value: Duration; label: string }[] = [
+    { value: "4", label: "4s" },
     { value: "5", label: "5s" },
     { value: "8", label: "8s" },
     { value: "10", label: "10s" },
+    { value: "12", label: "12s" },
     { value: "15", label: "15s" },
+    { value: "16", label: "16s" },
     { value: "20", label: "20s" },
   ];
+  if (model.allowedDurations) return all.filter((o) => model.allowedDurations!.includes(o.value));
   return all.filter((o) => parseInt(o.value) <= model.maxDuration);
 }
 

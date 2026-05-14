@@ -17,7 +17,7 @@ const VIDEO_MODEL_IDS = VIDEO_MODELS.map((m) => m.id) as [string, ...string[]];
 const Schema = z.object({
   videoModel:  z.enum(VIDEO_MODEL_IDS).default(VIDEO_MODEL_IDS[0]),
   aspectRatio: z.enum(["NINE_SIXTEEN", "SIXTEEN_NINE"]).default("NINE_SIXTEEN"),
-  duration:    z.enum(["5", "8", "10", "15", "20"]).default("5"),
+  duration:    z.enum(["4", "5", "8", "10", "12", "15", "16", "20"]).default("5"),
 });
 
 export async function POST(request: Request) {
