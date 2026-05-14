@@ -267,7 +267,7 @@ export default function HistoryClient({ items: rawItems }: { items: Item[] }) {
                       <FontAwesomeIcon icon={faWandMagicSparkles} style={{ fontSize: 28, color: "white" }} />
                       <p className="text-white text-[13px] font-semibold">Rendering your video...</p>
                       <div className="w-[55%] h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.25)" }}>
-                        <div className="h-full rounded-full animate-pulse" style={{ width: "45%", background: "#F59E0B" }} />
+                        <div className="h-full rounded-full" style={{ background: "#F59E0B", animation: "progress-sweep 90s linear forwards" }} />
                       </div>
                     </div>
                   )}

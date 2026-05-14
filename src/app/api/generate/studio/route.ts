@@ -123,13 +123,24 @@ export async function POST(request: Request) {
       return gen;
     });
 
-    const poyoTaskId = await submitPoyoVideoTask(
-      parsed.videoModel,
-      prompt,
-      imageUrl,
-      ASPECT_MAP[parsed.aspectRatio] || "9:16",
-      durationNum,
-    );
+    let poyoTaskId: string;
+    try {
+      poyoTaskId = await submitPoyoVideoTask(
+        parsed.videoModel,
+        prompt,
+        imageUrl,
+        ASPECT_MAP[parsed.aspectRatio] || "9:16",
+        durationNum,
+      );
+    } catch (poyoErr) {
+      // Poyo rejected the request — mark failed and refund credits so the record doesn't get stuck
+      await prisma.$transaction([
+        prisma.generation.update({ where: { id: generation.id }, data: { status: "FAILED", errorMessage: "Failed to start generation" } }),
+        prisma.user.update({ where: { id: generation.userId }, data: { credits: { increment: CREDIT_COST } } }),
+        prisma.transaction.create({ data: { userId: generation.userId, type: "REFUND", status: "COMPLETED", credits: CREDIT_COST, description: `Refund: failed to start generation ${generation.id}` } }),
+      ]);
+      throw poyoErr;
+    }
 
     await prisma.generation.update({
       where: { id: generation.id },

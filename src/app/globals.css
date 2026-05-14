@@ -324,6 +324,14 @@
   animation: pulse-dot 1.2s ease-in-out infinite;
 }
 
+@keyframes progress-sweep {
+  0%   { width: 0%; }
+  40%  { width: 65%; }
+  70%  { width: 80%; }
+  90%  { width: 90%; }
+  100% { width: 95%; }
+}
+
 @keyframes shimmer-sweep {
   0%   { transform: translateX(-100%); }
   100% { transform: translateX(100%); }
