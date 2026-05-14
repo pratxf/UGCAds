@@ -82,7 +82,6 @@ export default function SupportWidget() {
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
   const [adminOnline, setAdminOnline] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [reply, setReply] = useState("");
   const [sending, setSending] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -110,7 +109,7 @@ export default function SupportWidget() {
     } catch { /* silent */ }
   }, [selectedTicket]);
 
-  useEffect(() => { if (open) { setLoading(true); loadTickets().finally(() => setLoading(false)); } }, [open]);
+  useEffect(() => { if (open) { loadTickets(); } }, [open]);
   useEffect(() => {
     if (!open) return;
     const t = setInterval(loadTickets, 12000);
@@ -271,28 +270,6 @@ export default function SupportWidget() {
                   })}
                 </div>
 
-                <div className="h-px bg-[#F3F4F6] mx-5" />
-
-                {/* Previous conversations */}
-                {loading ? (
-                  <div className="flex items-center justify-center py-4">
-                    <Loader2 className="h-4 w-4 animate-spin text-[#9CA3AF]" />
-                  </div>
-                ) : tickets.length > 0 && (
-                  <div className="px-5 pt-3 pb-2">
-                    <p className="text-[11px] font-semibold text-[#9CA3AF] uppercase tracking-wider mb-2">Previous conversations</p>
-                    {tickets.map((t) => (
-                      <button key={t.id} onClick={() => openTicket(t)}
-                        className="w-full text-left flex items-center justify-between gap-3 py-3 border-b border-[#F3F4F6] last:border-0 hover:opacity-70 transition">
-                        <div className="min-w-0">
-                          <p className="text-[13px] font-semibold text-[#111111] truncate">{t.subject}</p>
-                          <p className="text-[11px] text-[#9CA3AF] mt-0.5">{relTime(t.updatedAt)}</p>
-                        </div>
-                        {t.status === "REPLIED" && <span className="shrink-0 size-2 rounded-full bg-[#4F46E5]" />}
-                      </button>
-                    ))}
-                  </div>
-                )}
 
                 {/* CTAs */}
                 <div className="px-5 pt-3 pb-5 space-y-2.5">
