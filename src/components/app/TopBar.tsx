@@ -8,6 +8,7 @@ import { useMobileNav } from "@/lib/stores/mobile-nav";
 
 const pageTitles: Record<string, string> = {
   "/dashboard": "Dashboard",
+  "/create/ugc-studio": "UGC Studio",
   "/create/ugc": "Create UGC Ad",
   "/create/product-ad": "Create Product Ad",
   "/create/product-photoshoot": "Product Photoshoot",

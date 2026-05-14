@@ -88,11 +88,53 @@ function downloadAsset(url: string, type: string, id: string) {
 }
 
 export default function HistoryClient({ items: rawItems }: { items: Item[] }) {
-  const items = rawItems.filter((i) => i.status !== "Failed");
+  const [liveItems, setLiveItems] = useState<Item[]>(rawItems.filter((i) => i.status !== "Failed"));
+  const items = liveItems;
   const [tab, setTab] = useState("all");
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<"newest" | "oldest">("newest");
   const [preview, setPreview] = useState<Item | null>(null);
+
+  useEffect(() => {
+    const processingIds = liveItems.filter((i) => i.status === "Processing").map((i) => i.id);
+    if (processingIds.length === 0) return;
+
+    const interval = setInterval(async () => {
+      const updates = await Promise.all(
+        processingIds.map(async (id) => {
+          try {
+            const res = await fetch(`/api/generate/status?id=${id}`);
+            if (!res.ok) return null;
+            const data = await res.json();
+            return { id, ...data };
+          } catch {
+            return null;
+          }
+        })
+      );
+
+      setLiveItems((prev) => {
+        let changed = false;
+        const next = prev.map((item) => {
+          const update = updates.find((u) => u?.id === item.id);
+          if (!update) return item;
+          if (update.status === "Complete" && item.status !== "Complete") {
+            changed = true;
+            return { ...item, status: "Complete" as Status, finalUrl: update.finalUrl ?? item.finalUrl };
+          }
+          if (update.status === "Failed") {
+            changed = true;
+            return { ...item, status: "Failed" as Status };
+          }
+          return item;
+        });
+        return changed ? next.filter((i) => i.status !== "Failed") : prev;
+      });
+    }, 5000);
+
+    return () => clearInterval(interval);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [liveItems.map((i) => i.id + i.status).join(",")]);
 
   const total = items.length;
   const complete = items.filter((g) => g.status === "Complete").length;

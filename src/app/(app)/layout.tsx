@@ -32,7 +32,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         <ConditionalOrb />
       </div>
       <div className="relative z-[20] flex flex-1 flex-col lg:ml-[252px]">
-        <TopBar credits={user.credits} />
+        <div className="lg:hidden">
+          <TopBar credits={user.credits} />
+        </div>
         <main className="flex-1 p-4 sm:p-6 lg:p-8">{children}</main>
       </div>
       <SupportWidget />
