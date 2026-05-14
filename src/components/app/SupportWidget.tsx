@@ -111,6 +111,11 @@ export default function SupportWidget() {
 
   useEffect(() => { if (open) { loadTickets(); } }, [open]);
   useEffect(() => {
+    const handler = () => setOpen(true);
+    window.addEventListener("support:open", handler);
+    return () => window.removeEventListener("support:open", handler);
+  }, []);
+  useEffect(() => {
     if (!open) return;
     const t = setInterval(loadTickets, 12000);
     return () => clearInterval(t);

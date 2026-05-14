@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -14,12 +14,6 @@ import {
   faShieldHalved,
   faRotateRight,
   faUser,
-  faBookOpen,
-  faArrowUpRightFromSquare,
-  faMinus,
-  faXmark,
-  faPaperclip,
-  faPaperPlane,
 } from "@fortawesome/free-solid-svg-icons";
 import { cn } from "@/lib/utils";
 
@@ -72,31 +66,6 @@ const faqs = [
   },
 ];
 
-interface ChatMessage {
-  id: number;
-  from: "user" | "agent";
-  text: string;
-  time: string;
-}
-
-const initialMessages: ChatMessage[] = [
-  { id: 1, from: "user", text: "How do credits work?", time: "10:30 AM" },
-  { id: 2, from: "agent", text: "Credits are used for every generation you create. The number of credits depends on the type of generation and settings you choose.", time: "10:31 AM" },
-  { id: 3, from: "user", text: "Do unused credits expire?", time: "10:31 AM" },
-  { id: 4, from: "agent", text: "No, your credits never expire. You can use them anytime.", time: "10:32 AM" },
-];
-
-function getTime() {
-  const d = new Date();
-  const h = d.getHours();
-  const m = d.getMinutes().toString().padStart(2, "0");
-  return `${h % 12 || 12}:${m} ${h >= 12 ? "PM" : "AM"}`;
-}
-
-/* ------------------------------------------------------------------ */
-/*  Agent Avatar                                                       */
-/* ------------------------------------------------------------------ */
-
 function AgentAvatar({ initials, bg, size = 32 }: { initials: string; bg: string; size?: number }) {
   return (
     <div
@@ -109,168 +78,11 @@ function AgentAvatar({ initials, bg, size = 32 }: { initials: string; bg: string
 }
 
 /* ------------------------------------------------------------------ */
-/*  Live Chat Widget                                                   */
-/* ------------------------------------------------------------------ */
-
-function LiveChatWidget({ onClose }: { onClose: () => void }) {
-  const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
-  const [input, setInput] = useState("");
-  const [minimized, setMinimized] = useState(false);
-  const bottomRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
-
-  function send() {
-    const text = input.trim();
-    if (!text) return;
-    const userMsg: ChatMessage = { id: Date.now(), from: "user", text, time: getTime() };
-    setMessages((prev) => [...prev, userMsg]);
-    setInput("");
-    // Simulated agent reply
-    setTimeout(() => {
-      const replies = [
-        "Thanks for reaching out! Our team will get back to you shortly.",
-        "That's a great question. Let me check that for you.",
-        "Got it! Is there anything else I can help you with?",
-        "Sure, I can help with that. Give me a moment.",
-      ];
-      const reply: ChatMessage = {
-        id: Date.now() + 1,
-        from: "agent",
-        text: replies[Math.floor(Math.random() * replies.length)],
-        time: getTime(),
-      };
-      setMessages((prev) => [...prev, reply]);
-    }, 1200);
-  }
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 24, scale: 0.97 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: 24, scale: 0.97 }}
-      transition={{ duration: 0.22, ease: "easeOut" }}
-      className="fixed bottom-6 right-6 z-50 flex flex-col rounded-2xl bg-white overflow-hidden"
-      style={{
-        width: 360,
-        maxHeight: minimized ? 64 : 560,
-        boxShadow: "0 8px 40px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.08)",
-        border: "1px solid #E5E7EB",
-        transition: "max-height 0.25s ease",
-      }}
-    >
-      {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3.5 shrink-0" style={{ background: "#fff", borderBottom: minimized ? "none" : "1px solid #F3F4F6" }}>
-        <div className="flex items-center gap-2.5">
-          <span className="size-2.5 rounded-full bg-green-500 shrink-0" />
-          <div>
-            <p className="text-[13px] font-bold text-[#111111] leading-none">Live chat</p>
-            {!minimized && <p className="text-[11px] text-[#6B7280] mt-0.5">We&apos;re online</p>}
-          </div>
-        </div>
-        <div className="flex items-center gap-1">
-          <button
-            onClick={() => setMinimized((v) => !v)}
-            className="flex h-7 w-7 items-center justify-center rounded-full text-[#9CA3AF] hover:text-[#374151] hover:bg-[#F3F4F6] transition"
-          >
-            <FontAwesomeIcon icon={faMinus} style={{ fontSize: 12 }} />
-          </button>
-          <button
-            onClick={onClose}
-            className="flex h-7 w-7 items-center justify-center rounded-full text-[#9CA3AF] hover:text-[#374151] hover:bg-[#F3F4F6] transition"
-          >
-            <FontAwesomeIcon icon={faXmark} style={{ fontSize: 13 }} />
-          </button>
-        </div>
-      </div>
-
-      {!minimized && (
-        <>
-          {/* Messages */}
-          <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4" style={{ background: "#F9FAFB" }}>
-            {/* Agent avatars greeting */}
-            <div className="flex items-center gap-1 mb-1">
-              {[
-                { initials: "E", bg: "#7C3AED" },
-                { initials: "M", bg: "#2563EB" },
-                { initials: "J", bg: "#059669" },
-              ].map((a, i) => (
-                <div key={i} style={{ marginLeft: i > 0 ? -8 : 0 }}>
-                  <AgentAvatar initials={a.initials} bg={a.bg} size={30} />
-                </div>
-              ))}
-            </div>
-            <div>
-              <p className="text-[13px] font-bold text-[#111111]">Hello! 👋</p>
-              <p className="text-[13px] text-[#374151]">How can we help you today?</p>
-            </div>
-
-            {messages.map((msg) => (
-              <div key={msg.id} className={cn("flex gap-2", msg.from === "user" ? "flex-row-reverse" : "flex-row")}>
-                {msg.from === "agent" && (
-                  <AgentAvatar initials="E" bg="#7C3AED" size={28} />
-                )}
-                <div className={cn("max-w-[75%]", msg.from === "user" ? "items-end" : "items-start")}>
-                  {msg.from === "agent" && (
-                    <p className="text-[10px] font-semibold text-[#9CA3AF] mb-1 ml-1">Emma</p>
-                  )}
-                  <div
-                    className="rounded-2xl px-3.5 py-2.5 text-[13px] leading-relaxed"
-                    style={msg.from === "user"
-                      ? { background: "#2563EB", color: "#fff", borderBottomRightRadius: 4 }
-                      : { background: "#fff", color: "#111111", border: "1px solid #E5E7EB", borderBottomLeftRadius: 4 }}
-                  >
-                    {msg.text}
-                  </div>
-                  <p className={cn("text-[10px] text-[#9CA3AF] mt-1", msg.from === "user" ? "text-right" : "text-left ml-1")}>
-                    {msg.time} {msg.from === "user" && "✓"}
-                  </p>
-                </div>
-              </div>
-            ))}
-            <div ref={bottomRef} />
-          </div>
-
-          {/* Input */}
-          <div className="px-3 py-3 shrink-0 border-t border-[#F3F4F6] bg-white">
-            <div className="flex items-center gap-2 rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] px-3 py-2">
-              <input
-                type="text"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && send()}
-                placeholder="Type a message..."
-                className="flex-1 bg-transparent text-[13px] text-[#111111] placeholder-[#9CA3AF] outline-none"
-              />
-              <button className="text-[#9CA3AF] hover:text-[#6B7280] transition">
-                <FontAwesomeIcon icon={faPaperclip} style={{ fontSize: 13 }} />
-              </button>
-              <button
-                onClick={send}
-                disabled={!input.trim()}
-                className="flex h-7 w-7 items-center justify-center rounded-full transition disabled:opacity-40"
-                style={{ background: input.trim() ? "#2563EB" : "#E5E7EB" }}
-              >
-                <FontAwesomeIcon icon={faPaperPlane} style={{ fontSize: 11, color: input.trim() ? "#fff" : "#9CA3AF" }} />
-              </button>
-            </div>
-            <p className="text-center text-[10px] text-[#C4C9D4] mt-2">Powered by ugcads support</p>
-          </div>
-        </>
-      )}
-    </motion.div>
-  );
-}
-
-/* ------------------------------------------------------------------ */
 /*  Main Page                                                          */
 /* ------------------------------------------------------------------ */
 
 export default function SupportPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
-  const [chatOpen, setChatOpen] = useState(false);
 
   return (
     <>
@@ -310,7 +122,7 @@ export default function SupportPage() {
 
             <div className="mt-5 flex items-center justify-between">
               <button
-                onClick={() => setChatOpen(true)}
+                onClick={() => window.dispatchEvent(new CustomEvent("support:open"))}
                 className="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-[13px] font-bold text-white transition hover:brightness-105"
                 style={{ background: "#2563EB" }}
               >
@@ -422,35 +234,8 @@ export default function SupportPage() {
           </div>
         </div>
 
-        {/* Still need help footer */}
-        <div
-          className="rounded-2xl bg-white border border-[#E5E7EB] px-6 py-4 flex items-center gap-4"
-          style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}
-        >
-          <div
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
-            style={{ background: "rgba(99,102,241,0.1)" }}
-          >
-            <FontAwesomeIcon icon={faBookOpen} style={{ fontSize: 16, color: "#6366F1" }} />
-          </div>
-          <div className="flex-1">
-            <p className="text-[13px] font-bold text-[#111111]">Still need help?</p>
-            <p className="text-[12px] text-[#6B7280]">Check out our Help Center for detailed guides and tutorials.</p>
-          </div>
-          <a
-            href="mailto:support@ugcads.us?subject=Support%20Request"
-            className="inline-flex items-center gap-1.5 rounded-xl border border-[#E5E7EB] bg-white hover:bg-[#F9FAFB] px-4 py-2 text-[13px] font-semibold text-[#374151] transition whitespace-nowrap"
-          >
-            Visit Help Center
-            <FontAwesomeIcon icon={faArrowUpRightFromSquare} style={{ fontSize: 11 }} />
-          </a>
-        </div>
       </div>
 
-      {/* Live chat widget */}
-      <AnimatePresence>
-        {chatOpen && <LiveChatWidget onClose={() => setChatOpen(false)} />}
-      </AnimatePresence>
     </>
   );
 }
