@@ -86,6 +86,14 @@ export function OnboardingModal() {
       <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="afterInteractive" />
 
       <div className="fixed inset-0 z-[200] bg-[#F7F9FC] overflow-y-auto">
+        <div className="absolute top-4 right-4">
+          <a
+            href="/auth/signout"
+            className="inline-flex items-center gap-1.5 rounded-full border border-[#E5E7EB] bg-white px-4 py-2 text-xs font-medium text-[#6B7280] hover:text-[#111111] hover:border-[#D1D5DB] transition-colors"
+          >
+            Sign out
+          </a>
+        </div>
         <div className="min-h-full flex flex-col items-center px-4 py-10">
 
           {/* Logo */}
