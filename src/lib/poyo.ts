@@ -62,7 +62,7 @@ function buildVideoInput(model: string, prompt: string, imageUrl: string | undef
     case "kling-3.0/standard":
       return { prompt, ...(imageUrl ? { image_url: imageUrl } : {}), aspect_ratio: aspectRatio, duration, multi_shots: false, sound: true };
     case "veo3.1-quality":
-      return { prompt, ...(imageUrl ? { image_urls: [imageUrl] } : {}), resolution: "1080p", aspect_ratio: aspectRatio, duration };
+      return { prompt, ...(imageUrl ? { image_urls: [imageUrl] } : {}), resolution: "720p", aspect_ratio: aspectRatio, duration };
     default:
       return { prompt, ...(imageUrl ? { image_urls: [imageUrl] } : {}), aspect_ratio: aspectRatio, duration };
   }
