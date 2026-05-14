@@ -34,7 +34,7 @@ export async function POST(req: Request) {
           },
           {
             role: "user",
-            content: `The user has written this scene idea for a product photo:\n"${existing}"\n\nImprove and expand this into a vivid, detailed scene description for AI product photography. Keep the user's core idea and style — only make it more specific and visual.\nRules:\n- 2-3 sentences max\n- Keep the user's original concept, setting, and mood — do not replace it with something unrelated\n- Add specific details: lighting type, surface texture, background elements, atmosphere\n- Do not mention the product itself — only the scene and environment\n- No hashtags, no emojis, no labels\n- Return only the improved scene description, nothing else`,
+            content: `The user wants a product photo with this vibe or setting:\n"${existing}"\n\nWrite a vivid, detailed background scene description for AI product photography based on their idea.\nRules:\n- 2-3 sentences max\n- Describe only the physical scene: surface, background, lighting, atmosphere, textures, colors\n- No people, no screens, no UI, no software — only real-world physical environment elements\n- Match the mood and style the user described but translate it into a real photoshoot setting\n- No hashtags, no emojis, no labels\n- Return only the scene description, nothing else`,
           },
         ],
         temperature: 1,
