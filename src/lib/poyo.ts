@@ -58,7 +58,7 @@ function buildVideoInput(model: string, prompt: string, imageUrl: string | undef
     case "seedance-2-fast":
       return { prompt, reference_image_urls: imageUrl ? [imageUrl] : [], resolution: "720p", aspect_ratio: aspectRatio, duration, generate_audio: true };
     case "sora-2-official":
-      return { prompt, aspect_ratio: aspectRatio, duration };
+      return { prompt, ...(imageUrl ? { image_urls: [imageUrl] } : {}), aspect_ratio: aspectRatio, duration };
     case "kling-3.0/standard":
       return { prompt, ...(imageUrl ? { image_url: imageUrl } : {}), aspect_ratio: aspectRatio, duration, multi_shots: false, sound: true };
     case "veo3.1-quality":
