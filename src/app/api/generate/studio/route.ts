@@ -70,15 +70,19 @@ export async function POST(request: Request) {
       return uploadToR2(buffer, key, file.type);
     };
 
+    const avatarFile = formData.get("avatarImage") as File | null;
     const file1 = formData.get("image1") as File | null;
     const file2 = formData.get("image2") as File | null;
 
-    const [uploadedUrl1, uploadedUrl2] = await Promise.all([
+    const [customAvatarUploadedUrl, uploadedUrl1, uploadedUrl2] = await Promise.all([
+      uploadFile(avatarFile),
       uploadFile(file1),
       uploadFile(file2),
     ]);
 
-    const allImageUrls = [libraryImageUrl, uploadedUrl1, uploadedUrl2].filter(Boolean) as string[];
+    // Avatar priority: library > custom upload. Product images come after.
+    const avatarImageUrl = libraryImageUrl ?? customAvatarUploadedUrl;
+    const allImageUrls = [avatarImageUrl, uploadedUrl1, uploadedUrl2].filter(Boolean) as string[];
     const imageUrl  = allImageUrls[0];
     const imageUrl2 = allImageUrls[1];
 
@@ -93,9 +97,9 @@ export async function POST(request: Request) {
           type:           "UGC_AD",
           status:         "GENERATING_VIDEO",
           characterId:    resolvedCharacterId ?? null,
-          characterImage: imageUrl ?? null,
-          isCustomAvatar: !characterId && !!imageUrl,
-          customAvatarUrl: !characterId ? (imageUrl ?? null) : null,
+          characterImage: avatarImageUrl ?? null,
+          isCustomAvatar: !characterId && !!customAvatarUploadedUrl,
+          customAvatarUrl: !characterId ? (customAvatarUploadedUrl ?? null) : null,
           productImage:   imageUrl2 ?? null,
           script:         prompt,
           aspectRatio:    parsed.aspectRatio,
