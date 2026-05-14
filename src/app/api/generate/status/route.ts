@@ -36,7 +36,12 @@ export async function GET(req: Request) {
         const finalUrl = await mirrorToR2FromUrl(result.url, r2Key, isVideo ? "video/mp4" : "image/jpeg");
         await prisma.generation.update({
           where: { id: gen.id },
-          data: { status: "COMPLETED", finalVideoUrl: finalUrl, completedAt: new Date() },
+          data: {
+            status: "COMPLETED",
+            finalVideoUrl: finalUrl,
+            thumbnailUrl: isVideo ? null : finalUrl,
+            completedAt: new Date(),
+          },
         });
         return NextResponse.json({ status: "Complete", finalUrl });
       }

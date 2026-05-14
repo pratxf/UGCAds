@@ -2,13 +2,12 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { mirrorToR2FromUrl, uploadToR2 } from "@/lib/r2";
-import { generateTryon } from "@/lib/fal";
+import { uploadToR2 } from "@/lib/r2";
+import { submitFalTryonTask, FAL_TRYON_MODEL } from "@/lib/fal-generation";
 import { COSTS_UNITS } from "@/lib/credits";
 import { rateLimitOrResponse } from "@/lib/rate-limit";
 
-// Try-On is one fal.ai call — run inline (like photoshoot) instead of via Inngest.
-export const maxDuration = 90;
+export const maxDuration = 30;
 
 const CREDIT_COST = COSTS_UNITS.TRYON;
 
@@ -90,68 +89,24 @@ export async function POST(request: Request) {
       return gen;
     });
 
-    // ─── Inline generation (bypasses Inngest) ──────────────
+    let falRequestId: string;
     try {
-      const { imageUrl: rawUrl } = await generateTryon({
-        personImage: tryonModel.imageUrl,
-        garmentImage: garmentImageUrl,
-        category: parsed.garmentCategory,
-      });
-
-      const finalUrl = await mirrorToR2FromUrl(
-        rawUrl,
-        `generations/${generation.id}/tryon.jpg`,
-        "image/jpeg",
-      );
-
-      await prisma.generation.update({
-        where: { id: generation.id },
-        data: {
-          status: "COMPLETED",
-          finalVideoUrl: finalUrl,
-          thumbnailUrl: finalUrl,
-          completedAt: new Date(),
-        },
-      });
-
-      return NextResponse.json({
-        id: generation.id,
-        status: "COMPLETED",
-        finalVideoUrl: finalUrl,
-      });
-    } catch (genErr) {
-      const message = genErr instanceof Error ? genErr.message : "Try-on failed";
-      console.error("[tryon] generation failed:", message);
-
+      falRequestId = await submitFalTryonTask(tryonModel.imageUrl, garmentImageUrl);
+    } catch (falErr) {
       await prisma.$transaction([
-        prisma.generation.update({
-          where: { id: generation.id },
-          data: { status: "FAILED", errorMessage: message },
-        }),
-        prisma.user.update({
-          where: { id: user.id },
-          data: { credits: { increment: CREDIT_COST } },
-        }),
-        prisma.transaction.create({
-          data: {
-            userId: user.id,
-            type: "REFUND",
-            status: "COMPLETED",
-            credits: CREDIT_COST,
-            description: `Refund for failed try-on ${generation.id}`,
-          },
-        }),
+        prisma.generation.update({ where: { id: generation.id }, data: { status: "FAILED", errorMessage: "Failed to start generation" } }),
+        prisma.user.update({ where: { id: user.id }, data: { credits: { increment: CREDIT_COST } } }),
+        prisma.transaction.create({ data: { userId: user.id, type: "REFUND", status: "COMPLETED", credits: CREDIT_COST, description: `Refund: failed to start try-on ${generation.id}` } }),
       ]);
-
-      return NextResponse.json(
-        {
-          id: generation.id,
-          status: "FAILED",
-          error: "Try-on failed. Your credits have been refunded.",
-        },
-        { status: 502 },
-      );
+      throw falErr;
     }
+
+    await prisma.generation.update({
+      where: { id: generation.id },
+      data: { metadata: { falRequestId, falModelId: FAL_TRYON_MODEL } },
+    });
+
+    return NextResponse.json({ id: generation.id, status: "Processing" });
   } catch (err: unknown) {
     const e = err as { message?: string; name?: string; code?: string; errors?: unknown };
     if (e?.message === "Unauthorized") return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

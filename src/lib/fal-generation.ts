@@ -80,6 +80,22 @@ export async function submitFalImageTask(
   return request_id;
 }
 
+export async function submitFalTryonTask(
+  personImage: string,
+  garmentImage: string,
+): Promise<string> {
+  const { request_id } = await fal.queue.submit("fal-ai/image-apps-v2/virtual-try-on", {
+    input: {
+      person_image_url: personImage,
+      clothing_image_url: garmentImage,
+      preserve_pose: true,
+    },
+  });
+  return request_id;
+}
+
+export const FAL_TRYON_MODEL = "fal-ai/image-apps-v2/virtual-try-on";
+
 export async function pollFalTask(
   modelId: string,
   requestId: string,

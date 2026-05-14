@@ -20,7 +20,6 @@ import {
   faWandMagicSparkles,
   faMagnifyingGlass,
   faChevronDown,
-  faEllipsis,
 } from "@fortawesome/free-solid-svg-icons";
 import { useEffect } from "react";
 import { cn } from "@/lib/utils";
@@ -198,20 +197,6 @@ export default function HistoryClient({ items: rawItems }: { items: Item[] }) {
         </div>
       </div>
 
-      {/* Filter tabs */}
-      <div className="flex gap-1.5 flex-wrap">
-        {tabs.map((t) => (
-          <button key={t.value} onClick={() => setTab(t.value)}
-            className="rounded-full px-3.5 py-1.5 text-[12px] font-medium transition-all"
-            style={{
-              background: tab === t.value ? "#2563EB" : "#FFFFFF",
-              color: tab === t.value ? "#FFFFFF" : "#6B7280",
-              border: `1px solid ${tab === t.value ? "#2563EB" : "#E5E7EB"}`,
-            }}>
-            {t.label}
-          </button>
-        ))}
-      </div>
 
       {/* Grid */}
       {filtered.length === 0 ? (
@@ -304,10 +289,6 @@ export default function HistoryClient({ items: rawItems }: { items: Item[] }) {
                 <div className="px-4 py-3">
                   <div className="flex items-center justify-between mb-2 gap-2">
                     <p className="text-[13px] font-bold text-[#111111] truncate flex-1">{g.title}</p>
-                    <button type="button" onClick={(e) => e.stopPropagation()}
-                      className="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-lg hover:bg-[#F3F4F6] transition text-[#9CA3AF]">
-                      <FontAwesomeIcon icon={faEllipsis} style={{ fontSize: 13 }} />
-                    </button>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full" style={typeTagStyle(g.type)}>

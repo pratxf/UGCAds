@@ -219,13 +219,10 @@ export default function TryonCreator() {
         setIsGenerating(false);
         return;
       }
-      if (data.status === "COMPLETED" && data.finalVideoUrl) {
-        setResultUrl(data.finalVideoUrl);
-        setIsGenerating(false);
-        return;
-      }
       setGenerationId(data.id);
       addActiveGeneration({ id: data.id, type: "AI Try-On", status: "GENERATING_TRYON" });
+      // Reset to idle — orb tracks progress
+      setIsGenerating(false);
     } catch {
       setError("Try-on failed. Please try again.");
       setIsGenerating(false);

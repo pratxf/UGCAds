@@ -282,13 +282,10 @@ export default function PhotoshootCreator() {
         setIsGenerating(false);
         return;
       }
-      if (data.status === "COMPLETED" && data.finalVideoUrl) {
-        setFinalImageUrl(data.finalVideoUrl);
-        setIsGenerating(false);
-        return;
-      }
       setGenerationId(data.id);
-      addActiveGeneration({ id: data.id, type: "Product Photoshoot", status: "GENERATING_SCENE" });
+      addActiveGeneration({ id: data.id, type: "Product Photoshoot", status: "GENERATING_SCENE", thumbnailUrl: productImage });
+      // Reset to idle — orb tracks progress
+      setIsGenerating(false);
     } catch {
       setGenerationError("Generation failed. Your credit has been refunded.");
       setIsGenerating(false);

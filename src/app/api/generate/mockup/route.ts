@@ -2,12 +2,12 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { submitFalImageTask, pollFalTask, PHOTOSHOOT_MODELS } from "@/lib/fal-generation";
-import { uploadToR2, mirrorToR2FromUrl } from "@/lib/r2";
+import { submitFalImageTask, PHOTOSHOOT_MODELS } from "@/lib/fal-generation";
+import { uploadToR2 } from "@/lib/r2";
 import { COSTS_UNITS } from "@/lib/credits";
 import { rateLimitOrResponse } from "@/lib/rate-limit";
 
-export const maxDuration = 120;
+export const maxDuration = 30;
 
 const MODEL_IDS = PHOTOSHOOT_MODELS.map((m) => m.id) as [string, ...string[]];
 
@@ -36,8 +36,6 @@ function buildPrompt(base: string): string {
 }
 
 const CREDIT_COST = COSTS_UNITS.MOCKUP;
-const POLL_INTERVAL_MS = 4000;
-const POLL_TIMEOUT_MS = 110_000;
 
 export async function POST(request: Request) {
   try {
@@ -115,29 +113,24 @@ export async function POST(request: Request) {
       : parsed.customPrompt!;
     const finalPrompt = buildPrompt(basePrompt);
 
-    const falRequestId = await submitFalImageTask(parsed.imageModel, finalPrompt, productImageUrl, parsed.aspectRatio);
-
-    const deadline = Date.now() + POLL_TIMEOUT_MS;
-    let finalUrl: string | null = null;
-
-    while (Date.now() < deadline) {
-      await new Promise((r) => setTimeout(r, POLL_INTERVAL_MS));
-      const result = await pollFalTask(parsed.imageModel, falRequestId);
-      if (result.state === "success" && result.url) {
-        finalUrl = await mirrorToR2FromUrl(result.url, `generations/${generation.id}/photoshoot.jpg`, "image/jpeg");
-        break;
-      }
-      if (result.state === "fail") throw new Error(result.error || "fal generation failed");
+    let falRequestId: string;
+    try {
+      falRequestId = await submitFalImageTask(parsed.imageModel, finalPrompt, productImageUrl, parsed.aspectRatio);
+    } catch (falErr) {
+      await prisma.$transaction([
+        prisma.generation.update({ where: { id: generation.id }, data: { status: "FAILED", errorMessage: "Failed to start generation" } }),
+        prisma.user.update({ where: { id: generation.userId }, data: { credits: { increment: CREDIT_COST } } }),
+        prisma.transaction.create({ data: { userId: generation.userId, type: "REFUND", status: "COMPLETED", credits: CREDIT_COST, description: `Refund: failed to start generation ${generation.id}` } }),
+      ]);
+      throw falErr;
     }
-
-    if (!finalUrl) throw new Error("Generation timed out");
 
     await prisma.generation.update({
       where: { id: generation.id },
-      data: { status: "COMPLETED", finalVideoUrl: finalUrl, thumbnailUrl: finalUrl, completedAt: new Date() },
+      data: { metadata: { falRequestId, falModelId: parsed.imageModel, ...(parsed.templateId ? { templateId: parsed.templateId, templateName } : {}) } },
     });
 
-    return NextResponse.json({ id: generation.id, status: "COMPLETED", finalVideoUrl: finalUrl });
+    return NextResponse.json({ id: generation.id, status: "Processing" });
   } catch (err: unknown) {
     const e = err as { message?: string; name?: string; code?: string; errors?: unknown };
     if (e?.message === "Unauthorized") return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
