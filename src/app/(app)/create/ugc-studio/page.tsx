@@ -25,8 +25,9 @@ type Duration = "4" | "5" | "8" | "10" | "12" | "15" | "16" | "20";
 type VideoModel = FalVideoModel & { allowedDurations?: Duration[] };
 
 const VIDEO_MODELS: VideoModel[] = [
-  { id: "bytedance/seedance-2.0/fast/image-to-video", name: "Seedance 2", tag: "ByteDance · 720p", logo: "/models/seedance-2.webp", credits: 15, maxDuration: 15, allowedDurations: ["5", "10", "15"] },
-  { id: "fal-ai/sora-2/image-to-video",               name: "Sora 2",     tag: "OpenAI · 720p",    logo: "/models/sora-2.webp",     credits: 20, maxDuration: 20, allowedDurations: ["16"] },
+  { id: "bytedance/seedance-2.0/fast/image-to-video",    name: "Seedance 2", tag: "ByteDance · 720p", logo: "/models/seedance-2.webp", credits: 15, maxDuration: 15, allowedDurations: ["5", "10", "15"] },
+  { id: "fal-ai/sora-2/image-to-video",                  name: "Sora 2",     tag: "OpenAI · 720p",    logo: "/models/sora-2.webp",     credits: 20, maxDuration: 20, allowedDurations: ["16"] },
+  { id: "fal-ai/kling-video/v3/standard/image-to-video", name: "Kling 3.0",  tag: "Kling · Standard", logo: "/models/kling-3.webp",    credits: 15, maxDuration: 15, allowedDurations: ["5", "10", "15"] },
 ];
 
 function getDurationOptions(model: VideoModel): { value: Duration; label: string }[] {
