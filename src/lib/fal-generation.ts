@@ -27,11 +27,11 @@ export const VIDEO_MODELS: FalVideoModel[] = [
   { id: "fal-ai/kling-video/v3/standard/image-to-video", name: "Kling 3.0",  tag: "Kling · Standard", logo: "/models/kling-3.webp",    credits: 15, maxDuration: 10 },
 ];
 
-const SEEDREAM_IMAGE_SIZE: Record<string, string> = {
-  "1:1":  "square_1_1",
-  "4:5":  "portrait_4_5",
-  "9:16": "portrait_16_9",
-  "16:9": "landscape_16_9",
+const SEEDREAM_IMAGE_SIZE: Record<string, { width: number; height: number }> = {
+  "1:1":  { width: 2048, height: 2048 },
+  "4:5":  { width: 1638, height: 2048 },
+  "9:16": { width: 1152, height: 2048 },
+  "16:9": { width: 2048, height: 1152 },
 };
 
 const GPT_IMAGE_SIZE: Record<string, string> = {
@@ -44,9 +44,9 @@ const GPT_IMAGE_SIZE: Record<string, string> = {
 function buildImageInput(modelId: string, prompt: string, imageUrl: string, aspectRatio: string): Record<string, unknown> {
   switch (modelId) {
     case "fal-ai/bytedance/seedream/v4.5/edit":
-      return { prompt, image_size: SEEDREAM_IMAGE_SIZE[aspectRatio] ?? "square_1_1", num_images: 1, max_images: 1, enable_safety_checker: true, image_urls: [imageUrl] };
+      return { prompt, image_size: SEEDREAM_IMAGE_SIZE[aspectRatio] ?? { width: 2048, height: 2048 }, num_images: 1, max_images: 1, enable_safety_checker: true, image_urls: [imageUrl] };
     case "fal-ai/bytedance/seedream/v5/lite/edit":
-      return { prompt, image_size: SEEDREAM_IMAGE_SIZE[aspectRatio] ?? "square_1_1", num_images: 1, max_images: 1, enable_safety_checker: true, image_urls: [imageUrl] };
+      return { prompt, image_size: SEEDREAM_IMAGE_SIZE[aspectRatio] ?? { width: 2048, height: 2048 }, num_images: 1, max_images: 1, enable_safety_checker: true, image_urls: [imageUrl] };
     case "fal-ai/nano-banana-2/edit":
       return { prompt, num_images: 1, aspect_ratio: aspectRatio, resolution: "1K", limit_generations: true, image_urls: [imageUrl] };
     case "openai/gpt-image-2/edit":
