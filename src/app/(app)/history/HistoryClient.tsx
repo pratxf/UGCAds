@@ -119,7 +119,9 @@ export default function HistoryClient({ items: rawItems }: { items: Item[] }) {
           if (!update) return item;
           if (update.status === "Complete" && item.status !== "Complete") {
             changed = true;
-            return { ...item, status: "Complete" as Status, finalUrl: update.finalUrl ?? item.finalUrl };
+            const finalUrl = update.finalUrl ?? item.finalUrl;
+            const isVideo = item.type === "UGC Ad" || item.type === "Product Ad";
+            return { ...item, status: "Complete" as Status, finalUrl, thumbnailUrl: isVideo ? item.thumbnailUrl : (finalUrl ?? item.thumbnailUrl) };
           }
           if (update.status === "Failed") {
             changed = true;
