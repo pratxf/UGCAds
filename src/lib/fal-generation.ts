@@ -30,7 +30,7 @@ export const VIDEO_MODELS: FalVideoModel[] = [
 const SEEDREAM_IMAGE_SIZE: Record<string, string> = {
   "1:1":  "square_1_1",
   "4:5":  "portrait_4_5",
-  "9:16": "portrait_9_16",
+  "9:16": "portrait_16_9",
   "16:9": "landscape_16_9",
 };
 
