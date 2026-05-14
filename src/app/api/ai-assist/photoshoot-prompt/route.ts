@@ -3,7 +3,7 @@ import { requireUser } from "@/lib/auth";
 import { rateLimitOrResponse } from "@/lib/rate-limit";
 import { prisma } from "@/lib/prisma";
 
-const POYO_BASE = "https://api.poyo.ai";
+const OPENAI_BASE = "https://api.openai.com/v1";
 
 export async function POST(req: Request) {
   try {
@@ -19,14 +19,14 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "existing is required" }, { status: 400 });
     }
 
-    const res = await fetch(`${POYO_BASE}/v1/chat/completions`, {
+    const res = await fetch(`${OPENAI_BASE}/chat/completions`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${process.env.POYO_API_KEY}`,
+        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: "claude-haiku-4-5-20251001",
+        model: "gpt-4.1-mini",
         messages: [
           {
             role: "system",
@@ -39,7 +39,6 @@ export async function POST(req: Request) {
         ],
         temperature: 1,
         max_tokens: 200,
-        top_p: 1,
       }),
     });
 
@@ -49,8 +48,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "AI service error" }, { status: 502 });
     }
 
-    const data = await res.json() as { content?: { type: string; text: string }[]; choices?: { message?: { content?: string } }[] };
-    const prompt = (data.content?.[0]?.text || data.choices?.[0]?.message?.content || "").trim();
+    const data = await res.json() as { choices?: { message?: { content?: string } }[] };
+    const prompt = (data.choices?.[0]?.message?.content || "").trim();
     if (!prompt) return NextResponse.json({ error: "Empty response from AI" }, { status: 502 });
 
     return NextResponse.json({ prompt });

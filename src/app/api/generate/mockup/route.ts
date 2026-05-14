@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { submitPoyoTask, pollPoyoTask, PHOTOSHOOT_MODELS } from "@/lib/poyo";
+import { submitFalImageTask, pollFalTask, PHOTOSHOOT_MODELS } from "@/lib/fal-generation";
 import { uploadToR2, mirrorToR2FromUrl } from "@/lib/r2";
 import { COSTS_UNITS } from "@/lib/credits";
 import { rateLimitOrResponse } from "@/lib/rate-limit";
@@ -92,7 +92,7 @@ export async function POST(request: Request) {
           quality:      "HD",
           creditsUsed:  CREDIT_COST,
           creditCost:   CREDIT_COST,
-          provider:     "POYO",
+          provider:     "FAL",
           metadata:     parsed.templateId ? { templateId: parsed.templateId, templateName } : {},
         },
       });
@@ -115,19 +115,19 @@ export async function POST(request: Request) {
       : parsed.customPrompt!;
     const finalPrompt = buildPrompt(basePrompt);
 
-    const taskId = await submitPoyoTask(parsed.imageModel, finalPrompt, productImageUrl, parsed.aspectRatio);
+    const falRequestId = await submitFalImageTask(parsed.imageModel, finalPrompt, productImageUrl, parsed.aspectRatio);
 
     const deadline = Date.now() + POLL_TIMEOUT_MS;
     let finalUrl: string | null = null;
 
     while (Date.now() < deadline) {
       await new Promise((r) => setTimeout(r, POLL_INTERVAL_MS));
-      const result = await pollPoyoTask(taskId);
+      const result = await pollFalTask(parsed.imageModel, falRequestId);
       if (result.state === "success" && result.url) {
         finalUrl = await mirrorToR2FromUrl(result.url, `generations/${generation.id}/photoshoot.jpg`, "image/jpeg");
         break;
       }
-      if (result.state === "fail") throw new Error(result.error || "Poyo generation failed");
+      if (result.state === "fail") throw new Error(result.error || "fal generation failed");
     }
 
     if (!finalUrl) throw new Error("Generation timed out");

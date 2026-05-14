@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { submitPoyoVideoTask, VIDEO_MODELS } from "@/lib/poyo";
+import { submitFalVideoTask, VIDEO_MODELS } from "@/lib/fal-generation";
 import { uploadToR2 } from "@/lib/r2";
 import { COSTS_UNITS } from "@/lib/credits";
 import { rateLimitOrResponse } from "@/lib/rate-limit";
@@ -10,14 +10,13 @@ import { rateLimitOrResponse } from "@/lib/rate-limit";
 const ASPECT_MAP: Record<string, string> = {
   NINE_SIXTEEN: "9:16",
   SIXTEEN_NINE: "16:9",
-  ONE_ONE: "1:1",
 };
 
 const VIDEO_MODEL_IDS = VIDEO_MODELS.map((m) => m.id) as [string, ...string[]];
 
 const Schema = z.object({
   videoModel:  z.enum(VIDEO_MODEL_IDS).default(VIDEO_MODEL_IDS[0]),
-  aspectRatio: z.enum(["NINE_SIXTEEN", "SIXTEEN_NINE", "ONE_ONE"]).default("NINE_SIXTEEN"),
+  aspectRatio: z.enum(["NINE_SIXTEEN", "SIXTEEN_NINE"]).default("NINE_SIXTEEN"),
   duration:    z.enum(["5", "8", "10", "15", "20"]).default("5"),
 });
 
@@ -106,7 +105,7 @@ export async function POST(request: Request) {
           quality:        "HD",
           creditsUsed:    CREDIT_COST,
           creditCost:     CREDIT_COST,
-          provider:       "POYO",
+          provider:       "FAL",
           aiModel:        parsed.videoModel,
         },
       });
@@ -123,28 +122,27 @@ export async function POST(request: Request) {
       return gen;
     });
 
-    let poyoTaskId: string;
+    let falRequestId: string;
     try {
-      poyoTaskId = await submitPoyoVideoTask(
+      falRequestId = await submitFalVideoTask(
         parsed.videoModel,
         prompt,
         imageUrl,
         ASPECT_MAP[parsed.aspectRatio] || "9:16",
         durationNum,
       );
-    } catch (poyoErr) {
-      // Poyo rejected the request — mark failed and refund credits so the record doesn't get stuck
+    } catch (falErr) {
       await prisma.$transaction([
         prisma.generation.update({ where: { id: generation.id }, data: { status: "FAILED", errorMessage: "Failed to start generation" } }),
         prisma.user.update({ where: { id: generation.userId }, data: { credits: { increment: CREDIT_COST } } }),
         prisma.transaction.create({ data: { userId: generation.userId, type: "REFUND", status: "COMPLETED", credits: CREDIT_COST, description: `Refund: failed to start generation ${generation.id}` } }),
       ]);
-      throw poyoErr;
+      throw falErr;
     }
 
     await prisma.generation.update({
       where: { id: generation.id },
-      data: { metadata: { poyoTaskId } },
+      data: { metadata: { falRequestId, falModelId: parsed.videoModel } },
     });
 
     return NextResponse.json({ id: generation.id, status: "Processing" });

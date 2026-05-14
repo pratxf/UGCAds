@@ -17,16 +17,15 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { useAvatars, type LibraryItem, type LibraryCategory } from "@/lib/hooks/use-library";
 import { addActiveGeneration } from "@/lib/active-generations";
-import type { PoyoVideoModel } from "@/lib/poyo";
+import type { FalVideoModel } from "@/lib/fal-generation";
 
-type AspectRatio = "9:16" | "1:1" | "16:9";
+type AspectRatio = "9:16" | "16:9";
 type Duration = "5" | "8" | "10" | "15" | "20";
 
-const VIDEO_MODELS: PoyoVideoModel[] = [
-  { id: "seedance-2-fast",    name: "Seedance 2",  tag: "ByteDance · 720p",  logo: "/models/seedance-2.webp",  credits: 15, maxDuration: 15 },
-  { id: "sora-2-official",    name: "Sora 2",      tag: "OpenAI · 20s",      logo: "/models/sora-2.webp",      credits: 20, maxDuration: 20 },
-  { id: "kling-3.0/standard", name: "Kling 3.0",   tag: "Kling · Standard",  logo: "/models/kling-3.webp",     credits: 15, maxDuration: 15 },
-  { id: "veo3.1-quality",     name: "Veo 3.1",     tag: "Google · 1080p",    logo: "/models/veo-3.webp",       credits: 20, maxDuration: 8  },
+const VIDEO_MODELS: FalVideoModel[] = [
+  { id: "bytedance/seedance-2.0/fast/image-to-video",    name: "Seedance 2", tag: "ByteDance · 720p", logo: "/models/seedance-2.webp", credits: 15, maxDuration: 15 },
+  { id: "fal-ai/sora-2/image-to-video",                  name: "Sora 2",     tag: "OpenAI · 720p",    logo: "/models/sora-2.webp",     credits: 20, maxDuration: 20 },
+  { id: "fal-ai/kling-video/v3/standard/image-to-video", name: "Kling 3.0",  tag: "Kling · Standard", logo: "/models/kling-3.webp",    credits: 15, maxDuration: 10 },
 ];
 
 function getDurationOptions(maxDuration: number): { value: Duration; label: string }[] {
@@ -309,7 +308,7 @@ export default function UGCStudio() {
       const fd = new FormData();
       fd.append("prompt", prompt.trim());
       fd.append("videoModel", videoModel);
-      fd.append("aspectRatio", aspectRatio === "9:16" ? "NINE_SIXTEEN" : aspectRatio === "16:9" ? "SIXTEEN_NINE" : "ONE_ONE");
+      fd.append("aspectRatio", aspectRatio === "9:16" ? "NINE_SIXTEEN" : "SIXTEEN_NINE");
       fd.append("duration", duration);
       if (selectedCharacter) fd.append("characterId", selectedCharacter);
       if (customAvatarFile) fd.append("avatarImage", customAvatarFile);
@@ -503,7 +502,7 @@ export default function UGCStudio() {
                   {isWritingScript
                     ? <FontAwesomeIcon icon={faCircleNotch} className="animate-spin" style={{ fontSize: 10 }} />
                     : <FontAwesomeIcon icon={faWandMagicSparkles} style={{ fontSize: 10 }} />}
-                  Write with AI
+                  AI Assist
                 </button>
               </div>
 
@@ -609,10 +608,6 @@ export default function UGCStudio() {
                 {
                   value: "9:16" as AspectRatio, label: "9:16",
                   shape: <span className="inline-block rounded-[3px] border-[1.5px] border-current flex-shrink-0" style={{ width: 10, height: 17 }} />,
-                },
-                {
-                  value: "1:1" as AspectRatio, label: "1:1",
-                  shape: <span className="inline-block rounded-[3px] border-[1.5px] border-current flex-shrink-0" style={{ width: 14, height: 14 }} />,
                 },
                 {
                   value: "16:9" as AspectRatio, label: "16:9",

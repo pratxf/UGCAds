@@ -3,8 +3,6 @@ import { requireUser } from "@/lib/auth";
 import { rateLimitOrResponse } from "@/lib/rate-limit";
 import { prisma } from "@/lib/prisma";
 
-const POYO_BASE = "https://api.poyo.ai";
-
 export async function POST(req: Request) {
   try {
     const user = await requireUser();
@@ -19,14 +17,14 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "existingScript is required" }, { status: 400 });
     }
 
-    const res = await fetch(`${POYO_BASE}/v1/chat/completions`, {
+    const res = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${process.env.POYO_API_KEY}`,
+        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: "claude-haiku-4-5-20251001",
+        model: "gpt-4.1-mini",
         messages: [
           {
             role: "system",
@@ -39,18 +37,17 @@ export async function POST(req: Request) {
         ],
         temperature: 1,
         max_tokens: 300,
-        top_p: 1,
       }),
     });
 
     if (!res.ok) {
       const err = await res.text();
-      console.error("[ai-assist/script] Poyo error:", err);
+      console.error("[ai-assist/script] OpenAI error:", err);
       return NextResponse.json({ error: "AI service error" }, { status: 502 });
     }
 
-    const data = await res.json() as { content?: { type: string; text: string }[]; choices?: { message?: { content?: string } }[] };
-    const script = (data.content?.[0]?.text || data.choices?.[0]?.message?.content || "").trim();
+    const data = await res.json() as { choices?: { message?: { content?: string } }[] };
+    const script = (data.choices?.[0]?.message?.content || "").trim();
     if (!script) return NextResponse.json({ error: "Empty response from AI" }, { status: 502 });
 
     return NextResponse.json({ script });

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { pollKieTask } from "@/lib/kie";
-import { pollPoyoTask } from "@/lib/poyo";
+import { pollFalTask } from "@/lib/fal-generation";
 import { mirrorToR2FromUrl } from "@/lib/r2";
 export const maxDuration = 60;
 
@@ -25,9 +25,9 @@ export async function GET(req: Request) {
 
     const meta = (gen.metadata as Record<string, string> | null) ?? {};
 
-    // ── Poyo provider ─────────────────────────────────────────────
-    if (meta.poyoTaskId) {
-      const result = await pollPoyoTask(meta.poyoTaskId);
+    // ── fal provider ──────────────────────────────────────────────
+    if (meta.falRequestId && meta.falModelId) {
+      const result = await pollFalTask(meta.falModelId, meta.falRequestId);
 
       if (result.state === "success" && result.url) {
         const isVideo = gen.type === "UGC_AD" || gen.type === "PRODUCT_AD";

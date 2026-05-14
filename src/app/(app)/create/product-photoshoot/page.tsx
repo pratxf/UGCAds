@@ -19,16 +19,15 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { usePhotoshootTemplates, type LibraryItem } from "@/lib/hooks/use-library";
 import { addActiveGeneration } from "@/lib/active-generations";
-import type { PoyoModel } from "@/lib/poyo";
+import type { FalModel } from "@/lib/fal-generation";
 
 type AspectRatio = "1:1" | "4:5" | "9:16" | "16:9";
 
-const PHOTOSHOOT_MODELS: PoyoModel[] = [
-  { id: "seedream-4.5-edit",       name: "Seedream 4.5",    tag: "ByteDance · 4K",     logo: "/models/seedance-2.webp",      credits: 5 },
-  { id: "nano-banana-2-new-edit",  name: "Nano Banana 2",   tag: "Gemini · Fast",      logo: "/models/nano-banana-2.webp",   credits: 5 },
-  { id: "seedream-5.0-lite-edit",  name: "Seedream 5 Lite", tag: "ByteDance · Lite",   logo: "/models/seedance-2.webp",      credits: 5 },
-  { id: "flux-2-pro-edit",         name: "Flux 2 Pro",      tag: "BFL · Pro",          logo: "/models/flux-2-pro.webp",      credits: 6 },
-  { id: "gpt-image-2-edit",        name: "GPT Image 2",     tag: "OpenAI · Photoreal", logo: "/models/gpt-image-2.webp",     credits: 3 },
+const PHOTOSHOOT_MODELS: FalModel[] = [
+  { id: "fal-ai/bytedance/seedream/v4.5/edit",   name: "Seedream 4.5",   tag: "ByteDance · 4K",     logo: "/models/seedance-2.webp",    credits: 5 },
+  { id: "fal-ai/bytedance/seedream/v5/lite/edit", name: "Seedream 5 Lite", tag: "ByteDance · 2K",    logo: "/models/seedance-2.webp",    credits: 5 },
+  { id: "fal-ai/nano-banana-2/edit",              name: "Nano Banana 2",  tag: "Gemini · 1K",        logo: "/models/nano-banana-2.webp", credits: 5 },
+  { id: "openai/gpt-image-2/edit",                name: "GPT Image 2",    tag: "OpenAI · Photoreal", logo: "/models/gpt-image-2.webp",   credits: 3 },
 ];
 
 
@@ -193,6 +192,7 @@ export default function PhotoshootCreator() {
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>("1:1");
   const [modelChoice, setModelChoice] = useState(PHOTOSHOOT_MODELS[0].id);
 
+  const [isWritingPrompt, setIsWritingPrompt] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationId, setGenerationId] = useState<string | null>(null);
   const [genStatus, setGenStatus] = useState<string | null>(null);
@@ -238,6 +238,20 @@ export default function PhotoshootCreator() {
     setProductImage(null);
     setProductName(null);
     productFileRef.current = null;
+  }
+
+  async function handleWritePrompt() {
+    if (!customPrompt.trim() || isWritingPrompt) return;
+    setIsWritingPrompt(true);
+    try {
+      const res = await fetch("/api/ai-assist/photoshoot-prompt", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ existing: customPrompt.trim() }),
+      });
+      const data = await res.json() as { prompt?: string; error?: string };
+      if (res.ok && data.prompt) setCustomPrompt(data.prompt);
+    } catch { /* silent */ } finally { setIsWritingPrompt(false); }
   }
 
   const hasBackground = !!selectedTemplate || customPrompt.trim().length > 0;
@@ -406,6 +420,21 @@ export default function PhotoshootCreator() {
                     </div>
                   )}
                 </div>
+                <button type="button" onClick={handleWritePrompt}
+                  disabled={!customPrompt.trim() || isWritingPrompt}
+                  className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-semibold flex-shrink-0 transition-all"
+                  style={{
+                    background: customPrompt.trim() && !isWritingPrompt ? "rgba(37,99,235,0.07)" : "transparent",
+                    color: customPrompt.trim() && !isWritingPrompt ? "#2563EB" : "#D1D5DB",
+                    border: "1px solid",
+                    borderColor: customPrompt.trim() && !isWritingPrompt ? "rgba(37,99,235,0.18)" : "#F3F4F6",
+                    cursor: !customPrompt.trim() || isWritingPrompt ? "not-allowed" : "pointer",
+                  }}>
+                  {isWritingPrompt
+                    ? <FontAwesomeIcon icon={faCircleNotch} className="animate-spin" style={{ fontSize: 10 }} />
+                    : <FontAwesomeIcon icon={faWandMagicSparkles} style={{ fontSize: 10 }} />}
+                  Write with AI
+                </button>
               </div>
 
               {/* Scene prompt textarea */}
