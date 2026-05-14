@@ -184,16 +184,23 @@ export default function GenerationsOrb() {
                       {/* Thumbnail */}
                       <div
                         className="relative w-10 h-10 rounded-xl overflow-hidden flex-shrink-0 flex items-center justify-center"
-                        onClick={() => isDone && item.finalVideoUrl && setPreviewUrl(item.finalVideoUrl)}
-                        style={{ background: "#F3F4F6", cursor: isDone && item.finalVideoUrl ? "pointer" : "default" }}
+                        onClick={() => { const isVideo = item.type !== "Product Photoshoot" && item.type !== "AI Try-On"; if (isDone && item.finalVideoUrl && isVideo) setPreviewUrl(item.finalVideoUrl); }}
+                        style={{ background: "#F3F4F6", cursor: isDone && item.finalVideoUrl && item.type !== "Product Photoshoot" && item.type !== "AI Try-On" ? "pointer" : "default" }}
                       >
                         {isDone && item.finalVideoUrl ? (
-                          <>
-                            <video src={item.finalVideoUrl} className="w-full h-full object-cover" muted playsInline />
-                            <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity rounded-xl">
-                              <span className="text-white text-[9px] font-bold">PLAY</span>
-                            </div>
-                          </>
+                          (() => {
+                            const isImage = item.type === "Product Photoshoot" || item.type === "AI Try-On";
+                            return isImage ? (
+                              <img src={item.finalVideoUrl} alt="" className="w-full h-full object-cover rounded-xl" />
+                            ) : (
+                              <>
+                                <video src={item.finalVideoUrl} className="w-full h-full object-cover" muted playsInline />
+                                <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity rounded-xl">
+                                  <span className="text-white text-[9px] font-bold">PLAY</span>
+                                </div>
+                              </>
+                            );
+                          })()
                         ) : item.thumbnailUrl ? (
                           <>
                             <img src={item.thumbnailUrl} alt="" className="w-full h-full object-cover object-top" />
