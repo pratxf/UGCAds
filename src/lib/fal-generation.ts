@@ -48,7 +48,7 @@ function buildImageInput(modelId: string, prompt: string, imageUrl: string, aspe
     case "fal-ai/bytedance/seedream/v5/lite/edit":
       return { prompt, image_size: SEEDREAM_IMAGE_SIZE[aspectRatio] ?? "square_hd", num_images: 1, max_images: 1, enable_safety_checker: true, image_urls: [imageUrl] };
     case "fal-ai/nano-banana-2/edit":
-      return { prompt, num_images: 1, aspect_ratio: aspectRatio, resolution: "1K", limit_generations: true, image_urls: [imageUrl] };
+      return { prompt, num_images: 1, aspect_ratio: aspectRatio, limit_generations: true, image_urls: [imageUrl] };
     case "openai/gpt-image-2/edit":
       return { prompt, image_urls: [imageUrl], image_size: GPT_IMAGE_SIZE[aspectRatio] ?? "square_1024", quality: "medium", num_images: 1, output_format: "png" };
     default:
