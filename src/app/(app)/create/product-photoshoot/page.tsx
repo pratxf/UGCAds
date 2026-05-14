@@ -282,10 +282,12 @@ export default function PhotoshootCreator() {
         setIsGenerating(false);
         return;
       }
-      setGenerationId(data.id);
       addActiveGeneration({ id: data.id, type: "Product Photoshoot", status: "GENERATING_SCENE", thumbnailUrl: productImage });
-      // Reset to idle — orb tracks progress
+      // Reset inputs — orb tracks progress
       setIsGenerating(false);
+      removeProduct();
+      setSelectedTemplate(null);
+      setCustomPrompt("");
     } catch {
       setGenerationError("Generation failed. Your credit has been refunded.");
       setIsGenerating(false);
@@ -298,7 +300,7 @@ export default function PhotoshootCreator() {
     setFinalImageUrl(null); setGenerationError(null);
   }
 
-  const creditCost = PHOTOSHOOT_MODELS.find(m => m.id === modelChoice)?.credits ?? 5;
+  const creditCost = 1;
   const [isDragging, setIsDragging] = useState(false);
 
   return (
@@ -430,7 +432,7 @@ export default function PhotoshootCreator() {
                   {isWritingPrompt
                     ? <FontAwesomeIcon icon={faCircleNotch} className="animate-spin" style={{ fontSize: 10 }} />
                     : <FontAwesomeIcon icon={faWandMagicSparkles} style={{ fontSize: 10 }} />}
-                  Write with AI
+                  AI Assist
                 </button>
               </div>
 
