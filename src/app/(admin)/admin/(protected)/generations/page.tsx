@@ -9,9 +9,7 @@ import {
   Search,
   ChevronDown,
   Download,
-  Plus,
   MoreHorizontal,
-  SlidersHorizontal,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
@@ -352,6 +350,20 @@ export default function AdminGenerationsPage() {
   }, [fetchStats]);
 
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
+
+  function exportCsv() {
+    const headers = ["Generation ID", "User Email", "User Name", "Type", "Model", "Status", "Credits", "Created"];
+    const csvRows = rows.map((r) => [
+      genNumber(r.id), r.userEmail, r.userName || "", TYPE_LABEL[r.type] || r.type,
+      modelLabel(r.aiModel), statusLabel(r.status), String(r.creditsUsed ?? 0),
+      new Date(r.createdAt).toLocaleDateString("en-US"),
+    ]);
+    const csv = [headers, ...csvRows].map((row) => row.map((c) => `"${c.replace(/"/g, '""')}"`).join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a"); a.href = url; a.download = "generations.csv"; a.click();
+    URL.revokeObjectURL(url);
+  }
   const completedPct = stats.total > 0 ? (stats.completed / stats.total) * 100 : 0;
   const pendingPct = stats.total > 0 ? (stats.pending / stats.total) * 100 : 0;
   const failedPct = stats.total > 0 ? (stats.failed / stats.total) * 100 : 0;
@@ -376,35 +388,16 @@ export default function AdminGenerationsPage() {
               Manage and monitor all content generations across the platform.
             </p>
           </div>
-          <div className="flex items-center gap-3">
-            <button
-              className="flex items-center gap-2 rounded-xl px-4 py-2 text-[13px] font-semibold transition-colors"
-              style={{
-                background: "#0F1629",
-                border: "1px solid rgba(255,255,255,0.1)",
-                color: "#94A3B8",
-              }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.color = "#CBD5E1";
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.color = "#94A3B8";
-              }}
-            >
-              <Download size={14} />
-              Export
-            </button>
-            <button
-              className="flex items-center gap-2 rounded-xl px-4 py-2 text-[13px] font-semibold text-white transition-opacity hover:opacity-90"
-              style={{
-                background: "linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%)",
-                boxShadow: "0 4px 14px rgba(99,102,241,0.35)",
-              }}
-            >
-              <Plus size={14} />
-              New Generation
-            </button>
-          </div>
+          <button
+            onClick={exportCsv}
+            className="flex items-center gap-2 rounded-xl px-4 py-2 text-[13px] font-semibold transition-colors"
+            style={{ background: "#0F1629", border: "1px solid rgba(255,255,255,0.1)", color: "#94A3B8" }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "#CBD5E1"; }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "#94A3B8"; }}
+          >
+            <Download size={14} />
+            Export CSV
+          </button>
         </div>
 
         {/* Stat Cards */}
@@ -506,25 +499,6 @@ export default function AdminGenerationsPage() {
                 { value: "tryon", label: "Try-On" },
               ]}
             />
-
-            {/* Filters button */}
-            <button
-              className="flex items-center gap-2 rounded-xl px-3.5 py-2 text-[13px] font-medium transition-colors"
-              style={{
-                background: "#080C18",
-                border: "1px solid rgba(255,255,255,0.08)",
-                color: "#64748B",
-              }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.color = "#94A3B8";
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.color = "#64748B";
-              }}
-            >
-              <SlidersHorizontal size={13} />
-              Filters
-            </button>
 
             <div className="ml-auto text-[12px]" style={{ color: "#475569" }}>
               {total.toLocaleString()} result{total !== 1 ? "s" : ""}

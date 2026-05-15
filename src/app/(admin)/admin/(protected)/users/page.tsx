@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Search, Download, Plus, ChevronLeft, ChevronRight, X, Coins, SlidersHorizontal } from "lucide-react";
+import { Search, Download, ChevronLeft, ChevronRight, X, Coins } from "lucide-react";
 
 type Row = {
   id: string; email: string; name: string | null;
@@ -129,6 +129,18 @@ export default function AdminUsersPage() {
   const [givingCredits, setGivingCredits] = useState<Row | null>(null);
   const pageSize = 50;
 
+  function exportCsv() {
+    const headers = ["Name", "Email", "Plan", "Credits", "Ads Generated", "Joined", "Status"];
+    const rows = users.map((u) => [
+      u.name || "", u.email, u.plan, String(u.credits), String(u.totalAds), formatDate(u.joined), u.status,
+    ]);
+    const csv = [headers, ...rows].map((r) => r.map((c) => `"${c.replace(/"/g, '""')}"`).join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a"); a.href = url; a.download = "users.csv"; a.click();
+    URL.revokeObjectURL(url);
+  }
+
   useEffect(() => {
     let alive = true;
     setLoading(true);
@@ -166,14 +178,9 @@ export default function AdminUsersPage() {
           <h1 className="text-[24px] font-bold text-white">Users</h1>
           <p className="text-[13px] mt-0.5" style={{ color: "#64748B" }}>Manage and monitor all registered users.</p>
         </div>
-        <div className="flex items-center gap-3">
-          <button className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-[13px] font-semibold text-white" style={{ background: "linear-gradient(135deg, #6366F1, #8B5CF6)" }}>
-            <Plus className="h-4 w-4" /> Add New User
-          </button>
-          <button className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-[13px] font-semibold" style={{ background: "#0F1629", border: "1px solid rgba(255,255,255,0.08)", color: "#94A3B8" }}>
-            <Download className="h-4 w-4" /> Export
-          </button>
-        </div>
+        <button onClick={exportCsv} className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-[13px] font-semibold transition hover:text-white" style={{ background: "#0F1629", border: "1px solid rgba(255,255,255,0.08)", color: "#94A3B8" }}>
+          <Download className="h-4 w-4" /> Export CSV
+        </button>
       </div>
 
       {/* Stat Cards */}
@@ -218,9 +225,6 @@ export default function AdminUsersPage() {
               {p === "all" ? "Plan ▾" : p.charAt(0).toUpperCase() + p.slice(1)}
             </button>
           ))}
-          <button className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[12px] font-semibold ml-auto" style={{ background: "rgba(255,255,255,0.04)", color: "#475569", border: "1px solid rgba(255,255,255,0.06)" }}>
-            <SlidersHorizontal className="h-3.5 w-3.5" /> Filters
-          </button>
         </div>
 
         {/* Table */}

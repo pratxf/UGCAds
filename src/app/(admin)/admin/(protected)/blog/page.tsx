@@ -53,6 +53,8 @@ export default function AdminBlogPage() {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
+  const [statusFilter, setStatusFilter] = useState<"all" | "published" | "draft">("all");
+  const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -70,7 +72,18 @@ export default function AdminBlogPage() {
 
   function newPost() { setEditorPost(null); setIsNew(true); setView("editor"); }
 
-  const filtered = posts.filter((p) => !search || p.title.toLowerCase().includes(search.toLowerCase()) || p.author.toLowerCase().includes(search.toLowerCase()));
+  const filtered = posts
+    .filter((p) => {
+      if (statusFilter === "published" && !p.published) return false;
+      if (statusFilter === "draft" && p.published) return false;
+      if (search && !p.title.toLowerCase().includes(search.toLowerCase()) && !p.author.toLowerCase().includes(search.toLowerCase())) return false;
+      return true;
+    })
+    .sort((a, b) => {
+      const da = new Date(a.publishedAt || 0).getTime();
+      const db = new Date(b.publishedAt || 0).getTime();
+      return sortOrder === "newest" ? db - da : da - db;
+    });
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
   const publishedCount = posts.filter((p) => p.published).length;
@@ -118,11 +131,20 @@ export default function AdminBlogPage() {
           <input value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} placeholder="Search posts by title or author..." className="h-10 pl-9 pr-4 rounded-xl text-[13px] placeholder:text-slate-600 focus:outline-none w-64" style={{ background: "#0F1629", border: "1px solid rgba(255,255,255,0.07)", color: "#E2E8F0" }} />
         </div>
         <div className="flex-1" />
-        <button className="inline-flex items-center gap-2 h-10 px-3 rounded-xl text-[13px] transition" style={{ background: "#0F1629", border: "1px solid rgba(255,255,255,0.07)", color: "#9CA3AF" }}>
-          <SlidersHorizontal className="h-3.5 w-3.5" /> Filter
+        <button
+          onClick={() => { setStatusFilter((f) => f === "all" ? "published" : f === "published" ? "draft" : "all"); setPage(1); }}
+          className="inline-flex items-center gap-2 h-10 px-3 rounded-xl text-[13px] transition"
+          style={{ background: statusFilter !== "all" ? "rgba(37,99,235,0.12)" : "#0F1629", border: `1px solid ${statusFilter !== "all" ? "rgba(37,99,235,0.3)" : "rgba(255,255,255,0.07)"}`, color: statusFilter !== "all" ? "#60A5FA" : "#9CA3AF" }}
+        >
+          <SlidersHorizontal className="h-3.5 w-3.5" />
+          {statusFilter === "all" ? "Filter" : statusFilter === "published" ? "Published" : "Drafts"}
         </button>
-        <button className="inline-flex items-center gap-2 h-10 px-3 rounded-xl text-[13px] transition" style={{ background: "#0F1629", border: "1px solid rgba(255,255,255,0.07)", color: "#9CA3AF" }}>
-          Sort: Newest <ChevronDown className="h-3.5 w-3.5 opacity-50" />
+        <button
+          onClick={() => setSortOrder((s) => s === "newest" ? "oldest" : "newest")}
+          className="inline-flex items-center gap-2 h-10 px-3 rounded-xl text-[13px] transition"
+          style={{ background: "#0F1629", border: "1px solid rgba(255,255,255,0.07)", color: "#9CA3AF" }}
+        >
+          Sort: {sortOrder === "newest" ? "Newest" : "Oldest"} <ChevronDown className="h-3.5 w-3.5 opacity-50" />
         </button>
         <div className="flex items-center gap-0.5 p-1 rounded-xl" style={{ background: "#0F1629", border: "1px solid rgba(255,255,255,0.07)" }}>
           <button onClick={() => setViewMode("grid")} className={cn("flex size-8 items-center justify-center rounded-lg transition", viewMode === "grid" ? "text-white bg-white/[0.09]" : "text-slate-600 hover:text-slate-400")}>
@@ -187,7 +209,7 @@ export default function AdminBlogPage() {
                     <td className="px-3 py-4 align-middle">
                       <div className="flex items-center gap-0.5">
                         <button onClick={() => openEditor(p)} className="flex size-8 items-center justify-center rounded-lg text-slate-600 hover:text-sky-400 hover:bg-white/[0.05] transition"><Pencil className="h-3.5 w-3.5" /></button>
-                        <button className="flex size-8 items-center justify-center rounded-lg text-slate-600 hover:text-slate-300 hover:bg-white/[0.05] transition"><Eye className="h-3.5 w-3.5" /></button>
+                        <button onClick={() => window.open(`/blog/${p.slug}`, "_blank")} className="flex size-8 items-center justify-center rounded-lg text-slate-600 hover:text-slate-300 hover:bg-white/[0.05] transition" title="View post"><Eye className="h-3.5 w-3.5" /></button>
                         <button className="flex size-8 items-center justify-center rounded-lg text-slate-600 hover:text-slate-300 hover:bg-white/[0.05] transition"><MoreVertical className="h-3.5 w-3.5" /></button>
                       </div>
                     </td>
@@ -315,7 +337,12 @@ function BlogEditor({ post, isNew, onBack }: { post: PostFull | null; isNew: boo
         <button onClick={() => save(false)} disabled={saving} className="flex items-center gap-2 h-9 px-4 rounded-xl text-[13px] font-semibold text-slate-300 hover:text-white transition" style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.1)" }}>
           <Save className="h-3.5 w-3.5" /> Save Draft
         </button>
-        <button className="flex items-center gap-2 h-9 px-4 rounded-xl text-[13px] font-semibold text-slate-300 hover:text-white transition" style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.1)" }}>
+        <button
+          onClick={() => form.slug && window.open(`/blog/${form.slug}`, "_blank")}
+          disabled={!form.slug}
+          className="flex items-center gap-2 h-9 px-4 rounded-xl text-[13px] font-semibold text-slate-300 hover:text-white transition disabled:opacity-40"
+          style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.1)" }}
+        >
           <Eye className="h-3.5 w-3.5" /> Preview
         </button>
         <button onClick={() => save(true)} disabled={saving} className="flex items-center gap-2 h-9 px-4 rounded-xl text-[13px] font-bold text-white transition-all" style={{ background: "linear-gradient(135deg, #2563EB, #1D4ED8)", boxShadow: "0 0 16px rgba(37,99,235,0.3)" }}>

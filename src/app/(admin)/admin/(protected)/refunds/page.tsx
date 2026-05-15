@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import {
   Loader2, AlertTriangle, Clock, CheckCircle2, Copy, RotateCcw,
-  SlidersHorizontal, X, ChevronLeft, ChevronRight, Download,
+  ChevronLeft, ChevronRight, Download,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -364,23 +364,12 @@ function FailedSection({
           <h2 className="text-[14px] font-bold text-slate-100">Failed Generations</h2>
           <p className="text-[11px] text-slate-600 mt-0.5">Pipeline errors requiring manual review and refund.</p>
         </div>
-        <div className="flex items-center gap-2">
-          {/* Status filter badge */}
-          <span
-            className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1.5 rounded-full"
-            style={{ background: "rgba(239,68,68,0.1)", color: "#EF4444", border: "1px solid rgba(239,68,68,0.2)" }}
-          >
-            Status: Failed
-            <X className="h-3 w-3" />
-          </span>
-          <button
-            className="inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-[11px] font-semibold text-slate-400 transition hover:text-slate-200"
-            style={{ border: "1px solid rgba(255,255,255,0.08)" }}
-          >
-            <SlidersHorizontal className="h-3.5 w-3.5" />
-            Filters
-          </button>
-        </div>
+        <span
+          className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1.5 rounded-full"
+          style={{ background: "rgba(239,68,68,0.1)", color: "#EF4444", border: "1px solid rgba(239,68,68,0.2)" }}
+        >
+          Status: Failed
+        </span>
       </div>
 
       {rows.length === 0 ? (
@@ -597,6 +586,23 @@ export default function AdminRefundsPage() {
 
   const pendingRefund = [...failed, ...(stuck as unknown as FailedRow[])].filter((r) => !r.refunded).length;
 
+  function exportCsv() {
+    const headers = ["Type", "Generation ID", "User Email", "User Name", "Credits", "Age", "Error", "Status"];
+    const failedRows = failed.map((r) => [
+      "Failed", genId(r.id), r.userEmail, r.userName || "",
+      String(r.creditsUsed), absDate(r.createdAt), r.errorMessage || "", r.refunded ? "Refunded" : "Needs Refund",
+    ]);
+    const stuckRows = stuck.map((r) => [
+      "Stuck", genId(r.id), r.userEmail, r.userName || "",
+      String(r.creditsUsed), absDate(r.createdAt), "", r.status,
+    ]);
+    const csv = [headers, ...failedRows, ...stuckRows].map((row) => row.map((c) => `"${c.replace(/"/g, '""')}"`).join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a"); a.href = url; a.download = "refunds.csv"; a.click();
+    URL.revokeObjectURL(url);
+  }
+
   return (
     <div className="max-w-6xl mx-auto space-y-8">
       {/* ---- Header ---- */}
@@ -615,11 +621,12 @@ export default function AdminRefundsPage() {
         <div className="flex items-center gap-3 shrink-0">
           <span className="text-[11px] text-slate-600 hidden sm:block">{dateRange()}</span>
           <button
-            className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90"
-            style={{ background: "linear-gradient(135deg, #6366F1, #8B5CF6)", boxShadow: "0 4px 14px rgba(99,102,241,0.35)" }}
+            onClick={exportCsv}
+            className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition"
+            style={{ background: "#0F1629", border: "1px solid rgba(255,255,255,0.08)", color: "#94A3B8" }}
           >
             <Download className="h-4 w-4" />
-            Export
+            Export CSV
           </button>
         </div>
       </div>

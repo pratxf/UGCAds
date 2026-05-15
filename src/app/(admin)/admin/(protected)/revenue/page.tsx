@@ -1,7 +1,6 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
 import { DollarSign, TrendingUp, Users, Zap, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -9,8 +8,6 @@ type Breakdown = { plan: string; subs: number; mrrCents: number };
 type RevenueData = { mrrCents: number; activeSubs: number; breakdown: Breakdown[]; totalRevenueCents: number; subscriptionRevenueCents: number; topupRevenueCents: number };
 
 const dollars = (c: number) => `$${(c / 100).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
-const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.06 } } };
-const up = { hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0, transition: { duration: 0.35, ease: [0.22,1,0.36,1] as any } } };
 
 function planStyle(plan: string) {
   switch (plan) {
@@ -37,17 +34,17 @@ export default function AdminRevenuePage() {
   ];
 
   return (
-    <motion.div variants={stagger} initial="hidden" animate="show" className="max-w-6xl mx-auto space-y-8">
-      <motion.div variants={up}>
+    <div className="max-w-6xl mx-auto space-y-8">
+      <div>
         <h1 className="text-[22px] font-bold text-slate-100" style={{ fontFamily: "Satoshi, sans-serif" }}>Revenue</h1>
         <p className="text-sm text-slate-600 mt-0.5">Subscriptions, top-ups, and monthly recurring revenue</p>
-      </motion.div>
+      </div>
 
-      <motion.div variants={stagger} className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {topCards.map((c) => {
           const Icon = c.icon;
           return (
-            <motion.div key={c.label} variants={up} className="rounded-2xl overflow-hidden" style={{ background: "#0B0F1A", border: "1px solid rgba(255,255,255,0.07)" }}>
+            <div key={c.label} className="rounded-2xl overflow-hidden" style={{ background: "#0F1629", border: "1px solid rgba(255,255,255,0.07)" }}>
               <div className={cn("h-[2px] w-full bg-gradient-to-r", c.gradient)} />
               <div className="p-5">
                 <div className="flex items-center justify-between mb-4">
@@ -59,13 +56,13 @@ export default function AdminRevenuePage() {
                 <p className="text-[26px] font-bold text-slate-100 tabular-nums leading-none" style={{ fontFamily: "Satoshi, sans-serif" }}>{c.value}</p>
                 <p className="text-[11px] text-slate-600 mt-2">{c.sub}</p>
               </div>
-            </motion.div>
+            </div>
           );
         })}
-      </motion.div>
+      </div>
 
       {/* Plan breakdown */}
-      <motion.div variants={up} className="rounded-2xl overflow-hidden" style={{ background: "#0B0F1A", border: "1px solid rgba(255,255,255,0.07)" }}>
+      <div className="rounded-2xl overflow-hidden" style={{ background: "#0F1629", border: "1px solid rgba(255,255,255,0.07)" }}>
         <div className="px-6 py-4" style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
           <h2 className="text-[13px] font-bold text-slate-200">Plan Breakdown</h2>
           <p className="text-[11px] text-slate-600 mt-0.5">MRR contribution by plan tier</p>
@@ -92,10 +89,9 @@ export default function AdminRevenuePage() {
                       <span className="text-sm font-bold text-slate-200 tabular-nums">{dollars(p.mrrCents)}</span>
                     </div>
                     <div className="h-2 w-full rounded-full" style={{ background: "rgba(255,255,255,0.04)" }}>
-                      <motion.div
-                        initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.8, ease: [0.22,1,0.36,1] as any, delay: 0.2 }}
-                        className={cn("h-full rounded-full", s.bar)}
-                        style={{ boxShadow: `0 0 8px ${s.glow}` }}
+                      <div
+                        className={cn("h-full rounded-full transition-all duration-700", s.bar)}
+                        style={{ width: `${pct}%`, boxShadow: `0 0 8px ${s.glow}` }}
                       />
                     </div>
                   </div>
@@ -104,16 +100,16 @@ export default function AdminRevenuePage() {
             </div>
           )}
         </div>
-      </motion.div>
+      </div>
 
       {/* Plan cards */}
       {data.breakdown.length > 0 && (
-        <motion.div variants={stagger} className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {data.breakdown.map((p) => {
             const s = planStyle(p.plan);
             const share = data.mrrCents > 0 ? Math.round((p.mrrCents / data.mrrCents) * 100) : 0;
             return (
-              <motion.div key={p.plan} variants={up} className="rounded-2xl overflow-hidden" style={{ background: "#0B0F1A", border: "1px solid rgba(255,255,255,0.07)" }}>
+              <div key={p.plan} className="rounded-2xl overflow-hidden" style={{ background: "#0F1629", border: "1px solid rgba(255,255,255,0.07)" }}>
                 <div className={cn("h-[2px] w-full bg-gradient-to-r", s.gradient)} />
                 <div className="p-5">
                   <div className="flex items-center justify-between mb-4">
@@ -124,11 +120,11 @@ export default function AdminRevenuePage() {
                   <p className="text-[11px] text-slate-600 mt-2">{p.subs} active {p.subs === 1 ? "subscriber" : "subscribers"}</p>
                   {p.subs > 0 && <p className="text-[11px] text-slate-700">{dollars(Math.round(p.mrrCents / p.subs))}/user avg</p>}
                 </div>
-              </motion.div>
+              </div>
             );
           })}
-        </motion.div>
+        </div>
       )}
-    </motion.div>
+    </div>
   );
 }

@@ -17,7 +17,7 @@ export async function GET() {
   const posts = await prisma.blogPost.findMany({
     orderBy: { publishedAt: "desc" },
     select: {
-      id: true, slug: true, title: true, category: true, published: true,
+      id: true, slug: true, title: true, excerpt: true, category: true, published: true,
       featured: true, author: true, publishedAt: true, readTime: true,
     },
   });
