@@ -275,12 +275,7 @@ export default function AdminDashboard() {
         {/* Platform Activity Chart */}
         <div className="col-span-2 rounded-2xl p-6" style={{ background: "#0F1629", border: "1px solid rgba(255,255,255,0.07)" }}>
           <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-3">
-              <h2 className="text-[15px] font-bold text-white">Platform Activity</h2>
-              <div className="flex items-center gap-1 rounded-lg px-3 py-1 text-[12px] text-[#94A3B8] cursor-pointer" style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}>
-                Overview ▾
-              </div>
-            </div>
+            <h2 className="text-[15px] font-bold text-white">Platform Activity</h2>
             <div className="flex items-center gap-1 rounded-lg p-1" style={{ background: "rgba(255,255,255,0.04)" }}>
               {["7D", "30D", "90D", "1Y"].map((t) => (
                 <button key={t} onClick={() => setActiveTab(t)}
