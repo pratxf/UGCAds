@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import {
   AreaChart, Area, LineChart, Line, PieChart, Pie, Cell,
   XAxis, YAxis, Tooltip, ResponsiveContainer,
 } from "recharts";
-import { Users, Crown, Zap, ShieldCheck, Download, TrendingUp, TrendingDown } from "lucide-react";
+import { Users, Crown, Zap, ShieldCheck, Download, TrendingUp, TrendingDown, ChevronDown } from "lucide-react";
 
 type Stats = {
   totalUsers: number;
@@ -67,13 +67,53 @@ const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?:
   );
 };
 
+const DATE_RANGE_OPTIONS = [
+  { value: "7D",  label: "Last 7 Days" },
+  { value: "30D", label: "Last 30 Days" },
+  { value: "90D", label: "Last 90 Days" },
+  { value: "1Y",  label: "Last Year" },
+];
+
 export default function AdminDashboard() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [activeTab, setActiveTab] = useState("30D");
+  const [dateOpen, setDateOpen] = useState(false);
+  const dateRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetch("/api/admin/stats").then((r) => r.json()).then(setStats).catch(() => {});
   }, []);
+
+  useEffect(() => {
+    if (!dateOpen) return;
+    function handler(e: MouseEvent) {
+      if (dateRef.current && !dateRef.current.contains(e.target as Node)) setDateOpen(false);
+    }
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [dateOpen]);
+
+  function exportReport(s: Stats) {
+    const rows = [
+      ["Metric", "Value"],
+      ["Total Users", String(s.totalUsers)],
+      ["Active Subscriptions", String(s.activeSubscriptions)],
+      ["Total Generations", String(s.totalGenerations)],
+      ["Generations Today", String(s.generationsToday)],
+      ["Failed Today", String(s.failedToday)],
+      ["Success Rate", `${s.successRate}%`],
+      ["This Month Revenue", `$${s.thisMonthRevenue.toLocaleString()}`],
+      ["Revenue Change", `${s.revenueChange >= 0 ? "+" : ""}${s.revenueChange}%`],
+      [],
+      ["Plan", "Count", "Percentage"],
+      ...s.breakdown.map((b) => [b.plan, String(b.count), `${b.pct}%`]),
+    ];
+    const csv = rows.map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a"); a.href = url; a.download = "admin-report.csv"; a.click();
+    URL.revokeObjectURL(url);
+  }
 
   if (!stats) {
     return (
@@ -146,11 +186,42 @@ export default function AdminDashboard() {
           <p className="text-[13px] mt-0.5" style={{ color: "#64748B" }}>Here&apos;s what&apos;s happening with your platform today.</p>
         </div>
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-[13px] font-medium cursor-pointer" style={{ background: "#0F1629", border: "1px solid rgba(255,255,255,0.08)", color: "#94A3B8" }}>
-            <span>📅</span>
-            <span>Last 30 Days</span>
+          <div ref={dateRef} className="relative">
+            <button
+              onClick={() => setDateOpen((v) => !v)}
+              className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-[13px] font-medium"
+              style={{ background: "#0F1629", border: dateOpen ? "1px solid rgba(99,102,241,0.4)" : "1px solid rgba(255,255,255,0.08)", color: "#94A3B8" }}
+            >
+              <span>📅</span>
+              <span>{DATE_RANGE_OPTIONS.find((o) => o.value === activeTab)?.label ?? "Last 30 Days"}</span>
+              <ChevronDown className="h-3.5 w-3.5" style={{ transform: dateOpen ? "rotate(180deg)" : "none", transition: "transform 0.15s" }} />
+            </button>
+            {dateOpen && (
+              <div
+                className="absolute right-0 top-11 z-30 min-w-[160px] rounded-xl overflow-hidden"
+                style={{ background: "#0F1629", border: "1px solid rgba(255,255,255,0.1)", boxShadow: "0 8px 24px rgba(0,0,0,0.6)" }}
+              >
+                {DATE_RANGE_OPTIONS.map((o) => (
+                  <button
+                    key={o.value}
+                    onClick={() => { setActiveTab(o.value); setDateOpen(false); }}
+                    className="flex w-full items-center px-4 py-2.5 text-[13px] font-medium transition-colors"
+                    style={{ color: activeTab === o.value ? "#A5B4FC" : "#94A3B8", background: activeTab === o.value ? "rgba(99,102,241,0.1)" : "transparent" }}
+                    onMouseEnter={(e) => { if (activeTab !== o.value) (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.04)"; }}
+                    onMouseLeave={(e) => { if (activeTab !== o.value) (e.currentTarget as HTMLButtonElement).style.background = "transparent"; }}
+                  >
+                    {o.label}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
-          <button className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-[13px] font-semibold text-white" style={{ background: "linear-gradient(135deg, #4F46E5, #7C3AED)" }}>
+          <button
+            onClick={() => stats && exportReport(stats)}
+            disabled={!stats}
+            className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-[13px] font-semibold text-white disabled:opacity-40 transition-opacity"
+            style={{ background: "linear-gradient(135deg, #4F46E5, #7C3AED)" }}
+          >
             <Download className="h-3.5 w-3.5" />
             Export Report
           </button>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import {
   Clapperboard,
   CheckCircle2,
@@ -216,7 +216,6 @@ function StatCard({
 }
 
 function SelectDropdown({
-  label,
   value,
   options,
   onChange,
@@ -226,35 +225,60 @@ function SelectDropdown({
   options: { value: string; label: string }[];
   onChange: (v: string) => void;
 }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function handler(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [open]);
+
+  const selected = options.find((o) => o.value === value);
+
   return (
-    <div className="relative">
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="appearance-none rounded-xl pl-3 pr-8 py-2 text-[13px] font-medium outline-none cursor-pointer"
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="flex items-center gap-2 rounded-xl pl-3 pr-2.5 py-2 text-[13px] font-medium"
         style={{
           background: "#0F1629",
-          border: "1px solid rgba(255,255,255,0.1)",
+          border: open ? "1px solid rgba(99,102,241,0.4)" : "1px solid rgba(255,255,255,0.1)",
           color: "#CBD5E1",
         }}
       >
-        {options.map((o) => (
-          <option key={o.value} value={o.value} style={{ background: "#0F1629" }}>
-            {o.label}
-          </option>
-        ))}
-      </select>
-      <ChevronDown
-        className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2"
-        size={13}
-        style={{ color: "#64748B" }}
-      />
-      <span
-        className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[11px] font-bold uppercase tracking-widest"
-        style={{ color: "#64748B", display: value !== "all" ? "none" : undefined }}
-      >
-        {value === "all" ? "" : ""}
-      </span>
+        {selected?.label}
+        <ChevronDown size={12} style={{ color: "#64748B", transform: open ? "rotate(180deg)" : "none", transition: "transform 0.15s" }} />
+      </button>
+      {open && (
+        <div
+          className="absolute left-0 top-10 z-30 min-w-[140px] rounded-xl overflow-hidden"
+          style={{
+            background: "#0F1629",
+            border: "1px solid rgba(255,255,255,0.1)",
+            boxShadow: "0 8px 24px rgba(0,0,0,0.6)",
+          }}
+        >
+          {options.map((o) => (
+            <button
+              key={o.value}
+              onClick={() => { onChange(o.value); setOpen(false); }}
+              className="flex w-full items-center px-3 py-2.5 text-[12px] font-medium transition-colors"
+              style={{
+                color: value === o.value ? "#A5B4FC" : "#94A3B8",
+                background: value === o.value ? "rgba(99,102,241,0.1)" : "transparent",
+              }}
+              onMouseEnter={(e) => { if (value !== o.value) (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.04)"; }}
+              onMouseLeave={(e) => { if (value !== o.value) (e.currentTarget as HTMLButtonElement).style.background = "transparent"; }}
+            >
+              {o.label}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

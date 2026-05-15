@@ -27,6 +27,8 @@ import {
   MoreHorizontal,
   AlertTriangle,
   UploadCloud,
+  ArrowUpRight,
+  Tag,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -219,6 +221,236 @@ function AvatarCardMenu({
           </button>
         </div>
       )}
+    </div>
+  );
+}
+
+// ─── Category Dropdown ────────────────────────────────────────────────────────
+
+function CategoryDropdown({
+  value,
+  categories,
+  onChange,
+}: {
+  value: string;
+  categories: Category[];
+  onChange: (v: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function handler(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [open]);
+
+  const selected = categories.find((c) => c.id === value);
+  const label = selected ? selected.name : "Uncategorized";
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-center justify-between h-10 rounded-xl px-3 text-sm transition"
+        style={{
+          background: "#080C18",
+          border: open ? "1px solid rgba(99,102,241,0.5)" : "1px solid rgba(255,255,255,0.08)",
+          color: value ? "#E2E8F0" : "#64748B",
+        }}
+      >
+        <span>{label}</span>
+        <ChevronDown className="h-3.5 w-3.5 text-slate-600 shrink-0" style={{ transform: open ? "rotate(180deg)" : "none", transition: "transform 0.15s" }} />
+      </button>
+      {open && (
+        <div
+          className="absolute left-0 top-11 z-40 w-full rounded-xl overflow-hidden"
+          style={{
+            background: "#0F1629",
+            border: "1px solid rgba(255,255,255,0.1)",
+            boxShadow: "0 8px 24px rgba(0,0,0,0.6)",
+            maxHeight: 200,
+            overflowY: "auto",
+          }}
+        >
+          <button
+            onClick={() => { onChange(""); setOpen(false); }}
+            className="flex w-full items-center px-3 py-2.5 text-[13px] font-medium transition-colors"
+            style={{ color: !value ? "#A5B4FC" : "#94A3B8", background: !value ? "rgba(99,102,241,0.1)" : "transparent" }}
+            onMouseEnter={(e) => { if (value) (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.04)"; }}
+            onMouseLeave={(e) => { if (value) (e.currentTarget as HTMLButtonElement).style.background = "transparent"; }}
+          >
+            Uncategorized
+          </button>
+          {categories.map((c) => (
+            <button
+              key={c.id}
+              onClick={() => { onChange(c.id); setOpen(false); }}
+              className="flex w-full items-center px-3 py-2.5 text-[13px] font-medium transition-colors"
+              style={{ color: value === c.id ? "#A5B4FC" : "#94A3B8", background: value === c.id ? "rgba(99,102,241,0.1)" : "transparent" }}
+              onMouseEnter={(e) => { if (value !== c.id) (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.04)"; }}
+              onMouseLeave={(e) => { if (value !== c.id) (e.currentTarget as HTMLButtonElement).style.background = "transparent"; }}
+            >
+              {c.name}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Categories Modal ─────────────────────────────────────────────────────────
+
+function CategoriesModal({
+  categories,
+  onClose,
+  onChanged,
+}: {
+  categories: Category[];
+  onClose: () => void;
+  onChanged: () => void;
+}) {
+  const [newName, setNewName] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  async function addCategory() {
+    const name = newName.trim();
+    if (!name) return;
+    setSaving(true);
+    await fetch("/api/admin/avatar-categories", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name }),
+    });
+    setSaving(false);
+    setNewName("");
+    onChanged();
+  }
+
+  async function deleteCategory(id: string) {
+    setDeletingId(id);
+    await fetch(`/api/admin/avatar-categories/${id}`, { method: "DELETE" });
+    setDeletingId(null);
+    onChanged();
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ background: "rgba(0,0,0,0.85)", backdropFilter: "blur(8px)" }}
+      onClick={onClose}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-md rounded-3xl overflow-hidden flex flex-col"
+        style={{
+          background: "#0F1629",
+          border: "1px solid rgba(255,255,255,0.07)",
+          boxShadow: "0 24px 64px rgba(0,0,0,0.7)",
+          maxHeight: "80vh",
+        }}
+      >
+        {/* Accent line */}
+        <div className="h-[2px] w-full" style={{ background: "linear-gradient(90deg, #6366F1, #8B5CF6)" }} />
+
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-5 shrink-0" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+          <div className="flex items-center gap-3">
+            {/* ugcads logo */}
+            <div className="flex items-center gap-[3px]">
+              <span className="text-[15px] font-bold text-white">ugc</span>
+              <div
+                className="flex items-center justify-center rounded-[5px]"
+                style={{ width: 20, height: 20, background: "#2563EB" }}
+              >
+                <ArrowUpRight className="h-3 w-3 text-white" />
+              </div>
+              <span className="text-[15px] font-bold text-white">ads</span>
+            </div>
+            <div
+              className="h-4 w-px"
+              style={{ background: "rgba(255,255,255,0.1)" }}
+            />
+            <div className="flex items-center gap-2">
+              <Tag className="h-4 w-4 text-indigo-400" />
+              <h3 className="text-[14px] font-bold text-slate-100">Avatar Categories</h3>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="flex size-8 items-center justify-center rounded-xl text-slate-500 hover:text-slate-200 hover:bg-white/[0.06] transition ml-2"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        {/* List */}
+        <div className="flex-1 overflow-y-auto px-6 py-4 space-y-2">
+          {categories.length === 0 ? (
+            <p className="text-[13px] text-slate-600 py-4 text-center">No categories yet</p>
+          ) : (
+            categories.map((cat) => (
+              <div
+                key={cat.id}
+                className="flex items-center justify-between rounded-xl px-3 py-2.5"
+                style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}
+              >
+                <div>
+                  <p className="text-[13px] font-semibold text-slate-200">{cat.name}</p>
+                  {cat._count && (
+                    <p className="text-[11px] text-slate-600 mt-0.5">{cat._count.avatars} avatar{cat._count.avatars !== 1 ? "s" : ""}</p>
+                  )}
+                </div>
+                <button
+                  onClick={() => deleteCategory(cat.id)}
+                  disabled={deletingId === cat.id}
+                  className="flex size-7 items-center justify-center rounded-lg text-slate-600 hover:text-red-400 hover:bg-red-500/10 transition-colors disabled:opacity-40"
+                >
+                  {deletingId === cat.id ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <Trash2 className="h-3.5 w-3.5" />
+                  )}
+                </button>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Add new */}
+        <div className="px-6 pb-6 pt-3 shrink-0" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2">Add Category</p>
+          <div className="flex gap-2">
+            <input
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") addCategory(); }}
+              placeholder="e.g. Women 20s"
+              className="flex-1 h-10 rounded-xl px-3 text-[13px] text-slate-200 placeholder:text-slate-600 focus:outline-none transition"
+              style={{
+                background: "#080C18",
+                border: "1px solid rgba(255,255,255,0.08)",
+              }}
+              onFocus={(e) => (e.currentTarget.style.border = "1px solid rgba(99,102,241,0.5)")}
+              onBlur={(e) => (e.currentTarget.style.border = "1px solid rgba(255,255,255,0.08)")}
+            />
+            <button
+              onClick={addCategory}
+              disabled={!newName.trim() || saving}
+              className="inline-flex items-center gap-1.5 rounded-xl px-4 text-[13px] font-bold text-white disabled:opacity-40 transition-all"
+              style={{ background: "linear-gradient(135deg, #6366F1, #8B5CF6)" }}
+            >
+              {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Plus className="h-3.5 w-3.5" />}
+              Add
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -417,25 +649,11 @@ function UploadModal({
             <label className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2 block">
               Category
             </label>
-            <div className="relative">
-              <select
-                value={categoryId}
-                onChange={(e) => setCategoryId(e.target.value)}
-                className="w-full h-10 rounded-xl px-3 pr-8 text-sm text-slate-200 focus:outline-none appearance-none transition"
-                style={{
-                  background: "#080C18",
-                  border: "1px solid rgba(255,255,255,0.08)",
-                }}
-              >
-                <option value="">Uncategorized</option>
-                {categories.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-600" />
-            </div>
+            <CategoryDropdown
+              value={categoryId}
+              categories={categories}
+              onChange={setCategoryId}
+            />
           </div>
 
           {/* Info note */}
@@ -547,6 +765,7 @@ export default function AdminAvatarsPage() {
 
   // Modals
   const [showUpload, setShowUpload] = useState(false);
+  const [showCategories, setShowCategories] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Avatar | null>(null);
   const [deleting, setDeleting] = useState(false);
 
@@ -661,14 +880,15 @@ export default function AdminAvatarsPage() {
           </div>
           <div className="flex items-center gap-2">
             <button
+              onClick={() => setShowCategories(true)}
               className="inline-flex items-center gap-1.5 rounded-xl px-4 py-2.5 text-[12px] font-semibold text-slate-400 hover:text-slate-200 transition-colors"
               style={{
                 border: "1px solid rgba(255,255,255,0.08)",
                 background: "rgba(255,255,255,0.03)",
               }}
             >
+              <Tag className="h-3 w-3" />
               Categories
-              <ChevronDown className="h-3 w-3" />
             </button>
             <button
               onClick={() => setShowUpload(true)}
@@ -979,6 +1199,13 @@ export default function AdminAvatarsPage() {
       </div>
 
       {/* ── Modals ── */}
+      {showCategories && (
+        <CategoriesModal
+          categories={categories}
+          onClose={() => setShowCategories(false)}
+          onChanged={() => load()}
+        />
+      )}
       {showUpload && (
         <UploadModal
           categories={categories}
