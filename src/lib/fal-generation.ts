@@ -61,7 +61,7 @@ function buildVideoInput(modelId: string, prompt: string, imageUrl: string | und
     case "bytedance/seedance-2.0/fast/image-to-video":
       return { prompt, ...(imageUrl ? { image_url: imageUrl } : {}), resolution: "720p", duration, aspect_ratio: aspectRatio, generate_audio: true };
     case "fal-ai/sora-2/image-to-video":
-      return { prompt, ...(imageUrl ? { image_url: imageUrl } : {}), resolution: "720p", aspect_ratio: aspectRatio, duration };
+      return { prompt, ...(imageUrl ? { image_url: imageUrl } : {}), resolution: "auto", aspect_ratio: "auto", duration };
     case "fal-ai/kling-video/v3/standard/image-to-video":
       return { prompt, ...(imageUrl ? { start_image_url: imageUrl } : {}), aspect_ratio: aspectRatio, duration, generate_audio: true, negative_prompt: "blur, distort, and low quality", cfg_scale: 0.5 };
     default:
