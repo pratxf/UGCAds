@@ -48,23 +48,8 @@ const SECTIONS: Section[] = [
   },
 ];
 
-const PAGE_TITLES: Record<string, string> = {
-  "/admin":                      "Overview",
-  "/admin/users":                "Users",
-  "/admin/generations":          "Generations",
-  "/admin/refunds":              "Refunds",
-  "/admin/support":              "Support",
-  "/admin/avatars":              "UGC Avatars",
-  "/admin/photoshoot-templates": "Photoshoot Templates",
-  "/admin/tryon-models":         "Try-On Models",
-  "/admin/revenue":              "Revenue",
-  "/admin/pricing":              "Grant Credits",
-  "/admin/blog":                 "Blog",
-};
-
 export default function AdminShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const pageTitle = PAGE_TITLES[pathname] ?? "Admin";
 
   return (
     <div
@@ -148,26 +133,6 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
 
       {/* ── Main ─────────────────────────────────────── */}
       <div className="ml-[240px] flex-1 flex flex-col min-w-0">
-        {/* Header */}
-        <header
-          className="sticky top-0 z-20 flex h-[60px] items-center justify-between px-8"
-          style={{
-            background: "rgba(5,8,14,0.8)",
-            backdropFilter: "blur(16px)",
-            borderBottom: "1px solid rgba(255,255,255,0.05)",
-          }}
-        >
-          <div className="flex items-center gap-2">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-600">Admin</span>
-            <span className="text-slate-700">/</span>
-            <span className="text-[12px] font-semibold text-slate-300">{pageTitle}</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-[11px] text-slate-600 font-medium">Live</span>
-          </div>
-        </header>
-
         <main className="flex-1 overflow-y-auto p-6 lg:p-8">{children}</main>
       </div>
     </div>
