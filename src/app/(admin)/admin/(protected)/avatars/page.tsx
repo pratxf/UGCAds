@@ -885,6 +885,7 @@ export default function AdminAvatarsPage() {
   };
 
   return (
+    <>
     <div className="max-w-[1400px] mx-auto space-y-6">
       {/* ── Stat Cards ── */}
         <div className="flex gap-4 flex-wrap">
@@ -1207,7 +1208,7 @@ export default function AdminAvatarsPage() {
           onClose={() => setDeleteTarget(null)}
         />
       )}
-    </div>
+    </>
   );
 }
 
