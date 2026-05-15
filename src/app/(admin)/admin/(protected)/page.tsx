@@ -177,7 +177,7 @@ export default function AdminDashboard() {
       : stats.activityChart;
 
   return (
-    <div className="min-h-screen p-6 space-y-6" style={{ background: "#080C18" }}>
+    <div className="space-y-6">
 
       {/* Header */}
       <div className="flex items-center justify-end">

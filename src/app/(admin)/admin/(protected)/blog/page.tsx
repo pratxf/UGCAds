@@ -314,7 +314,7 @@ function BlogEditor({ post, isNew, onBack }: { post: PostFull | null; isNew: boo
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-56px)] min-h-0 -mx-6 -mt-6">
+    <div className="flex flex-col h-[calc(100vh-60px)] min-h-0 -mx-6 -mt-6">
       {/* Top bar */}
       <div className="flex items-center gap-3 px-6 py-3 shrink-0" style={{ background: "#080C18", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
         <button onClick={onBack} className="flex items-center gap-1.5 text-[13px] font-medium text-slate-500 hover:text-slate-300 transition mr-2">

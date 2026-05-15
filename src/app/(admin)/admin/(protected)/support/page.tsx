@@ -316,20 +316,14 @@ export default function AdminSupportPage() {
   // ---------------------------------------------------------------------------
   if (loading) {
     return (
-      <div
-        className="min-h-screen flex items-center justify-center"
-        style={{ background: "#080C18" }}
-      >
+      <div className="flex items-center justify-center py-24">
         <Loader2 className="h-5 w-5 animate-spin text-indigo-400" />
       </div>
     );
   }
 
   return (
-    <div
-      className="flex flex-col gap-5 min-h-screen p-6"
-      style={{ background: "#080C18" }}
-    >
+    <div className="flex flex-col gap-5">
       {/* ------------------------------------------------------------------ */}
       {/* Header */}
       {/* ------------------------------------------------------------------ */}
@@ -392,7 +386,7 @@ export default function AdminSupportPage() {
       {/* ------------------------------------------------------------------ */}
       {/* 3-column layout */}
       {/* ------------------------------------------------------------------ */}
-      <div className="flex gap-4" style={{ minHeight: 0, height: "calc(100vh - 240px)" }}>
+      <div className="flex gap-4" style={{ minHeight: 0, height: "calc(100vh - 260px)" }}>
         {/* ---------------------------------------------------------------- */}
         {/* LEFT — ticket list */}
         {/* ---------------------------------------------------------------- */}

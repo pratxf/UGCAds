@@ -128,7 +128,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
       <div className="ml-[240px] flex-1 flex flex-col min-w-0">
         {/* Topbar */}
         <div
-          className="sticky top-0 z-20 flex h-14 shrink-0 items-center px-6"
+          className="sticky top-0 z-20 flex h-[60px] shrink-0 items-center px-6"
           style={{ background: "#080C18", borderBottom: "1px solid rgba(255,255,255,0.06)" }}
         >
           <p className="text-[15px] font-bold text-slate-100">
