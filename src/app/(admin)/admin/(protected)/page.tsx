@@ -228,51 +228,6 @@ export default function AdminDashboard() {
   return (
     <div className="space-y-6">
 
-      {/* Header */}
-      <div className="flex items-center justify-end">
-        <div className="flex items-center gap-3">
-          <div ref={dateRef} className="relative">
-            <button
-              onClick={() => setDateOpen((v) => !v)}
-              className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-[13px] font-medium"
-              style={{ background: "#0F1629", border: dateOpen ? "1px solid rgba(99,102,241,0.4)" : "1px solid rgba(255,255,255,0.08)", color: "#94A3B8" }}
-            >
-              <span>📅</span>
-              <span>{DATE_RANGE_OPTIONS.find((o) => o.value === activeTab)?.label ?? "Last 30 Days"}</span>
-              <ChevronDown className="h-3.5 w-3.5" style={{ transform: dateOpen ? "rotate(180deg)" : "none", transition: "transform 0.15s" }} />
-            </button>
-            {dateOpen && (
-              <div
-                className="absolute right-0 top-11 z-30 min-w-[160px] rounded-xl overflow-hidden"
-                style={{ background: "#0F1629", border: "1px solid rgba(255,255,255,0.1)", boxShadow: "0 8px 24px rgba(0,0,0,0.6)" }}
-              >
-                {DATE_RANGE_OPTIONS.map((o) => (
-                  <button
-                    key={o.value}
-                    onClick={() => { setActiveTab(o.value); setDateOpen(false); }}
-                    className="flex w-full items-center px-4 py-2.5 text-[13px] font-medium transition-colors"
-                    style={{ color: activeTab === o.value ? "#A5B4FC" : "#94A3B8", background: activeTab === o.value ? "rgba(99,102,241,0.1)" : "transparent" }}
-                    onMouseEnter={(e) => { if (activeTab !== o.value) (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.04)"; }}
-                    onMouseLeave={(e) => { if (activeTab !== o.value) (e.currentTarget as HTMLButtonElement).style.background = "transparent"; }}
-                  >
-                    {o.label}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-          <button
-            onClick={() => stats && exportReport(stats)}
-            disabled={!stats}
-            className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-[13px] font-semibold text-white disabled:opacity-40 transition-opacity"
-            style={{ background: "linear-gradient(135deg, #4F46E5, #7C3AED)" }}
-          >
-            <Download className="h-3.5 w-3.5" />
-            Export Report
-          </button>
-        </div>
-      </div>
-
       {/* Stat Cards */}
       <div className="grid grid-cols-4 gap-4">
         {statCards.map((card) => {
