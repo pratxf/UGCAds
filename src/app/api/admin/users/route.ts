@@ -24,7 +24,7 @@ export async function GET(req: Request) {
       ...(plan === "free" ? { subscription: null } : {}),
     };
 
-    const [total, users] = await Promise.all([
+    const [total, users, freeUsers, paidUsers, creatorUsers] = await Promise.all([
       prisma.user.count({ where }),
       prisma.user.findMany({
         where,
@@ -37,19 +37,27 @@ export async function GET(req: Request) {
           name: true,
           credits: true,
           createdAt: true,
-          subscription: { select: { plan: true } },
+          subscription: { select: { plan: true, status: true } },
           _count: { select: { generations: true } },
         },
       }),
+      prisma.user.count({ where: { subscription: null } }),
+      prisma.subscription.count({ where: { status: "ACTIVE" } }),
+      prisma.subscription.count({ where: { status: "ACTIVE", plan: "CREATOR" } }),
     ]);
 
     return NextResponse.json({
+      totalUsers: await prisma.user.count(),
+      freeUsers,
+      paidUsers,
+      creatorUsers,
       users: users.map((u) => ({
         id: u.id,
         email: u.email,
         name: u.name,
         credits: u.credits,
         plan: u.subscription?.plan ?? "FREE",
+        status: u.subscription?.status && u.subscription.status !== "ACTIVE" ? "Inactive" : "Active",
         totalAds: u._count.generations,
         joined: u.createdAt,
       })),

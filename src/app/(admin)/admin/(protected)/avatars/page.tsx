@@ -1,75 +1,558 @@
-﻿"use client";
+"use client";
 
-import { useEffect, useState, useRef, type ChangeEvent } from "react";
+import {
+  useEffect,
+  useState,
+  useRef,
+  useCallback,
+  type ChangeEvent,
+} from "react";
 import Image from "next/image";
-import { motion } from "framer-motion";
-import { Plus, Trash2, Loader2, X, Tag, AlertTriangle } from "lucide-react";
+import {
+  Plus,
+  Trash2,
+  Loader2,
+  X,
+  ChevronDown,
+  Search,
+  Filter,
+  LayoutGrid,
+  List,
+  Users,
+  CheckCircle,
+  EyeOff,
+  CloudUpload,
+  User,
+  Info,
+  MoreHorizontal,
+  AlertTriangle,
+  UploadCloud,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
-type Category = { id: string; name: string; slug: string; _count?: { avatars: number } };
-type Avatar = { id: string; name: string; imageUrl: string; categoryId: string | null; category: Category | null; active: boolean };
+// ─── Types ───────────────────────────────────────────────────────────────────
 
-const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.04 } } };
-const up = { hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0, transition: { duration: 0.35, ease: [0.22,1,0.36,1] as any } } };
+type Category = {
+  id: string;
+  name: string;
+  slug: string;
+  _count?: { avatars: number };
+};
 
-function ConfirmModal({ title, description, loading, onConfirm, onClose }: { title: string; description: string; loading: boolean; onConfirm: () => void; onClose: () => void }) {
+type Avatar = {
+  id: string;
+  name: string;
+  imageUrl: string;
+  thumbnailUrl?: string;
+  categoryId: string | null;
+  category: Category | null;
+  active: boolean;
+};
+
+type GenderFilter = "all" | "women" | "men";
+type SortOption = "newest" | "oldest" | "name-asc" | "name-desc";
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+function getGender(avatar: Avatar): "women" | "men" | "other" {
+  const catName = (avatar.category?.name ?? "").toLowerCase();
+  if (catName.includes("women") || catName.includes("female")) return "women";
+  if (catName.includes("men") || catName.includes("male")) return "men";
+  return "other";
+}
+
+const PAGE_SIZE = 12;
+
+// ─── Confirm Delete Modal ─────────────────────────────────────────────────────
+
+function ConfirmModal({
+  title,
+  description,
+  loading,
+  onConfirm,
+  onClose,
+}: {
+  title: string;
+  description: string;
+  loading: boolean;
+  onConfirm: () => void;
+  onClose: () => void;
+}) {
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.8)", backdropFilter: "blur(8px)" }} onClick={onClose}>
-      <motion.div initial={{ opacity: 0, scale: 0.96, y: 8 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ duration: 0.2, ease: [0.22,1,0.36,1] as any }}
-        onClick={(e) => e.stopPropagation()} className="w-full max-w-sm rounded-2xl overflow-hidden" style={{ background: "#0D1120", border: "1px solid rgba(255,255,255,0.09)" }}>
+    <div
+      className="fixed inset-0 z-[70] flex items-center justify-center p-4"
+      style={{ background: "rgba(0,0,0,0.85)", backdropFilter: "blur(8px)" }}
+      onClick={onClose}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-sm rounded-2xl overflow-hidden"
+        style={{
+          background: "#0F1629",
+          border: "1px solid rgba(255,255,255,0.07)",
+        }}
+      >
         <div className="h-[2px] w-full bg-gradient-to-r from-red-500 to-rose-600" />
         <div className="p-6">
           <div className="flex items-start gap-4 mb-6">
-            <div className="flex size-10 shrink-0 items-center justify-center rounded-xl" style={{ background: "rgba(248,113,113,0.1)" }}>
+            <div
+              className="flex size-10 shrink-0 items-center justify-center rounded-xl"
+              style={{ background: "rgba(248,113,113,0.12)" }}
+            >
               <AlertTriangle className="h-5 w-5 text-red-400" />
             </div>
             <div>
               <h3 className="text-[14px] font-bold text-slate-100">{title}</h3>
-              <p className="text-sm text-slate-500 mt-1.5 leading-relaxed">{description}</p>
+              <p className="text-sm text-slate-500 mt-1.5 leading-relaxed">
+                {description}
+              </p>
             </div>
           </div>
           <div className="flex gap-2">
-            <button onClick={onClose} className="flex-1 rounded-xl py-2.5 text-sm font-semibold text-slate-500 hover:text-slate-300 transition" style={{ border: "1px solid rgba(255,255,255,0.08)" }}>Cancel</button>
-            <button onClick={onConfirm} disabled={loading} className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-bold text-white disabled:opacity-40 transition" style={{ background: "linear-gradient(135deg, #ef4444, #dc2626)", boxShadow: "0 0 16px rgba(239,68,68,0.25)" }}>
+            <button
+              onClick={onClose}
+              className="flex-1 rounded-xl py-2.5 text-sm font-semibold text-slate-400 hover:text-slate-200 transition"
+              style={{ border: "1px solid rgba(255,255,255,0.08)" }}
+            >
+              Cancel
+            </button>
+            <button
+              onClick={onConfirm}
+              disabled={loading}
+              className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-bold text-white disabled:opacity-40 transition"
+              style={{
+                background: "linear-gradient(135deg, #ef4444, #dc2626)",
+                boxShadow: "0 0 16px rgba(239,68,68,0.25)",
+              }}
+            >
               {loading && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
               Delete Avatar
             </button>
           </div>
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 }
 
-function AdminModal({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
+// ─── Avatar Card Dropdown Menu ────────────────────────────────────────────────
+
+function AvatarCardMenu({
+  avatar,
+  onToggle,
+  onDelete,
+}: {
+  avatar: Avatar;
+  onToggle: () => void;
+  onDelete: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [open]);
+
   return (
-    <div onClick={onClose} className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.8)", backdropFilter: "blur(8px)" }}>
-      <motion.div initial={{ opacity: 0, scale: 0.96, y: 8 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ duration: 0.2, ease: [0.22,1,0.36,1] as any }}
-        onClick={(e) => e.stopPropagation()} className="w-full max-w-md rounded-2xl overflow-hidden max-h-[90vh] flex flex-col" style={{ background: "#0D1120", border: "1px solid rgba(255,255,255,0.09)" }}>
-        <div className="h-[2px] w-full bg-gradient-to-r from-violet-500 to-purple-600 shrink-0" />
-        <div className="flex items-center justify-between px-5 py-4 shrink-0" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-          <h3 className="text-[14px] font-bold text-slate-100">{title}</h3>
-          <button onClick={onClose} className="flex size-7 items-center justify-center rounded-lg text-slate-600 hover:text-slate-300 hover:bg-white/[0.05] transition">
-            <X className="h-3.5 w-3.5" />
+    <div ref={ref} className="relative">
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          setOpen((v) => !v);
+        }}
+        className="flex size-7 items-center justify-center rounded-lg transition-colors"
+        style={{
+          background: "rgba(0,0,0,0.55)",
+          backdropFilter: "blur(6px)",
+          border: "1px solid rgba(255,255,255,0.12)",
+        }}
+      >
+        <MoreHorizontal className="h-3.5 w-3.5 text-white" />
+      </button>
+      {open && (
+        <div
+          className="absolute right-0 top-8 z-10 min-w-[140px] rounded-xl overflow-hidden"
+          style={{
+            background: "#0F1629",
+            border: "1px solid rgba(255,255,255,0.1)",
+            boxShadow: "0 8px 24px rgba(0,0,0,0.6)",
+          }}
+        >
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setOpen(false);
+              onToggle();
+            }}
+            className="flex w-full items-center gap-2 px-3 py-2.5 text-[12px] font-medium text-slate-300 hover:bg-white/[0.05] transition-colors"
+          >
+            {avatar.active ? (
+              <>
+                <EyeOff className="h-3.5 w-3.5 text-amber-400" />
+                Set Inactive
+              </>
+            ) : (
+              <>
+                <CheckCircle className="h-3.5 w-3.5 text-emerald-400" />
+                Set Active
+              </>
+            )}
+          </button>
+          <div style={{ height: "1px", background: "rgba(255,255,255,0.06)" }} />
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setOpen(false);
+              onDelete();
+            }}
+            className="flex w-full items-center gap-2 px-3 py-2.5 text-[12px] font-medium text-red-400 hover:bg-red-500/10 transition-colors"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+            Delete
           </button>
         </div>
-        <div className="p-5 overflow-y-auto">{children}</div>
-      </motion.div>
+      )}
     </div>
   );
 }
+
+// ─── Upload Avatar Modal ──────────────────────────────────────────────────────
+
+function UploadModal({
+  categories,
+  onClose,
+  onSaved,
+}: {
+  categories: Category[];
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const [name, setName] = useState("");
+  const [categoryId, setCategoryId] = useState<string>("");
+  const [file, setFile] = useState<File | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  function pickFileFromEvent(f: File) {
+    setFile(f);
+    setPreview(URL.createObjectURL(f));
+  }
+
+  function handleInputChange(e: ChangeEvent<HTMLInputElement>) {
+    const f = e.target.files?.[0];
+    if (f) pickFileFromEvent(f);
+  }
+
+  function handleDrop(e: React.DragEvent) {
+    e.preventDefault();
+    setIsDragging(false);
+    const f = e.dataTransfer.files?.[0];
+    if (f && f.type.startsWith("image/")) pickFileFromEvent(f);
+  }
+
+  async function submit() {
+    if (!name || !file) return;
+    setSaving(true);
+    const fd = new FormData();
+    fd.append("name", name);
+    fd.append("image", file);
+    if (categoryId) fd.append("categoryId", categoryId);
+    const res = await fetch("/api/admin/avatars", { method: "POST", body: fd });
+    setSaving(false);
+    if (res.ok) onSaved();
+    else alert("Upload failed. Please try again.");
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ background: "rgba(0,0,0,0.85)", backdropFilter: "blur(8px)" }}
+      onClick={onClose}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-md rounded-3xl overflow-hidden flex flex-col max-h-[90vh]"
+        style={{
+          background: "#0F1629",
+          border: "1px solid rgba(255,255,255,0.07)",
+          boxShadow: "0 24px 64px rgba(0,0,0,0.7)",
+        }}
+      >
+        {/* Header */}
+        <div
+          className="flex items-start justify-between px-6 pt-6 pb-4 shrink-0"
+          style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}
+        >
+          <div>
+            <h3 className="text-[16px] font-bold text-slate-100">
+              Upload Avatar
+            </h3>
+            <p className="text-[12px] text-slate-500 mt-0.5">
+              Add a new avatar to the UGC Studio library
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="flex size-8 items-center justify-center rounded-xl text-slate-500 hover:text-slate-200 hover:bg-white/[0.06] transition ml-3 shrink-0"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className="p-6 space-y-5 overflow-y-auto">
+          {/* Drop zone */}
+          <div
+            onClick={() => inputRef.current?.click()}
+            onDragOver={(e) => {
+              e.preventDefault();
+              setIsDragging(true);
+            }}
+            onDragLeave={() => setIsDragging(false)}
+            onDrop={handleDrop}
+            className="relative flex flex-col items-center justify-center rounded-2xl cursor-pointer transition-all overflow-hidden"
+            style={{
+              minHeight: 180,
+              border: isDragging
+                ? "2px dashed #6366F1"
+                : preview
+                ? "2px dashed rgba(99,102,241,0.4)"
+                : "2px dashed rgba(99,102,241,0.3)",
+              background: isDragging
+                ? "rgba(99,102,241,0.08)"
+                : preview
+                ? "transparent"
+                : "rgba(99,102,241,0.03)",
+            }}
+          >
+            {preview ? (
+              <div className="relative w-full" style={{ minHeight: 180 }}>
+                <Image
+                  src={preview}
+                  alt="Preview"
+                  fill
+                  className="object-cover object-top"
+                />
+                <div
+                  className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity"
+                  style={{ background: "rgba(0,0,0,0.5)" }}
+                >
+                  <p className="text-[12px] font-semibold text-white">
+                    Click to change
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center gap-3 py-8 px-6 text-center">
+                <div
+                  className="flex size-12 items-center justify-center rounded-2xl"
+                  style={{ background: "rgba(99,102,241,0.12)" }}
+                >
+                  <CloudUpload className="h-6 w-6 text-indigo-400" />
+                </div>
+                <div>
+                  <p className="text-[13px] font-semibold text-slate-300">
+                    Drag & drop your image here
+                  </p>
+                  <p className="text-[12px] text-slate-500 mt-0.5">
+                    or{" "}
+                    <span className="text-indigo-400 font-semibold">
+                      click to browse files
+                    </span>
+                  </p>
+                </div>
+                <p className="text-[11px] text-slate-600">
+                  PNG, JPG or WEBP &bull; Max 10MB &bull; 1:1 aspect ratio
+                </p>
+              </div>
+            )}
+            <input
+              ref={inputRef}
+              type="file"
+              accept="image/*"
+              className="sr-only"
+              onChange={handleInputChange}
+            />
+          </div>
+
+          {/* Name field */}
+          <div>
+            <label className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2 block">
+              Name
+            </label>
+            <div className="relative">
+              <User className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-600" />
+              <input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="e.g. Sarah Chen"
+                className="w-full h-10 rounded-xl pl-9 pr-3 text-sm text-slate-200 placeholder:text-slate-600 focus:outline-none transition"
+                style={{
+                  background: "#080C18",
+                  border: "1px solid rgba(255,255,255,0.08)",
+                }}
+                onFocus={(e) =>
+                  (e.currentTarget.style.border =
+                    "1px solid rgba(99,102,241,0.5)")
+                }
+                onBlur={(e) =>
+                  (e.currentTarget.style.border =
+                    "1px solid rgba(255,255,255,0.08)")
+                }
+              />
+            </div>
+          </div>
+
+          {/* Category field */}
+          <div>
+            <label className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2 block">
+              Category
+            </label>
+            <div className="relative">
+              <select
+                value={categoryId}
+                onChange={(e) => setCategoryId(e.target.value)}
+                className="w-full h-10 rounded-xl px-3 pr-8 text-sm text-slate-200 focus:outline-none appearance-none transition"
+                style={{
+                  background: "#080C18",
+                  border: "1px solid rgba(255,255,255,0.08)",
+                }}
+              >
+                <option value="">Uncategorized</option>
+                {categories.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-600" />
+            </div>
+          </div>
+
+          {/* Info note */}
+          <div
+            className="flex items-start gap-2.5 rounded-xl px-3 py-3"
+            style={{ background: "rgba(99,102,241,0.07)", border: "1px solid rgba(99,102,241,0.15)" }}
+          >
+            <Info className="h-3.5 w-3.5 text-indigo-400 shrink-0 mt-0.5" />
+            <p className="text-[11px] text-slate-400 leading-relaxed">
+              Avatars will be reviewed before they become available to users in
+              UGC Studio.
+            </p>
+          </div>
+
+          {/* Actions */}
+          <div className="flex gap-2 pt-1">
+            <button
+              onClick={onClose}
+              className="flex-1 rounded-xl py-2.5 text-sm font-semibold text-slate-400 hover:text-slate-200 transition"
+              style={{ border: "1px solid rgba(255,255,255,0.08)" }}
+            >
+              Cancel
+            </button>
+            <button
+              onClick={submit}
+              disabled={!name.trim() || !file || saving}
+              className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-bold text-white disabled:opacity-40 transition-all"
+              style={{
+                background:
+                  "linear-gradient(135deg, #6366F1, #8B5CF6)",
+                boxShadow: "0 0 20px rgba(99,102,241,0.3)",
+              }}
+            >
+              {saving ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <UploadCloud className="h-3.5 w-3.5" />
+              )}
+              {saving ? "Uploading..." : "Save Avatar"}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Stat Card ────────────────────────────────────────────────────────────────
+
+function StatCard({
+  label,
+  count,
+  subtitle,
+  icon,
+  countColor,
+  iconBg,
+}: {
+  label: string;
+  count: number;
+  subtitle: string;
+  icon: React.ReactNode;
+  countColor: string;
+  iconBg: string;
+}) {
+  return (
+    <div
+      className="flex items-center gap-4 rounded-2xl px-5 py-4 flex-1 min-w-[180px]"
+      style={{
+        background: "#0F1629",
+        border: "1px solid rgba(255,255,255,0.07)",
+      }}
+    >
+      <div
+        className="flex size-10 shrink-0 items-center justify-center rounded-xl"
+        style={{ background: iconBg }}
+      >
+        {icon}
+      </div>
+      <div>
+        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-600">
+          {label}
+        </p>
+        <p
+          className="text-[26px] font-bold tabular-nums leading-tight"
+          style={{ color: countColor }}
+        >
+          {count}
+        </p>
+        <p className="text-[11px] text-slate-600 mt-0.5">{subtitle}</p>
+      </div>
+    </div>
+  );
+}
+
+// ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function AdminAvatarsPage() {
   const [avatars, setAvatars] = useState<Avatar[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<string>("all");
+
+  // Filter / search / sort / pagination
+  const [genderFilter, setGenderFilter] = useState<GenderFilter>("all");
+  const [search, setSearch] = useState("");
+  const [sort, setSort] = useState<SortOption>("newest");
+  const [sortOpen, setSortOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [page, setPage] = useState(1);
+
+  // Modals
   const [showUpload, setShowUpload] = useState(false);
-  const [showCategory, setShowCategory] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Avatar | null>(null);
   const [deleting, setDeleting] = useState(false);
 
-  async function load() {
+  const sortRef = useRef<HTMLDivElement>(null);
+
+  const load = useCallback(async () => {
     setLoading(true);
     const [a, c] = await Promise.all([
       fetch("/api/admin/avatars").then((r) => r.json()),
@@ -78,197 +561,609 @@ export default function AdminAvatarsPage() {
     setAvatars(a.avatars || []);
     setCategories(c.categories || []);
     setLoading(false);
-  }
+  }, []);
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  // Close sort dropdown on outside click
+  useEffect(() => {
+    if (!sortOpen) return;
+    function handler(e: MouseEvent) {
+      if (sortRef.current && !sortRef.current.contains(e.target as Node)) {
+        setSortOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [sortOpen]);
 
   async function handleDelete(avatar: Avatar) {
     setDeleting(true);
     await fetch(`/api/admin/avatars/${avatar.id}`, { method: "DELETE" });
-    setDeleting(false); setDeleteTarget(null);
+    setDeleting(false);
+    setDeleteTarget(null);
     await load();
   }
 
-  async function toggleActive(a: Avatar) {
-    await fetch(`/api/admin/avatars/${a.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ active: !a.active }) });
+  async function toggleActive(avatar: Avatar) {
+    await fetch(`/api/admin/avatars/${avatar.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ active: !avatar.active }),
+    });
     await load();
   }
 
-  async function handleDeleteCategory(id: string) {
-    await fetch(`/api/admin/avatar-categories/${id}`, { method: "DELETE" });
-    await load();
-  }
+  // Derived counts
+  const totalCount = avatars.length;
+  const activeCount = avatars.filter((a) => a.active).length;
+  const inactiveCount = avatars.filter((a) => !a.active).length;
+  const womenCount = avatars.filter((a) => getGender(a) === "women").length;
+  const menCount = avatars.filter((a) => getGender(a) === "men").length;
 
-  const filtered = avatars.filter((a) => filter === "all" || a.categoryId === filter);
+  // Filtered + searched + sorted
+  const filtered = avatars
+    .filter((a) => {
+      if (genderFilter === "women") return getGender(a) === "women";
+      if (genderFilter === "men") return getGender(a) === "men";
+      return true;
+    })
+    .filter((a) => {
+      if (!search.trim()) return true;
+      const q = search.toLowerCase();
+      return (
+        a.name.toLowerCase().includes(q) ||
+        (a.category?.name ?? "").toLowerCase().includes(q)
+      );
+    })
+    .sort((a, b) => {
+      if (sort === "name-asc") return a.name.localeCompare(b.name);
+      if (sort === "name-desc") return b.name.localeCompare(a.name);
+      // newest/oldest: fall back to name order since we don't have createdAt in the type
+      if (sort === "oldest") return a.name.localeCompare(b.name);
+      return b.name.localeCompare(a.name);
+    });
 
-  return (
-    <motion.div variants={stagger} initial="hidden" animate="show" className="max-w-7xl mx-auto space-y-6">
-      <motion.div variants={up} className="flex items-center justify-between gap-3 flex-wrap">
-        <div>
-          <h1 className="text-[22px] font-bold text-slate-100" style={{ fontFamily: "Satoshi, sans-serif" }}>UGC Studio Avatars</h1>
-          <p className="text-sm text-slate-600 mt-0.5">Manage the avatar library shown to users in UGC Studio</p>
-        </div>
-        <div className="flex gap-2">
-          <button onClick={() => setShowCategory(true)} className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-[12px] font-semibold text-slate-400 hover:text-slate-200 transition-colors" style={{ border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.03)" }}>
-            <Tag className="h-3.5 w-3.5" /> Categories
-          </button>
-          <button onClick={() => setShowUpload(true)} className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-[12px] font-bold text-white transition-all" style={{ background: "linear-gradient(135deg, #7C3AED, #6D28D9)", boxShadow: "0 0 16px rgba(124,58,237,0.25)" }}>
-            <Plus className="h-3.5 w-3.5" /> Upload Avatar
-          </button>
-        </div>
-      </motion.div>
-
-      {/* Stats row */}
-      <motion.div variants={up} className="flex items-center gap-5">
-        <div className="rounded-xl px-4 py-2.5" style={{ background: "#0B0F1A", border: "1px solid rgba(255,255,255,0.07)" }}>
-          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-700">Total</p>
-          <p className="text-[22px] font-bold text-slate-100 tabular-nums" style={{ fontFamily: "Satoshi, sans-serif" }}>{avatars.length}</p>
-        </div>
-        <div className="rounded-xl px-4 py-2.5" style={{ background: "#0B0F1A", border: "1px solid rgba(255,255,255,0.07)" }}>
-          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-700">Active</p>
-          <p className="text-[22px] font-bold text-emerald-300 tabular-nums" style={{ fontFamily: "Satoshi, sans-serif" }}>{avatars.filter((a) => a.active).length}</p>
-        </div>
-        <div className="rounded-xl px-4 py-2.5" style={{ background: "#0B0F1A", border: "1px solid rgba(255,255,255,0.07)" }}>
-          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-700">Inactive</p>
-          <p className="text-[22px] font-bold text-red-400 tabular-nums" style={{ fontFamily: "Satoshi, sans-serif" }}>{avatars.filter((a) => !a.active).length}</p>
-        </div>
-      </motion.div>
-
-      {/* Category filters */}
-      <motion.div variants={up} className="flex flex-wrap gap-1.5">
-        {[{ id: "all", name: "All", count: avatars.length }, ...categories.map((c) => ({ id: c.id, name: c.name, count: avatars.filter((a) => a.categoryId === c.id).length }))].map((cat) => (
-          <button key={cat.id} onClick={() => setFilter(cat.id)} className={cn("rounded-full px-2.5 py-1 text-[11px] font-semibold transition-all", filter === cat.id ? "bg-violet-500/15 text-violet-300 border border-violet-500/30" : "text-slate-600 border border-white/[0.07] hover:text-slate-400")}>
-            {cat.name} <span className={cn("ml-1", filter === cat.id ? "text-violet-400/60" : "text-slate-700")}>{cat.count}</span>
-          </button>
-        ))}
-      </motion.div>
-
-      {loading ? (
-        <div className="flex items-center justify-center py-16">
-          <Loader2 className="h-4 w-4 animate-spin text-sky-400" />
-        </div>
-      ) : filtered.length === 0 ? (
-        <div className="rounded-2xl flex items-center justify-center py-16 text-sm text-slate-700" style={{ border: "1px dashed rgba(255,255,255,0.07)" }}>
-          No avatars in this category
-        </div>
-      ) : (
-        <motion.div variants={stagger} className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
-          {filtered.map((a) => (
-            <motion.div key={a.id} variants={up} className={cn("group relative aspect-[3/4] rounded-2xl overflow-hidden", !a.active && "opacity-50")} style={{ border: a.active ? "1px solid rgba(255,255,255,0.07)" : "1px solid rgba(239,68,68,0.3)" }}>
-              <img src={a.imageUrl} alt={a.name} className="h-full w-full object-cover object-top" />
-              <div className="absolute inset-x-0 bottom-0 p-3" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.9), transparent)" }}>
-                <p className="text-[11px] font-bold text-white truncate">{a.name}</p>
-                {a.category && <p className="text-[10px] text-white/50 truncate">{a.category.name}</p>}
-              </div>
-              <div className="absolute top-2 right-2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                <button onClick={() => toggleActive(a)} className={cn("flex h-6 px-2 items-center justify-center rounded-md text-[10px] font-bold backdrop-blur-sm transition-colors", a.active ? "bg-black/70 text-white/80 hover:bg-amber-400/90 hover:text-black" : "bg-black/70 text-white/80 hover:bg-emerald-400/90 hover:text-black")}>
-                  {a.active ? "Hide" : "Show"}
-                </button>
-                <button onClick={() => setDeleteTarget(a)} className="flex size-6 items-center justify-center rounded-md backdrop-blur-sm transition-colors" style={{ background: "rgba(0,0,0,0.7)" }}>
-                  <Trash2 className="h-3 w-3 text-white/70 hover:text-red-400" />
-                </button>
-              </div>
-            </motion.div>
-          ))}
-        </motion.div>
-      )}
-
-      {showUpload && <UploadModal categories={categories} onClose={() => setShowUpload(false)} onSaved={() => { setShowUpload(false); load(); }} />}
-      {showCategory && <CategoryModal categories={categories} onClose={() => setShowCategory(false)} onChange={load} onDelete={handleDeleteCategory} />}
-      {deleteTarget && <ConfirmModal title="Delete Avatar" description={`Delete "${deleteTarget.name}"? This cannot be undone.`} loading={deleting} onConfirm={() => handleDelete(deleteTarget)} onClose={() => setDeleteTarget(null)} />}
-    </motion.div>
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages);
+  const paginated = filtered.slice(
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE
   );
-}
 
-function UploadModal({ categories, onClose, onSaved }: { categories: Category[]; onClose: () => void; onSaved: () => void }) {
-  const [name, setName] = useState("");
-  const [categoryId, setCategoryId] = useState<string>("");
-  const [file, setFile] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
-  const [saving, setSaving] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  function pickFile(e: ChangeEvent<HTMLInputElement>) {
-    const f = e.target.files?.[0];
-    if (!f) return;
-    setFile(f); setPreview(URL.createObjectURL(f));
-  }
-
-  async function submit() {
-    if (!name || !file) return;
-    setSaving(true);
-    const fd = new FormData();
-    fd.append("name", name); fd.append("image", file);
-    if (categoryId) fd.append("categoryId", categoryId);
-    const res = await fetch("/api/admin/avatars", { method: "POST", body: fd });
-    setSaving(false);
-    if (res.ok) onSaved();
-    else alert("Upload failed");
-  }
+  const sortLabels: Record<SortOption, string> = {
+    newest: "Newest",
+    oldest: "Oldest",
+    "name-asc": "Name A-Z",
+    "name-desc": "Name Z-A",
+  };
 
   return (
-    <AdminModal onClose={onClose} title="Upload Avatar">
-      <div className="space-y-4">
-        <div onClick={() => inputRef.current?.click()} className="aspect-[3/4] w-full rounded-xl overflow-hidden flex items-center justify-center cursor-pointer transition-all" style={{ border: "2px dashed rgba(124,58,237,0.3)", background: "rgba(124,58,237,0.04)" }}>
-          {preview ? <Image src={preview} alt="" width={300} height={400} className="h-full w-full object-cover object-top" /> : <p className="text-sm text-slate-700 px-4 text-center">Click to upload avatar image</p>}
-          <input ref={inputRef} type="file" accept="image/*" className="sr-only" onChange={pickFile} />
+    <div
+      className="min-h-screen"
+      style={{ background: "#080C18", padding: "32px 24px" }}
+    >
+      <div className="max-w-[1400px] mx-auto space-y-6">
+        {/* ── Header ── */}
+        <div className="flex items-start justify-between gap-4 flex-wrap">
+          <div>
+            <h1
+              className="text-[22px] font-bold text-slate-100"
+              style={{ fontFamily: "Satoshi, sans-serif" }}
+            >
+              UGC Studio Avatars
+            </h1>
+            <p className="text-sm text-slate-500 mt-0.5">
+              Manage the avatar library shown to users in UGC Studio.
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              className="inline-flex items-center gap-1.5 rounded-xl px-4 py-2.5 text-[12px] font-semibold text-slate-400 hover:text-slate-200 transition-colors"
+              style={{
+                border: "1px solid rgba(255,255,255,0.08)",
+                background: "rgba(255,255,255,0.03)",
+              }}
+            >
+              Categories
+              <ChevronDown className="h-3 w-3" />
+            </button>
+            <button
+              onClick={() => setShowUpload(true)}
+              className="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-[12px] font-bold text-white transition-all hover:opacity-90"
+              style={{
+                background: "linear-gradient(135deg, #6366F1, #8B5CF6)",
+                boxShadow: "0 0 20px rgba(99,102,241,0.3)",
+              }}
+            >
+              <Plus className="h-3.5 w-3.5" />
+              Upload Avatar
+            </button>
+          </div>
         </div>
-        <div>
-          <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-600 mb-1.5 block">Name</label>
-          <input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Sarah Chen" className="w-full h-10 rounded-xl px-3 text-sm text-slate-200 placeholder:text-slate-700 focus:outline-none" style={{ background: "#080C15", border: "1px solid rgba(255,255,255,0.08)" }} />
-        </div>
-        <div>
-          <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-600 mb-1.5 block">Category</label>
-          <select value={categoryId} onChange={(e) => setCategoryId(e.target.value)} className="w-full h-10 rounded-xl px-3 text-sm text-slate-200 focus:outline-none" style={{ background: "#080C15", border: "1px solid rgba(255,255,255,0.08)" }}>
-            <option value="">Uncategorized</option>
-            {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-          </select>
-        </div>
-        <button onClick={submit} disabled={!name || !file || saving} className="w-full rounded-xl py-2.5 text-sm font-bold text-white disabled:opacity-40 transition-all" style={{ background: "linear-gradient(135deg, #7C3AED, #6D28D9)", boxShadow: "0 0 16px rgba(124,58,237,0.2)" }}>
-          {saving ? "Uploading..." : "Save Avatar"}
-        </button>
-      </div>
-    </AdminModal>
-  );
-}
 
-function CategoryModal({ categories, onClose, onChange, onDelete }: { categories: Category[]; onClose: () => void; onChange: () => void; onDelete: (id: string) => void }) {
-  const [name, setName] = useState("");
-  const [saving, setSaving] = useState(false);
-  const [deletingId, setDeletingId] = useState<string | null>(null);
-
-  async function add() {
-    if (!name.trim()) return;
-    setSaving(true);
-    const res = await fetch("/api/admin/avatar-categories", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name }) });
-    setSaving(false);
-    if (res.ok) { setName(""); onChange(); }
-    else alert("Failed to create");
-  }
-
-  return (
-    <AdminModal onClose={onClose} title="Avatar Categories">
-      <div className="space-y-4">
-        <div className="flex gap-2">
-          <input value={name} onChange={(e) => setName(e.target.value)} placeholder="New category name" className="flex-1 h-10 rounded-xl px-3 text-sm text-slate-200 placeholder:text-slate-700 focus:outline-none" style={{ background: "#080C15", border: "1px solid rgba(255,255,255,0.08)" }} onKeyDown={(e) => e.key === "Enter" && add()} />
-          <button onClick={add} disabled={!name.trim() || saving} className="rounded-xl px-4 py-2 text-[12px] font-bold text-white disabled:opacity-40" style={{ background: "linear-gradient(135deg, #7C3AED, #6D28D9)" }}>Add</button>
+        {/* ── Stat Cards ── */}
+        <div className="flex gap-4 flex-wrap">
+          <StatCard
+            label="Total Avatars"
+            count={totalCount}
+            subtitle="All genders"
+            countColor="#e2e8f0"
+            iconBg="rgba(99,102,241,0.12)"
+            icon={<Users className="h-5 w-5 text-indigo-400" />}
+          />
+          <StatCard
+            label="Active Avatars"
+            count={activeCount}
+            subtitle="Currently visible"
+            countColor="#10B981"
+            iconBg="rgba(16,185,129,0.12)"
+            icon={<CheckCircle className="h-5 w-5 text-emerald-400" />}
+          />
+          <StatCard
+            label="Inactive Avatars"
+            count={inactiveCount}
+            subtitle="Hidden from library"
+            countColor="#f87171"
+            iconBg="rgba(248,113,113,0.12)"
+            icon={<EyeOff className="h-5 w-5 text-red-400" />}
+          />
         </div>
-        <div className="space-y-1.5">
-          {categories.length === 0 ? (
-            <p className="text-sm text-slate-700 text-center py-4">No categories yet</p>
-          ) : categories.map((c) => (
-            <div key={c.id} className="flex items-center justify-between rounded-xl px-3 py-2.5" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
-              <div>
-                <p className="text-[13px] font-semibold text-slate-200">{c.name}</p>
-                <p className="text-[11px] text-slate-700">{c._count?.avatars ?? 0} avatars</p>
-              </div>
-              <button onClick={async () => { setDeletingId(c.id); await onDelete(c.id); setDeletingId(null); }} disabled={deletingId === c.id} className="text-slate-700 hover:text-red-400 transition-colors">
-                {deletingId === c.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+
+        {/* ── Filter Row ── */}
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          {/* Gender tabs */}
+          <div className="flex items-center gap-1">
+            {(
+              [
+                { key: "all", label: `All (${totalCount})` },
+                { key: "women", label: `Women (${womenCount})` },
+                { key: "men", label: `Men (${menCount})` },
+              ] as { key: GenderFilter; label: string }[]
+            ).map((tab) => (
+              <button
+                key={tab.key}
+                onClick={() => {
+                  setGenderFilter(tab.key);
+                  setPage(1);
+                }}
+                className={cn(
+                  "rounded-lg px-3.5 py-2 text-[12px] font-semibold transition-all",
+                  genderFilter === tab.key
+                    ? "text-white"
+                    : "text-slate-500 hover:text-slate-300"
+                )}
+                style={
+                  genderFilter === tab.key
+                    ? {
+                        background: "rgba(99,102,241,0.18)",
+                        border: "1px solid rgba(99,102,241,0.35)",
+                      }
+                    : {
+                        border: "1px solid transparent",
+                      }
+                }
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Right controls */}
+          <div className="flex items-center gap-2">
+            {/* Search */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-600" />
+              <input
+                value={search}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setPage(1);
+                }}
+                placeholder="Search avatars..."
+                className="h-9 w-[180px] rounded-xl pl-8 pr-3 text-[12px] text-slate-300 placeholder:text-slate-600 focus:outline-none transition"
+                style={{
+                  background: "#0F1629",
+                  border: "1px solid rgba(255,255,255,0.08)",
+                }}
+              />
+            </div>
+
+            {/* Filter button */}
+            <button
+              className="inline-flex items-center gap-1.5 rounded-xl h-9 px-3 text-[12px] font-semibold text-slate-500 hover:text-slate-300 transition"
+              style={{
+                border: "1px solid rgba(255,255,255,0.08)",
+                background: "#0F1629",
+              }}
+            >
+              <Filter className="h-3.5 w-3.5" />
+              Filter
+            </button>
+
+            {/* Sort dropdown */}
+            <div ref={sortRef} className="relative">
+              <button
+                onClick={() => setSortOpen((v) => !v)}
+                className="inline-flex items-center gap-1.5 rounded-xl h-9 px-3 text-[12px] font-semibold text-slate-400 hover:text-slate-200 transition"
+                style={{
+                  border: "1px solid rgba(255,255,255,0.08)",
+                  background: "#0F1629",
+                }}
+              >
+                Sort: {sortLabels[sort]}
+                <ChevronDown className="h-3 w-3" />
+              </button>
+              {sortOpen && (
+                <div
+                  className="absolute right-0 top-10 z-20 min-w-[140px] rounded-xl overflow-hidden"
+                  style={{
+                    background: "#0F1629",
+                    border: "1px solid rgba(255,255,255,0.1)",
+                    boxShadow: "0 8px 24px rgba(0,0,0,0.6)",
+                  }}
+                >
+                  {(
+                    Object.entries(sortLabels) as [SortOption, string][]
+                  ).map(([key, label]) => (
+                    <button
+                      key={key}
+                      onClick={() => {
+                        setSort(key);
+                        setSortOpen(false);
+                        setPage(1);
+                      }}
+                      className={cn(
+                        "flex w-full items-center px-3 py-2.5 text-[12px] font-medium transition-colors",
+                        sort === key
+                          ? "text-indigo-400 bg-indigo-500/10"
+                          : "text-slate-400 hover:bg-white/[0.04]"
+                      )}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* View toggle */}
+            <div
+              className="flex rounded-xl overflow-hidden"
+              style={{ border: "1px solid rgba(255,255,255,0.08)" }}
+            >
+              <button
+                onClick={() => setViewMode("grid")}
+                className={cn(
+                  "flex size-9 items-center justify-center transition-colors",
+                  viewMode === "grid"
+                    ? "bg-indigo-500/20 text-indigo-400"
+                    : "bg-[#0F1629] text-slate-600 hover:text-slate-400"
+                )}
+              >
+                <LayoutGrid className="h-3.5 w-3.5" />
+              </button>
+              <button
+                onClick={() => setViewMode("list")}
+                className={cn(
+                  "flex size-9 items-center justify-center transition-colors",
+                  viewMode === "list"
+                    ? "bg-indigo-500/20 text-indigo-400"
+                    : "bg-[#0F1629] text-slate-600 hover:text-slate-400"
+                )}
+              >
+                <List className="h-3.5 w-3.5" />
               </button>
             </div>
-          ))}
+          </div>
         </div>
+
+        {/* ── Grid / List ── */}
+        {loading ? (
+          <div className="flex items-center justify-center py-24">
+            <Loader2 className="h-5 w-5 animate-spin text-indigo-400" />
+          </div>
+        ) : filtered.length === 0 ? (
+          <div
+            className="flex flex-col items-center justify-center py-24 rounded-2xl gap-3"
+            style={{ border: "1px dashed rgba(255,255,255,0.07)" }}
+          >
+            <Users className="h-8 w-8 text-slate-700" />
+            <p className="text-sm text-slate-600">No avatars found</p>
+          </div>
+        ) : viewMode === "grid" ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+            {paginated.map((avatar) => (
+              <AvatarCard
+                key={avatar.id}
+                avatar={avatar}
+                onToggle={() => toggleActive(avatar)}
+                onDelete={() => setDeleteTarget(avatar)}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {paginated.map((avatar) => (
+              <AvatarListRow
+                key={avatar.id}
+                avatar={avatar}
+                onToggle={() => toggleActive(avatar)}
+                onDelete={() => setDeleteTarget(avatar)}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* ── Pagination ── */}
+        {filtered.length > PAGE_SIZE && (
+          <div className="flex items-center justify-between gap-4 flex-wrap pt-2">
+            <p className="text-[12px] text-slate-600">
+              Showing{" "}
+              <span className="text-slate-400 font-medium">
+                {(currentPage - 1) * PAGE_SIZE + 1}
+              </span>{" "}
+              to{" "}
+              <span className="text-slate-400 font-medium">
+                {Math.min(currentPage * PAGE_SIZE, filtered.length)}
+              </span>{" "}
+              of{" "}
+              <span className="text-slate-400 font-medium">
+                {filtered.length}
+              </span>{" "}
+              avatars
+            </p>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="rounded-lg h-8 px-3 text-[12px] font-semibold text-slate-500 hover:text-slate-200 disabled:opacity-30 disabled:cursor-not-allowed transition"
+                style={{ border: "1px solid rgba(255,255,255,0.08)" }}
+              >
+                Prev
+              </button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1)
+                .filter(
+                  (p) =>
+                    p === 1 ||
+                    p === totalPages ||
+                    Math.abs(p - currentPage) <= 1
+                )
+                .reduce<(number | "...")[]>((acc, p, idx, arr) => {
+                  if (idx > 0 && p - (arr[idx - 1] as number) > 1)
+                    acc.push("...");
+                  acc.push(p);
+                  return acc;
+                }, [])
+                .map((p, i) =>
+                  p === "..." ? (
+                    <span key={`ellipsis-${i}`} className="text-slate-700 px-1 text-[12px]">
+                      ...
+                    </span>
+                  ) : (
+                    <button
+                      key={p}
+                      onClick={() => setPage(p as number)}
+                      className={cn(
+                        "rounded-lg size-8 text-[12px] font-semibold transition-all",
+                        currentPage === p
+                          ? "text-white"
+                          : "text-slate-500 hover:text-slate-200"
+                      )}
+                      style={
+                        currentPage === p
+                          ? {
+                              background: "rgba(99,102,241,0.18)",
+                              border: "1px solid rgba(99,102,241,0.35)",
+                            }
+                          : { border: "1px solid rgba(255,255,255,0.08)" }
+                      }
+                    >
+                      {p}
+                    </button>
+                  )
+                )}
+              <button
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                className="rounded-lg h-8 px-3 text-[12px] font-semibold text-slate-500 hover:text-slate-200 disabled:opacity-30 disabled:cursor-not-allowed transition"
+                style={{ border: "1px solid rgba(255,255,255,0.08)" }}
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
       </div>
-    </AdminModal>
+
+      {/* ── Modals ── */}
+      {showUpload && (
+        <UploadModal
+          categories={categories}
+          onClose={() => setShowUpload(false)}
+          onSaved={() => {
+            setShowUpload(false);
+            load();
+          }}
+        />
+      )}
+      {deleteTarget && (
+        <ConfirmModal
+          title="Delete Avatar"
+          description={`Delete "${deleteTarget.name}"? This action cannot be undone.`}
+          loading={deleting}
+          onConfirm={() => handleDelete(deleteTarget)}
+          onClose={() => setDeleteTarget(null)}
+        />
+      )}
+    </div>
+  );
+}
+
+// ─── Avatar Card (Grid) ───────────────────────────────────────────────────────
+
+function AvatarCard({
+  avatar,
+  onToggle,
+  onDelete,
+}: {
+  avatar: Avatar;
+  onToggle: () => void;
+  onDelete: () => void;
+}) {
+  const imgSrc = avatar.thumbnailUrl || avatar.imageUrl;
+
+  return (
+    <div
+      className="group relative aspect-[3/4] rounded-2xl overflow-hidden cursor-default transition-transform hover:scale-[1.02]"
+      style={{
+        border: "1px solid rgba(255,255,255,0.07)",
+        background: "#0F1629",
+      }}
+    >
+      {/* Image */}
+      <Image
+        src={imgSrc}
+        alt={avatar.name}
+        fill
+        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 16vw"
+        className="object-cover object-top transition-[filter] duration-200 group-hover:brightness-90"
+      />
+
+      {/* Active/Inactive badge */}
+      <div className="absolute top-2 left-2 z-10">
+        {avatar.active ? (
+          <div
+            className="inline-flex items-center gap-1 rounded-lg px-2 py-0.5"
+            style={{
+              background: "rgba(0,0,0,0.55)",
+              backdropFilter: "blur(6px)",
+              border: "1px solid rgba(16,185,129,0.3)",
+            }}
+          >
+            <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400" />
+            <span className="text-[10px] font-semibold text-emerald-400">
+              Active
+            </span>
+          </div>
+        ) : (
+          <div
+            className="inline-flex items-center gap-1 rounded-lg px-2 py-0.5"
+            style={{
+              background: "rgba(0,0,0,0.55)",
+              backdropFilter: "blur(6px)",
+              border: "1px solid rgba(248,113,113,0.3)",
+            }}
+          >
+            <span className="inline-block h-1.5 w-1.5 rounded-full bg-red-400" />
+            <span className="text-[10px] font-semibold text-red-400">
+              Inactive
+            </span>
+          </div>
+        )}
+      </div>
+
+      {/* Menu button */}
+      <div className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+        <AvatarCardMenu avatar={avatar} onToggle={onToggle} onDelete={onDelete} />
+      </div>
+
+      {/* Bottom overlay */}
+      <div
+        className="absolute inset-x-0 bottom-0 px-3 py-3 z-10"
+        style={{
+          background:
+            "linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.4) 60%, transparent 100%)",
+        }}
+      >
+        <p className="text-[12px] font-bold text-white truncate leading-tight">
+          {avatar.name}
+        </p>
+        {avatar.category && (
+          <p className="text-[10px] text-white/50 truncate mt-0.5">
+            {avatar.category.name}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── Avatar List Row ──────────────────────────────────────────────────────────
+
+function AvatarListRow({
+  avatar,
+  onToggle,
+  onDelete,
+}: {
+  avatar: Avatar;
+  onToggle: () => void;
+  onDelete: () => void;
+}) {
+  const imgSrc = avatar.thumbnailUrl || avatar.imageUrl;
+
+  return (
+    <div
+      className="flex items-center gap-4 rounded-2xl px-4 py-3 transition-colors hover:bg-white/[0.02]"
+      style={{
+        background: "#0F1629",
+        border: "1px solid rgba(255,255,255,0.07)",
+      }}
+    >
+      <div className="relative h-12 w-9 shrink-0 rounded-xl overflow-hidden">
+        <Image
+          src={imgSrc}
+          alt={avatar.name}
+          fill
+          sizes="40px"
+          className="object-cover object-top"
+        />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-[13px] font-semibold text-slate-200 truncate">
+          {avatar.name}
+        </p>
+        <p className="text-[11px] text-slate-600 truncate">
+          {avatar.category?.name ?? "Uncategorized"}
+        </p>
+      </div>
+      <div>
+        {avatar.active ? (
+          <span
+            className="inline-flex items-center gap-1 rounded-lg px-2 py-0.5"
+            style={{ background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.2)" }}
+          >
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 inline-block" />
+            <span className="text-[11px] font-semibold text-emerald-400">Active</span>
+          </span>
+        ) : (
+          <span
+            className="inline-flex items-center gap-1 rounded-lg px-2 py-0.5"
+            style={{ background: "rgba(248,113,113,0.1)", border: "1px solid rgba(248,113,113,0.2)" }}
+          >
+            <span className="h-1.5 w-1.5 rounded-full bg-red-400 inline-block" />
+            <span className="text-[11px] font-semibold text-red-400">Inactive</span>
+          </span>
+        )}
+      </div>
+      <div className="flex items-center gap-1">
+        <button
+          onClick={onToggle}
+          className="rounded-lg h-8 px-3 text-[11px] font-semibold text-slate-500 hover:text-slate-200 transition"
+          style={{ border: "1px solid rgba(255,255,255,0.08)" }}
+        >
+          {avatar.active ? "Deactivate" : "Activate"}
+        </button>
+        <button
+          onClick={onDelete}
+          className="flex size-8 items-center justify-center rounded-lg text-slate-600 hover:text-red-400 transition-colors"
+          style={{ border: "1px solid rgba(255,255,255,0.08)" }}
+        >
+          <Trash2 className="h-3.5 w-3.5" />
+        </button>
+      </div>
+    </div>
   );
 }

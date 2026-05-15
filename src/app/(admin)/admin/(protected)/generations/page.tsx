@@ -1,130 +1,829 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
-import { Loader2 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { useEffect, useState, useCallback } from "react";
+import {
+  Clapperboard,
+  CheckCircle2,
+  Clock,
+  XCircle,
+  Search,
+  ChevronDown,
+  Download,
+  Plus,
+  MoreHorizontal,
+  SlidersHorizontal,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 
-type Row = { id: string; type: string; status: string; creditCost: number; creditsUsed: number; aiModel: string | null; userEmail: string; userName: string | null; createdAt: string };
+// ─── Types ────────────────────────────────────────────────────────────────────
 
-const TYPE_LABEL: Record<string, string> = { UGC_AD: "UGC",  PRODUCT_AD: "Product", PRODUCT_PHOTOSHOOT: "Photoshoot", MOCKUP: "Photoshoot", TRYON: "Try-On" };
-const TYPE_TONE: Record<string, string> = {
-  UGC_AD:             "bg-sky-500/10 text-sky-300 border-sky-500/20",
-  PRODUCT_AD:         "bg-violet-500/10 text-violet-300 border-violet-500/20",
-  PRODUCT_PHOTOSHOOT: "bg-amber-500/10 text-amber-300 border-amber-500/20",
-  MOCKUP:             "bg-amber-500/10 text-amber-300 border-amber-500/20",
-  TRYON:              "bg-emerald-500/10 text-emerald-300 border-emerald-500/20",
+type Generation = {
+  id: string;
+  type: string;
+  status: string;
+  creditsUsed: number;
+  aiModel: string | null;
+  userEmail: string;
+  userName: string | null;
+  createdAt: string;
 };
 
-function statusStyle(s: string) {
-  if (s === "COMPLETED") return "bg-emerald-500/10 text-emerald-300 border-emerald-500/20";
-  if (s === "FAILED")    return "bg-red-500/10 text-red-300 border-red-500/20";
-  return "bg-amber-500/10 text-amber-300 border-amber-500/20";
+type ApiResponse = {
+  generations: Generation[];
+  total: number;
+  page: number;
+  pageSize: number;
+};
+
+type StatCounts = {
+  total: number;
+  completed: number;
+  pending: number;
+  failed: number;
+};
+
+// ─── Constants ────────────────────────────────────────────────────────────────
+
+const AVATAR_COLORS = [
+  "#6366F1",
+  "#8B5CF6",
+  "#EC4899",
+  "#F59E0B",
+  "#10B981",
+  "#3B82F6",
+];
+
+const TYPE_LABEL: Record<string, string> = {
+  UGC_AD: "UGC",
+  PRODUCT_AD: "Photoshoot",
+  PRODUCT_PHOTOSHOOT: "Photoshoot",
+  MOCKUP: "Photoshoot",
+  TRYON: "Try-On",
+};
+
+const TYPE_STYLE: Record<string, { bg: string; text: string; border: string }> = {
+  UGC_AD: {
+    bg: "rgba(99,102,241,0.12)",
+    text: "#A5B4FC",
+    border: "rgba(99,102,241,0.25)",
+  },
+  PRODUCT_AD: {
+    bg: "rgba(245,158,11,0.12)",
+    text: "#FCD34D",
+    border: "rgba(245,158,11,0.25)",
+  },
+  PRODUCT_PHOTOSHOOT: {
+    bg: "rgba(245,158,11,0.12)",
+    text: "#FCD34D",
+    border: "rgba(245,158,11,0.25)",
+  },
+  MOCKUP: {
+    bg: "rgba(245,158,11,0.12)",
+    text: "#FCD34D",
+    border: "rgba(245,158,11,0.25)",
+  },
+  TRYON: {
+    bg: "rgba(20,184,166,0.12)",
+    text: "#5EEAD4",
+    border: "rgba(20,184,166,0.25)",
+  },
+};
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function modelLabel(raw: string | null): string {
+  if (!raw) return "—";
+  const r = raw.toLowerCase();
+  if (r.includes("seedance-2")) return "Seedance 2 Fast";
+  if (r.includes("sora-2")) return "Sora 2";
+  if (r.includes("kling")) return "Kling 3.0";
+  if (r.includes("seedream/v4.5") || r.includes("seedream-4") || r.includes("seedream/v4") || r.includes("seedream-4.5")) return "Seedream V4.5";
+  if (r.includes("seedream/v5") || r.includes("seedream-5") || r.includes("seedream-5-lite")) return "Seedream V5 Lite";
+  if (r.includes("nano-banana")) return "Nano Banana 2";
+  if (r.includes("gpt-image-2")) return "GPT Image 2";
+  if (r.includes("flux-2-pro") || r.includes("flux-2")) return "Flux 2 Pro";
+  if (r.includes("veo")) return "Veo 3.1";
+  return raw;
 }
 
-const fmtTime = (iso: string) => new Date(iso).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
-const initials = (s: string) => s.split(/[ @]/).map((p) => p[0]).filter(Boolean).slice(0, 2).join("").toUpperCase();
+function genNumber(id: string): string {
+  const last6 = id.replace(/-/g, "").slice(-6);
+  const num = parseInt(last6, 36) % 1000000;
+  return "#GEN-" + String(num).padStart(6, "0");
+}
 
-const STATUS_FILTERS = ["all", "complete", "pending", "failed"];
-const TYPE_FILTERS   = ["all", "ugc", "product", "photoshoot", "tryon"];
+function avatarColor(email: string): string {
+  let hash = 0;
+  for (let i = 0; i < email.length; i++) {
+    hash = (hash * 31 + email.charCodeAt(i)) >>> 0;
+  }
+  return AVATAR_COLORS[hash % AVATAR_COLORS.length];
+}
 
-export default function AdminGenerationsPage() {
-  const [rows, setRows] = useState<Row[]>([]);
-  const [total, setTotal] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [status, setStatus] = useState("all");
-  const [type, setType] = useState("all");
+function initials(name: string | null, email: string): string {
+  const src = name || email;
+  return src
+    .split(/[\s@._-]/)
+    .map((p) => p[0])
+    .filter(Boolean)
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+}
 
-  useEffect(() => {
-    let alive = true;
-    setLoading(true);
-    fetch(`/api/admin/generations?${new URLSearchParams({ status, type })}`)
-      .then((r) => r.json())
-      .then((d) => { if (!alive) return; setRows(d.generations || []); setTotal(d.total || 0); })
-      .finally(() => alive && setLoading(false));
-    return () => { alive = false; };
-  }, [status, type]);
+function fmtDate(iso: string): { date: string; time: string } {
+  const d = new Date(iso);
+  const date = d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  const time = d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
+  return { date, time };
+}
 
+function statusStyle(s: string): { bg: string; text: string; border: string; dot: string } {
+  if (s === "COMPLETED")
+    return { bg: "rgba(16,185,129,0.12)", text: "#6EE7B7", border: "rgba(16,185,129,0.25)", dot: "#10B981" };
+  if (s === "FAILED")
+    return { bg: "rgba(239,68,68,0.12)", text: "#FCA5A5", border: "rgba(239,68,68,0.25)", dot: "#EF4444" };
+  return { bg: "rgba(245,158,11,0.12)", text: "#FCD34D", border: "rgba(245,158,11,0.25)", dot: "#F59E0B" };
+}
+
+function statusLabel(s: string): string {
+  if (s === "COMPLETED") return "Completed";
+  if (s === "FAILED") return "Failed";
+  return "Pending";
+}
+
+// ─── Sub-components ───────────────────────────────────────────────────────────
+
+function StatCard({
+  icon,
+  label,
+  value,
+  subtitle,
+  barColor,
+  barPct,
+  iconBg,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: number;
+  subtitle: string;
+  barColor: string;
+  barPct: number;
+  iconBg: string;
+}) {
   return (
-    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, ease: [0.22,1,0.36,1] }} className="max-w-6xl mx-auto space-y-6">
+    <div
+      className="rounded-2xl p-5 flex flex-col gap-3"
+      style={{
+        background: "#0F1629",
+        border: "1px solid rgba(255,255,255,0.07)",
+      }}
+    >
+      <div className="flex items-start justify-between">
+        <div
+          className="flex size-10 items-center justify-center rounded-xl"
+          style={{ background: iconBg }}
+        >
+          {icon}
+        </div>
+        <span className="text-[11px] font-semibold" style={{ color: barColor }}>
+          {barPct.toFixed(0)}%
+        </span>
+      </div>
       <div>
-        <h1 className="text-[22px] font-bold text-slate-100" style={{ fontFamily: "Satoshi, sans-serif" }}>Generations</h1>
-        <p className="text-sm text-slate-600 mt-0.5">{total.toLocaleString()} total generations across the platform</p>
+        <p className="text-2xl font-bold text-white tabular-nums">
+          {value.toLocaleString()}
+        </p>
+        <p className="text-[13px] font-medium mt-0.5" style={{ color: "#94A3B8" }}>
+          {label}
+        </p>
       </div>
-
-      <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-        <FilterRow label="Status" options={STATUS_FILTERS} value={status} onChange={setStatus} />
-        <FilterRow label="Type"   options={TYPE_FILTERS}   value={type}   onChange={setType}   />
+      <div>
+        <div
+          className="h-1.5 rounded-full overflow-hidden"
+          style={{ background: "rgba(255,255,255,0.06)" }}
+        >
+          <div
+            className="h-full rounded-full transition-all duration-700"
+            style={{ width: `${barPct}%`, background: barColor }}
+          />
+        </div>
+        <p className="text-[11px] mt-1.5" style={{ color: "#64748B" }}>
+          {subtitle}
+        </p>
       </div>
-
-      <div className="rounded-2xl overflow-hidden" style={{ background: "#0B0F1A", border: "1px solid rgba(255,255,255,0.07)" }}>
-        {loading ? (
-          <div className="flex items-center justify-center py-16"><Loader2 className="h-4 w-4 animate-spin text-sky-400" /></div>
-        ) : rows.length === 0 ? (
-          <div className="text-center py-16 text-sm text-slate-700">No generations match this filter</div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
-                  {["User", "Type", "Status", "Model", "Credits", "Created"].map((h, i) => (
-                    <th key={i} className={cn("text-left px-5 py-3 text-[10px] font-bold uppercase tracking-widest text-slate-700", i > 3 && "hidden md:table-cell", i === 5 && "hidden lg:table-cell")}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((r, i) => (
-                  <tr key={r.id} className="hover:bg-white/[0.02] transition-colors" style={{ borderTop: i === 0 ? "none" : "1px solid rgba(255,255,255,0.04)" }}>
-                    <td className="px-5 py-3.5">
-                      <div className="flex items-center gap-3">
-                        <div className="flex size-8 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white" style={{ background: "linear-gradient(135deg, #0EA5E9, #2563EB)" }}>
-                          {initials(r.userName || r.userEmail)}
-                        </div>
-                        <div>
-                          <p className="text-[13px] font-semibold text-slate-200">{r.userName || r.userEmail.split("@")[0]}</p>
-                          <p className="text-[11px] text-slate-600 truncate max-w-[160px]">{r.userEmail}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-5 py-3.5">
-                      <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border", TYPE_TONE[r.type] || "bg-white/[0.04] text-slate-500 border-white/[0.08]")}>
-                        {TYPE_LABEL[r.type] || r.type}
-                      </span>
-                    </td>
-                    <td className="px-5 py-3.5">
-                      <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border", statusStyle(r.status))}>
-                        {r.status}
-                      </span>
-                    </td>
-                    <td className="px-5 py-3.5 text-[11px] text-slate-600 font-mono hidden md:table-cell">{r.aiModel || "—"}</td>
-                    <td className="px-5 py-3.5 text-sm font-bold text-slate-300 tabular-nums hidden md:table-cell">{r.creditCost ?? r.creditsUsed}</td>
-                    <td className="px-5 py-3.5 text-[12px] text-slate-600 hidden lg:table-cell">{fmtTime(r.createdAt)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-    </motion.div>
+    </div>
   );
 }
 
-function FilterRow({ label, options, value, onChange }: { label: string; options: string[]; value: string; onChange: (v: string) => void }) {
+function SelectDropdown({
+  label,
+  value,
+  options,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  options: { value: string; label: string }[];
+  onChange: (v: string) => void;
+}) {
   return (
-    <div className="flex items-center gap-2">
-      <span className="text-[10px] font-bold uppercase tracking-widest text-slate-600 shrink-0">{label}</span>
-      <div className="flex gap-1.5">
+    <div className="relative">
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="appearance-none rounded-xl pl-3 pr-8 py-2 text-[13px] font-medium outline-none cursor-pointer"
+        style={{
+          background: "#0F1629",
+          border: "1px solid rgba(255,255,255,0.1)",
+          color: "#CBD5E1",
+        }}
+      >
         {options.map((o) => (
-          <button key={o} onClick={() => onChange(o)} className={cn(
-            "rounded-full px-2.5 py-1 text-[11px] font-semibold capitalize transition-all",
-            value === o
-              ? "bg-sky-500/15 text-sky-300 border border-sky-500/30"
-              : "text-slate-600 border border-white/[0.07] hover:text-slate-400"
-          )}>
-            {o}
-          </button>
+          <option key={o.value} value={o.value} style={{ background: "#0F1629" }}>
+            {o.label}
+          </option>
         ))}
+      </select>
+      <ChevronDown
+        className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2"
+        size={13}
+        style={{ color: "#64748B" }}
+      />
+      <span
+        className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[11px] font-bold uppercase tracking-widest"
+        style={{ color: "#64748B", display: value !== "all" ? "none" : undefined }}
+      >
+        {value === "all" ? "" : ""}
+      </span>
+    </div>
+  );
+}
+
+// ─── Main Page ────────────────────────────────────────────────────────────────
+
+export default function AdminGenerationsPage() {
+  const [rows, setRows] = useState<Generation[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
+  const [loading, setLoading] = useState(true);
+  const [statsLoading, setStatsLoading] = useState(true);
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [typeFilter, setTypeFilter] = useState("all");
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [hoveredRow, setHoveredRow] = useState<string | null>(null);
+  const [stats, setStats] = useState<StatCounts>({
+    total: 0,
+    completed: 0,
+    pending: 0,
+    failed: 0,
+  });
+
+  // Debounce search
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(search), 350);
+    return () => clearTimeout(t);
+  }, [search]);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setPage(1);
+  }, [statusFilter, typeFilter, debouncedSearch]);
+
+  // Fetch main data
+  useEffect(() => {
+    let alive = true;
+    setLoading(true);
+    const params = new URLSearchParams({
+      status: statusFilter,
+      type: typeFilter,
+      page: String(page),
+    });
+    if (debouncedSearch) params.set("search", debouncedSearch);
+
+    fetch(`/api/admin/generations?${params}`)
+      .then((r) => r.json())
+      .then((d: ApiResponse) => {
+        if (!alive) return;
+        setRows(d.generations || []);
+        setTotal(d.total || 0);
+        setPageSize(d.pageSize || 20);
+      })
+      .catch(() => {
+        if (!alive) return;
+        setRows([]);
+        setTotal(0);
+      })
+      .finally(() => {
+        if (alive) setLoading(false);
+      });
+    return () => {
+      alive = false;
+    };
+  }, [statusFilter, typeFilter, page, debouncedSearch]);
+
+  // Fetch stat counts
+  const fetchStats = useCallback(() => {
+    setStatsLoading(true);
+    const base = "/api/admin/generations";
+    Promise.all([
+      fetch(`${base}?status=all&page=1`).then((r) => r.json()),
+      fetch(`${base}?status=complete&page=1`).then((r) => r.json()),
+      fetch(`${base}?status=pending&page=1`).then((r) => r.json()),
+      fetch(`${base}?status=failed&page=1`).then((r) => r.json()),
+    ])
+      .then(([all, completed, pending, failed]: [ApiResponse, ApiResponse, ApiResponse, ApiResponse]) => {
+        setStats({
+          total: all.total || 0,
+          completed: completed.total || 0,
+          pending: pending.total || 0,
+          failed: failed.total || 0,
+        });
+      })
+      .catch(() => {})
+      .finally(() => setStatsLoading(false));
+  }, []);
+
+  useEffect(() => {
+    fetchStats();
+  }, [fetchStats]);
+
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const completedPct = stats.total > 0 ? (stats.completed / stats.total) * 100 : 0;
+  const pendingPct = stats.total > 0 ? (stats.pending / stats.total) * 100 : 0;
+  const failedPct = stats.total > 0 ? (stats.failed / stats.total) * 100 : 0;
+
+  return (
+    <div
+      className="min-h-screen p-6"
+      style={{ background: "#080C18" }}
+    >
+      <div className="max-w-[1400px] mx-auto space-y-6">
+
+        {/* Header */}
+        <div className="flex items-start justify-between gap-4 flex-wrap">
+          <div>
+            <h1
+              className="text-2xl font-bold text-white"
+              style={{ fontFamily: "Satoshi, Inter, sans-serif" }}
+            >
+              Generations
+            </h1>
+            <p className="text-sm mt-1" style={{ color: "#64748B" }}>
+              Manage and monitor all content generations across the platform.
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              className="flex items-center gap-2 rounded-xl px-4 py-2 text-[13px] font-semibold transition-colors"
+              style={{
+                background: "#0F1629",
+                border: "1px solid rgba(255,255,255,0.1)",
+                color: "#94A3B8",
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.color = "#CBD5E1";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.color = "#94A3B8";
+              }}
+            >
+              <Download size={14} />
+              Export
+            </button>
+            <button
+              className="flex items-center gap-2 rounded-xl px-4 py-2 text-[13px] font-semibold text-white transition-opacity hover:opacity-90"
+              style={{
+                background: "linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%)",
+                boxShadow: "0 4px 14px rgba(99,102,241,0.35)",
+              }}
+            >
+              <Plus size={14} />
+              New Generation
+            </button>
+          </div>
+        </div>
+
+        {/* Stat Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+          <StatCard
+            icon={<Clapperboard size={18} color="#A5B4FC" />}
+            iconBg="rgba(99,102,241,0.15)"
+            label="Total Generations"
+            value={statsLoading ? 0 : stats.total}
+            subtitle="All time across all types"
+            barColor="#6366F1"
+            barPct={statsLoading ? 0 : 100}
+          />
+          <StatCard
+            icon={<CheckCircle2 size={18} color="#6EE7B7" />}
+            iconBg="rgba(16,185,129,0.15)"
+            label="Completed"
+            value={statsLoading ? 0 : stats.completed}
+            subtitle={`${completedPct.toFixed(1)}% success rate`}
+            barColor="#10B981"
+            barPct={statsLoading ? 0 : completedPct}
+          />
+          <StatCard
+            icon={<Clock size={18} color="#FCD34D" />}
+            iconBg="rgba(245,158,11,0.15)"
+            label="Pending"
+            value={statsLoading ? 0 : stats.pending}
+            subtitle="Awaiting processing"
+            barColor="#F59E0B"
+            barPct={statsLoading ? 0 : pendingPct}
+          />
+          <StatCard
+            icon={<XCircle size={18} color="#FCA5A5" />}
+            iconBg="rgba(239,68,68,0.15)"
+            label="Failed"
+            value={statsLoading ? 0 : stats.failed}
+            subtitle="Require attention"
+            barColor="#EF4444"
+            barPct={statsLoading ? 0 : failedPct}
+          />
+        </div>
+
+        {/* Table Card */}
+        <div
+          className="rounded-2xl overflow-hidden"
+          style={{
+            background: "#0F1629",
+            border: "1px solid rgba(255,255,255,0.07)",
+          }}
+        >
+          {/* Filters */}
+          <div
+            className="flex flex-wrap items-center gap-3 px-5 py-4"
+            style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}
+          >
+            {/* Search */}
+            <div className="relative flex-1 min-w-[200px] max-w-[320px]">
+              <Search
+                size={13}
+                className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                style={{ color: "#64748B" }}
+              />
+              <input
+                type="text"
+                placeholder="Search generations..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full rounded-xl pl-8 pr-3 py-2 text-[13px] outline-none placeholder:text-[#475569]"
+                style={{
+                  background: "#080C18",
+                  border: "1px solid rgba(255,255,255,0.08)",
+                  color: "#CBD5E1",
+                }}
+              />
+            </div>
+
+            {/* Status dropdown */}
+            <SelectDropdown
+              label="Status"
+              value={statusFilter}
+              onChange={setStatusFilter}
+              options={[
+                { value: "all", label: "All Status" },
+                { value: "complete", label: "Completed" },
+                { value: "pending", label: "Pending" },
+                { value: "failed", label: "Failed" },
+              ]}
+            />
+
+            {/* Type dropdown */}
+            <SelectDropdown
+              label="Type"
+              value={typeFilter}
+              onChange={setTypeFilter}
+              options={[
+                { value: "all", label: "All Types" },
+                { value: "ugc", label: "UGC" },
+                { value: "photoshoot", label: "Photoshoot" },
+                { value: "tryon", label: "Try-On" },
+              ]}
+            />
+
+            {/* Filters button */}
+            <button
+              className="flex items-center gap-2 rounded-xl px-3.5 py-2 text-[13px] font-medium transition-colors"
+              style={{
+                background: "#080C18",
+                border: "1px solid rgba(255,255,255,0.08)",
+                color: "#64748B",
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.color = "#94A3B8";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.color = "#64748B";
+              }}
+            >
+              <SlidersHorizontal size={13} />
+              Filters
+            </button>
+
+            <div className="ml-auto text-[12px]" style={{ color: "#475569" }}>
+              {total.toLocaleString()} result{total !== 1 ? "s" : ""}
+            </div>
+          </div>
+
+          {/* Table */}
+          {loading ? (
+            <div className="flex items-center justify-center py-20">
+              <div
+                className="h-5 w-5 rounded-full border-2 border-t-transparent animate-spin"
+                style={{ borderColor: "rgba(99,102,241,0.3)", borderTopColor: "#6366F1" }}
+              />
+            </div>
+          ) : rows.length === 0 ? (
+            <div
+              className="flex flex-col items-center justify-center py-20 gap-3"
+            >
+              <Clapperboard size={32} style={{ color: "#1E293B" }} />
+              <p className="text-sm" style={{ color: "#475569" }}>
+                No generations match this filter
+              </p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+                    {[
+                      "Generation",
+                      "User",
+                      "Type",
+                      "Model",
+                      "Status",
+                      "Credits",
+                      "Created",
+                      "Actions",
+                    ].map((h) => (
+                      <th
+                        key={h}
+                        className="text-left px-5 py-3"
+                        style={{
+                          fontSize: "10px",
+                          fontWeight: 700,
+                          letterSpacing: "0.08em",
+                          textTransform: "uppercase",
+                          color: "#475569",
+                        }}
+                      >
+                        {h}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.map((row, i) => {
+                    const ss = statusStyle(row.status);
+                    const ts = TYPE_STYLE[row.type] || {
+                      bg: "rgba(255,255,255,0.04)",
+                      text: "#94A3B8",
+                      border: "rgba(255,255,255,0.08)",
+                    };
+                    const ac = avatarColor(row.userEmail);
+                    const { date, time } = fmtDate(row.createdAt);
+                    const isHovered = hoveredRow === row.id;
+
+                    return (
+                      <tr
+                        key={row.id}
+                        onMouseEnter={() => setHoveredRow(row.id)}
+                        onMouseLeave={() => setHoveredRow(null)}
+                        style={{
+                          borderTop: i === 0 ? "none" : "1px solid rgba(255,255,255,0.04)",
+                          background: isHovered ? "rgba(255,255,255,0.02)" : "transparent",
+                          transition: "background 0.15s",
+                        }}
+                      >
+                        {/* GENERATION */}
+                        <td className="px-5 py-3.5">
+                          <div className="flex items-center gap-3">
+                            <div
+                              className="flex size-9 shrink-0 items-center justify-center rounded-xl"
+                              style={{
+                                background: "rgba(99,102,241,0.12)",
+                                border: "1px solid rgba(99,102,241,0.2)",
+                              }}
+                            >
+                              <Clapperboard size={15} style={{ color: "#A5B4FC" }} />
+                            </div>
+                            <div>
+                              <p
+                                className="text-[12px] font-mono font-semibold"
+                                style={{ color: "#CBD5E1" }}
+                              >
+                                {genNumber(row.id)}
+                              </p>
+                              <p
+                                className="text-[11px] mt-0.5 truncate max-w-[120px]"
+                                style={{ color: "#475569" }}
+                              >
+                                {modelLabel(row.aiModel)}
+                              </p>
+                            </div>
+                          </div>
+                        </td>
+
+                        {/* USER */}
+                        <td className="px-5 py-3.5">
+                          <div className="flex items-center gap-2.5">
+                            <div
+                              className="flex size-8 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white"
+                              style={{ background: ac }}
+                            >
+                              {initials(row.userName, row.userEmail)}
+                            </div>
+                            <div>
+                              <p
+                                className="text-[13px] font-semibold"
+                                style={{ color: "#E2E8F0" }}
+                              >
+                                {row.userName || row.userEmail.split("@")[0]}
+                              </p>
+                              <p
+                                className="text-[11px] truncate max-w-[160px]"
+                                style={{ color: "#475569" }}
+                              >
+                                {row.userEmail}
+                              </p>
+                            </div>
+                          </div>
+                        </td>
+
+                        {/* TYPE */}
+                        <td className="px-5 py-3.5">
+                          <span
+                            className="inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold"
+                            style={{
+                              background: ts.bg,
+                              color: ts.text,
+                              border: `1px solid ${ts.border}`,
+                            }}
+                          >
+                            {TYPE_LABEL[row.type] || row.type}
+                          </span>
+                        </td>
+
+                        {/* MODEL */}
+                        <td className="px-5 py-3.5">
+                          <span
+                            className="text-[12px] font-medium"
+                            style={{ color: "#94A3B8" }}
+                          >
+                            {modelLabel(row.aiModel)}
+                          </span>
+                        </td>
+
+                        {/* STATUS */}
+                        <td className="px-5 py-3.5">
+                          <span
+                            className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-semibold"
+                            style={{
+                              background: ss.bg,
+                              color: ss.text,
+                              border: `1px solid ${ss.border}`,
+                            }}
+                          >
+                            <span
+                              className="inline-block size-1.5 rounded-full"
+                              style={{ background: ss.dot }}
+                            />
+                            {statusLabel(row.status)}
+                          </span>
+                        </td>
+
+                        {/* CREDITS */}
+                        <td className="px-5 py-3.5">
+                          <span
+                            className="text-[13px] font-bold tabular-nums"
+                            style={{ color: "#CBD5E1" }}
+                          >
+                            {row.creditsUsed ?? 0}
+                          </span>
+                        </td>
+
+                        {/* CREATED */}
+                        <td className="px-5 py-3.5">
+                          <p className="text-[12px]" style={{ color: "#94A3B8" }}>
+                            {date}
+                          </p>
+                          <p className="text-[11px] mt-0.5" style={{ color: "#475569" }}>
+                            {time}
+                          </p>
+                        </td>
+
+                        {/* ACTIONS */}
+                        <td className="px-5 py-3.5">
+                          <button
+                            className="flex size-7 items-center justify-center rounded-lg transition-colors"
+                            style={{
+                              background: isHovered
+                                ? "rgba(255,255,255,0.06)"
+                                : "transparent",
+                              color: isHovered ? "#94A3B8" : "transparent",
+                              border: isHovered
+                                ? "1px solid rgba(255,255,255,0.1)"
+                                : "1px solid transparent",
+                            }}
+                          >
+                            <MoreHorizontal size={14} />
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* Pagination */}
+          {!loading && total > 0 && (
+            <div
+              className="flex items-center justify-between px-5 py-3.5"
+              style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}
+            >
+              <p className="text-[12px]" style={{ color: "#475569" }}>
+                Showing{" "}
+                <span style={{ color: "#94A3B8" }}>
+                  {(page - 1) * pageSize + 1}
+                </span>{" "}
+                to{" "}
+                <span style={{ color: "#94A3B8" }}>
+                  {Math.min(page * pageSize, total)}
+                </span>{" "}
+                of{" "}
+                <span style={{ color: "#94A3B8" }}>{total.toLocaleString()}</span>{" "}
+                results
+              </p>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page <= 1}
+                  className="flex size-7 items-center justify-center rounded-lg transition-colors disabled:opacity-30"
+                  style={{
+                    background: "#080C18",
+                    border: "1px solid rgba(255,255,255,0.08)",
+                    color: "#64748B",
+                  }}
+                >
+                  <ChevronLeft size={13} />
+                </button>
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  let p: number;
+                  if (totalPages <= 5) {
+                    p = i + 1;
+                  } else if (page <= 3) {
+                    p = i + 1;
+                  } else if (page >= totalPages - 2) {
+                    p = totalPages - 4 + i;
+                  } else {
+                    p = page - 2 + i;
+                  }
+                  return (
+                    <button
+                      key={p}
+                      onClick={() => setPage(p)}
+                      className="flex size-7 items-center justify-center rounded-lg text-[12px] font-semibold transition-colors"
+                      style={{
+                        background:
+                          page === p
+                            ? "linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%)"
+                            : "#080C18",
+                        border:
+                          page === p
+                            ? "1px solid rgba(99,102,241,0.5)"
+                            : "1px solid rgba(255,255,255,0.08)",
+                        color: page === p ? "#FFFFFF" : "#64748B",
+                      }}
+                    >
+                      {p}
+                    </button>
+                  );
+                })}
+                <button
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={page >= totalPages}
+                  className="flex size-7 items-center justify-center rounded-lg transition-colors disabled:opacity-30"
+                  style={{
+                    background: "#080C18",
+                    border: "1px solid rgba(255,255,255,0.08)",
+                    color: "#64748B",
+                  }}
+                >
+                  <ChevronRight size={13} />
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
