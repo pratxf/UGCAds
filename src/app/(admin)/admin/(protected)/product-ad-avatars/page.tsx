@@ -52,13 +52,7 @@ export default function AdminProductAdAvatarsPage() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Product Ad Avatars</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">
-            Models posed with empty hands ready to hold a product
-          </p>
-        </div>
+      <div className="flex items-center justify-end gap-3 flex-wrap">
         <button
           onClick={() => setShowCreate(true)}
           className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-black hover:brightness-105 transition"

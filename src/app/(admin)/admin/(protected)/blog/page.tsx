@@ -96,11 +96,7 @@ export default function AdminBlogPage() {
   return (
     <div className="max-w-7xl mx-auto space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <h1 className="text-[22px] font-bold text-slate-100">Blog</h1>
-          <p className="text-[14px] mt-0.5" style={{ color: "#6B7280" }}>Create and manage blog posts to share updates, guides, and announcements.</p>
-        </div>
+      <div className="flex items-center justify-end gap-3">
         <button onClick={newPost} className="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-[13px] font-bold text-white" style={{ background: "linear-gradient(135deg, #2563EB, #1D4ED8)", boxShadow: "0 0 20px rgba(37,99,235,0.3)" }}>
           <Plus className="h-4 w-4" /> New Post
         </button>
@@ -318,7 +314,7 @@ function BlogEditor({ post, isNew, onBack }: { post: PostFull | null; isNew: boo
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-80px)] min-h-0 -mx-6 -mt-6">
+    <div className="flex flex-col h-[calc(100vh-56px)] min-h-0 -mx-6 -mt-6">
       {/* Top bar */}
       <div className="flex items-center gap-3 px-6 py-3 shrink-0" style={{ background: "#080C18", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
         <button onClick={onBack} className="flex items-center gap-1.5 text-[13px] font-medium text-slate-500 hover:text-slate-300 transition mr-2">

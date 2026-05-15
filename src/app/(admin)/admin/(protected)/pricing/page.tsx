@@ -68,17 +68,6 @@ export default function AdminPricingPage() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-8 pb-8">
-      {/* Page header */}
-      <div className="flex items-center gap-4">
-        <div className="flex size-14 items-center justify-center rounded-2xl shrink-0" style={{ background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.2)" }}>
-          <Tag className="h-6 w-6 text-emerald-400" />
-        </div>
-        <div>
-          <h1 className="text-[26px] font-bold text-slate-100">Grant Credits</h1>
-          <p className="text-[14px] mt-0.5" style={{ color: "#6B7280" }}>Manually add or remove credits from any user account.</p>
-        </div>
-      </div>
-
       {/* Success banner */}
       {grantSuccess && (
         <div className="flex items-center gap-3 rounded-xl px-4 py-3" style={{ background: "rgba(52,211,153,0.08)", border: "1px solid rgba(52,211,153,0.2)" }}>

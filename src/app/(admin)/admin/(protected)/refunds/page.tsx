@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import {
   Loader2, AlertTriangle, Clock, CheckCircle2, Copy, RotateCcw,
-  ChevronLeft, ChevronRight, Download,
+  ChevronLeft, ChevronRight, Download, XCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -198,14 +198,17 @@ function Avatar({ name, email }: { name: string | null; email: string }) {
 // ---------------------------------------------------------------------------
 // Confirm Modal (no framer-motion)
 // ---------------------------------------------------------------------------
+type ConfirmTarget = { id: string; creditsUsed: number; userEmail: string; isStuck?: boolean };
+
 function ConfirmModal({
   row, loading, onConfirm, onClose,
 }: {
-  row: FailedRow;
+  row: ConfirmTarget;
   loading: boolean;
   onConfirm: () => void;
   onClose: () => void;
 }) {
+  const isStuck = row.isStuck;
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
@@ -217,17 +220,18 @@ function ConfirmModal({
         style={{ background: "#0F1629", border: "1px solid rgba(255,255,255,0.09)" }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="h-[2px] w-full" style={{ background: "linear-gradient(135deg, #6366F1, #8B5CF6)" }} />
+        <div className="h-[2px] w-full" style={{ background: isStuck ? "linear-gradient(135deg, #F59E0B, #EF4444)" : "linear-gradient(135deg, #6366F1, #8B5CF6)" }} />
         <div className="p-6">
           <div className="flex items-start gap-4 mb-6">
-            <div className="flex size-10 shrink-0 items-center justify-center rounded-xl" style={{ background: "rgba(99,102,241,0.12)" }}>
-              <RotateCcw className="h-5 w-5 text-indigo-400" />
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-xl" style={{ background: isStuck ? "rgba(239,68,68,0.12)" : "rgba(99,102,241,0.12)" }}>
+              {isStuck ? <XCircle className="h-5 w-5 text-red-400" /> : <RotateCcw className="h-5 w-5 text-indigo-400" />}
             </div>
             <div>
-              <h3 className="text-[14px] font-bold text-slate-100">Issue Credit Refund</h3>
+              <h3 className="text-[14px] font-bold text-slate-100">{isStuck ? "Cancel & Refund Generation" : "Issue Credit Refund"}</h3>
               <p className="text-sm text-slate-500 mt-1.5 leading-relaxed">
-                Refund <span className="font-semibold text-slate-300">{row.creditsUsed} credits</span> to{" "}
-                <span className="font-semibold text-slate-300">{row.userEmail}</span>? This cannot be undone.
+                {isStuck ? "This will mark the generation as failed and refund " : "Refund "}
+                <span className="font-semibold text-slate-300">{row.creditsUsed} credits</span> to{" "}
+                <span className="font-semibold text-slate-300">{row.userEmail}</span>. This cannot be undone.
               </p>
             </div>
           </div>
@@ -243,10 +247,13 @@ function ConfirmModal({
               onClick={onConfirm}
               disabled={loading}
               className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-bold text-white disabled:opacity-40 transition"
-              style={{ background: "linear-gradient(135deg, #6366F1, #8B5CF6)", boxShadow: "0 0 20px rgba(99,102,241,0.3)" }}
+              style={{
+                background: isStuck ? "linear-gradient(135deg, #F59E0B, #EF4444)" : "linear-gradient(135deg, #6366F1, #8B5CF6)",
+                boxShadow: isStuck ? "0 0 20px rgba(239,68,68,0.3)" : "0 0 20px rgba(99,102,241,0.3)",
+              }}
             >
               {loading && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-              Refund Credits
+              {isStuck ? "Cancel & Refund" : "Refund Credits"}
             </button>
           </div>
         </div>
@@ -258,19 +265,25 @@ function ConfirmModal({
 // ---------------------------------------------------------------------------
 // Stuck Generations section
 // ---------------------------------------------------------------------------
-function StuckSection({ rows }: { rows: StuckRow[] }) {
+function StuckSection({
+  rows, onCancel, cancelling,
+}: {
+  rows: StuckRow[];
+  onCancel: (r: StuckRow) => void;
+  cancelling: string | null;
+}) {
   return (
     <div className="rounded-2xl overflow-hidden" style={{ background: "#0F1629", border: "1px solid rgba(255,255,255,0.07)" }}>
-      {/* header */}
       <div className="flex items-center justify-between px-6 py-4" style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
         <div>
           <h2 className="text-[14px] font-bold text-slate-100">Stuck Generations</h2>
           <p className="text-[11px] text-slate-600 mt-0.5">Generations that have been processing for too long.</p>
         </div>
         {rows.length > 0 && (
-          <button className="text-[11px] font-semibold text-indigo-400 hover:text-indigo-300 transition">
-            View all stuck →
-          </button>
+          <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1.5 rounded-full"
+            style={{ background: "rgba(245,158,11,0.1)", color: "#F59E0B", border: "1px solid rgba(245,158,11,0.2)" }}>
+            {rows.length} stuck
+          </span>
         )}
       </div>
 
@@ -289,7 +302,7 @@ function StuckSection({ rows }: { rows: StuckRow[] }) {
           <table className="w-full">
             <thead>
               <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
-                {["USER", "GENERATION ID", "TYPE", "CREDITS", "AGE", "STATUS"].map((h, i) => (
+                {["USER", "GENERATION ID", "TYPE", "CREDITS", "AGE", "STATUS", "ACTIONS"].map((h, i) => (
                   <th key={i} className="text-left px-5 py-3 text-[10px] font-bold uppercase tracking-widest text-slate-600">
                     {h}
                   </th>
@@ -326,6 +339,21 @@ function StuckSection({ rows }: { rows: StuckRow[] }) {
                   </td>
                   <td className="px-5 py-3.5">
                     <span className="text-[11px] font-semibold text-amber-400">{r.status}</span>
+                  </td>
+                  <td className="px-5 py-3.5">
+                    <button
+                      onClick={() => onCancel(r)}
+                      disabled={cancelling === r.id}
+                      className="inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-[11px] font-bold text-white disabled:opacity-40 transition hover:opacity-90"
+                      style={{ background: "linear-gradient(135deg, #F59E0B, #EF4444)" }}
+                    >
+                      {cancelling === r.id ? (
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                      ) : (
+                        <XCircle className="h-3 w-3" />
+                      )}
+                      Cancel & Refund
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -551,7 +579,7 @@ export default function AdminRefundsPage() {
   const [stuck, setStuck] = useState<StuckRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [refunding, setRefunding] = useState<string | null>(null);
-  const [confirmRow, setConfirmRow] = useState<FailedRow | null>(null);
+  const [confirmRow, setConfirmRow] = useState<ConfirmTarget | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -606,18 +634,7 @@ export default function AdminRefundsPage() {
   return (
     <div className="max-w-6xl mx-auto space-y-8">
       {/* ---- Header ---- */}
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1
-            className="text-[22px] font-bold text-slate-100"
-            style={{ fontFamily: "Satoshi, sans-serif" }}
-          >
-            Refunds
-          </h1>
-          <p className="text-sm text-slate-600 mt-0.5">
-            Failed and stuck generations requiring manual credit refunds.
-          </p>
-        </div>
+      <div className="flex items-center justify-end gap-4">
         <div className="flex items-center gap-3 shrink-0">
           <span className="text-[11px] text-slate-600 hidden sm:block">{dateRange()}</span>
           <button
@@ -667,8 +684,8 @@ export default function AdminRefundsPage() {
         </div>
       ) : (
         <div className="space-y-6">
-          <StuckSection rows={stuck} />
-          <FailedSection rows={failed} onRefund={setConfirmRow} refunding={refunding} />
+          <StuckSection rows={stuck} onCancel={(r) => setConfirmRow({ ...r, isStuck: true })} cancelling={refunding} />
+          <FailedSection rows={failed} onRefund={(r) => setConfirmRow(r)} refunding={refunding} />
         </div>
       )}
 

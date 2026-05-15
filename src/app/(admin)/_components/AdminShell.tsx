@@ -126,6 +126,21 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
 
       {/* ── Main ─────────────────────────────────────── */}
       <div className="ml-[240px] flex-1 flex flex-col min-w-0">
+        {/* Topbar */}
+        <div
+          className="sticky top-0 z-20 flex h-14 shrink-0 items-center px-6"
+          style={{ background: "#080C18", borderBottom: "1px solid rgba(255,255,255,0.06)" }}
+        >
+          <p className="text-[15px] font-bold text-slate-100">
+            {(() => {
+              const allItems = SECTIONS.flatMap((s) => s.items);
+              const cur = allItems.find((item) =>
+                item.href === "/admin" ? pathname === "/admin" : pathname.startsWith(item.href)
+              );
+              return cur?.label ?? "Admin";
+            })()}
+          </p>
+        </div>
         <main className="flex-1 overflow-y-auto p-6 lg:p-8">{children}</main>
       </div>
     </div>

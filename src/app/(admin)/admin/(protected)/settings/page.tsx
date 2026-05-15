@@ -21,11 +21,6 @@ export default function AdminSettingsPage() {
 
   return (
     <motion.div variants={container} initial="hidden" animate="show" className="max-w-2xl mx-auto space-y-8 pb-8">
-      <motion.div variants={fadeUp}>
-        <h1 className="text-2xl font-bold text-foreground">Settings</h1>
-        <p className="text-sm text-muted-foreground mt-0.5">Site-wide configuration and announcements</p>
-      </motion.div>
-
       {/* Announcement Bar */}
       <motion.div variants={fadeUp} className="rounded-2xl border border-border bg-card p-6 space-y-5">
         <div className="flex items-center gap-3">

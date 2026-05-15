@@ -35,11 +35,6 @@ export default function AdminRevenuePage() {
 
   return (
     <div className="max-w-6xl mx-auto space-y-8">
-      <div>
-        <h1 className="text-[22px] font-bold text-slate-100" style={{ fontFamily: "Satoshi, sans-serif" }}>Revenue</h1>
-        <p className="text-sm text-slate-600 mt-0.5">Subscriptions, top-ups, and monthly recurring revenue</p>
-      </div>
-
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {topCards.map((c) => {
           const Icon = c.icon;

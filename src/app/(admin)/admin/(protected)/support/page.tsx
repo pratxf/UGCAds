@@ -197,6 +197,20 @@ export default function AdminSupportPage() {
   const [togglingOnline, setTogglingOnline] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const prevMsgCountsRef = useRef<Record<string, number>>({});
+  const prevTicketCountRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    audioRef.current = new Audio("/chat.mp3");
+    audioRef.current.volume = 0.6;
+  }, []);
+
+  function playNotification() {
+    if (!audioRef.current) return;
+    audioRef.current.currentTime = 0;
+    audioRef.current.play().catch(() => {});
+  }
 
   // page size
   const PAGE = 20;
@@ -206,6 +220,23 @@ export default function AdminSupportPage() {
   const load = useCallback(async () => {
     try {
       const r: ApiData = await fetch("/api/admin/support").then((res) => res.json());
+      const isFirstLoad = prevTicketCountRef.current === null;
+
+      if (!isFirstLoad) {
+        // New ticket arrived
+        if (r.tickets.length > (prevTicketCountRef.current ?? 0)) playNotification();
+        // New customer message in any ticket
+        r.tickets.forEach((ticket) => {
+          const prev = prevMsgCountsRef.current[ticket.id];
+          if (prev !== undefined && ticket.messages.length > prev) {
+            if (ticket.messages.slice(prev).some((m) => !m.isAdmin)) playNotification();
+          }
+        });
+      }
+
+      prevTicketCountRef.current = r.tickets.length;
+      r.tickets.forEach((t) => { prevMsgCountsRef.current[t.id] = t.messages.length; });
+
       setData(r);
       if (selected) {
         const updated = r.tickets.find((t) => t.id === selected.id);
@@ -302,13 +333,7 @@ export default function AdminSupportPage() {
       {/* ------------------------------------------------------------------ */}
       {/* Header */}
       {/* ------------------------------------------------------------------ */}
-      <div className="flex items-start justify-between flex-wrap gap-3">
-        <div>
-          <h1 className="text-[22px] font-bold text-white">Support</h1>
-          <p className="text-[13px] text-slate-500 mt-0.5">
-            Manage and resolve customer support tickets.
-          </p>
-        </div>
+      <div className="flex items-center justify-end flex-wrap gap-3">
         <div className="flex items-center gap-2">
           <button
             onClick={load}
@@ -367,7 +392,7 @@ export default function AdminSupportPage() {
       {/* ------------------------------------------------------------------ */}
       {/* 3-column layout */}
       {/* ------------------------------------------------------------------ */}
-      <div className="flex gap-4" style={{ minHeight: 0, height: "calc(100vh - 320px)" }}>
+      <div className="flex gap-4" style={{ minHeight: 0, height: "calc(100vh - 240px)" }}>
         {/* ---------------------------------------------------------------- */}
         {/* LEFT — ticket list */}
         {/* ---------------------------------------------------------------- */}

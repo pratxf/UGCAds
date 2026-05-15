@@ -173,11 +173,7 @@ export default function AdminUsersPage() {
     <div className="min-h-screen p-6 space-y-6" style={{ background: "#080C18" }}>
 
       {/* Header */}
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-[24px] font-bold text-white">Users</h1>
-          <p className="text-[13px] mt-0.5" style={{ color: "#64748B" }}>Manage and monitor all registered users.</p>
-        </div>
+      <div className="flex items-center justify-end">
         <button onClick={exportCsv} className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-[13px] font-semibold transition hover:text-white" style={{ background: "#0F1629", border: "1px solid rgba(255,255,255,0.08)", color: "#94A3B8" }}>
           <Download className="h-4 w-4" /> Export CSV
         </button>

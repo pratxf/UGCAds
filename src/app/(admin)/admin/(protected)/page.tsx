@@ -180,11 +180,7 @@ export default function AdminDashboard() {
     <div className="min-h-screen p-6 space-y-6" style={{ background: "#080C18" }}>
 
       {/* Header */}
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-[24px] font-bold text-white">Welcome back, Admin 👋</h1>
-          <p className="text-[13px] mt-0.5" style={{ color: "#64748B" }}>Here&apos;s what&apos;s happening with your platform today.</p>
-        </div>
+      <div className="flex items-center justify-end">
         <div className="flex items-center gap-3">
           <div ref={dateRef} className="relative">
             <button
