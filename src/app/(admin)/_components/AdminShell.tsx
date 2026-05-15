@@ -52,20 +52,13 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
   const pathname = usePathname();
 
   return (
-    <div
-      className="flex min-h-screen"
-      style={{
-        background: "#05080E",
-        backgroundImage: "radial-gradient(rgba(255,255,255,0.025) 1px, transparent 1px)",
-        backgroundSize: "28px 28px",
-      }}
-    >
+    <div className="flex min-h-screen" style={{ background: "#080C18" }}>
       {/* ── Sidebar ─────────────────────────────────── */}
       <aside
         className="fixed inset-y-0 left-0 z-30 flex w-[240px] flex-col"
         style={{
-          background: "linear-gradient(180deg, #08101E 0%, #060A14 100%)",
-          borderRight: "1px solid rgba(255,255,255,0.05)",
+          background: "#080C18",
+          borderRight: "1px solid rgba(255,255,255,0.06)",
         }}
       >
         {/* Logo */}
