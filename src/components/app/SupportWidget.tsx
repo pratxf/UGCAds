@@ -90,6 +90,20 @@ export default function SupportWidget() {
   const [starting, setStarting] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const prevMsgCountsRef = useRef<Record<string, number>>({});
+  const prevOnlineRef = useRef<boolean | null>(null);
+
+  useEffect(() => {
+    audioRef.current = new Audio("/chat.mp3");
+    audioRef.current.volume = 0.6;
+  }, []);
+
+  function playNotification() {
+    if (!audioRef.current) return;
+    audioRef.current.currentTime = 0;
+    audioRef.current.play().catch(() => {});
+  }
 
   const hasUnread = tickets.some((t) => t.status === "REPLIED");
 
@@ -100,8 +114,26 @@ export default function SupportWidget() {
         fetch("/api/admin/support/status").then((r) => r.json()),
       ]);
       const list: Ticket[] = ticketsRes.tickets || [];
+      const onlineNow: boolean = statusRes.online ?? false;
+      const isFirstLoad = prevOnlineRef.current === null;
+
+      if (!isFirstLoad) {
+        // Admin just joined
+        if (onlineNow && prevOnlineRef.current === false) playNotification();
+        // New admin messages in any ticket
+        list.forEach((ticket) => {
+          const prev = prevMsgCountsRef.current[ticket.id];
+          if (prev !== undefined && ticket.messages.length > prev) {
+            if (ticket.messages.slice(prev).some((m) => m.fromAdmin)) playNotification();
+          }
+        });
+      }
+
+      list.forEach((t) => { prevMsgCountsRef.current[t.id] = t.messages.length; });
+      prevOnlineRef.current = onlineNow;
+
       setTickets(list);
-      setAdminOnline(statusRes.online ?? false);
+      setAdminOnline(onlineNow);
       if (selectedTicket) {
         const updated = list.find((t) => t.id === selectedTicket.id);
         if (updated) setSelectedTicket(updated);
@@ -262,7 +294,7 @@ export default function SupportWidget() {
                   {FEATURES.map((f) => {
                     const Icon = f.icon;
                     return (
-                      <div key={f.label} className="flex items-center gap-3.5 px-3 py-3.5 rounded-xl hover:bg-[#F9FAFB] transition-colors">
+                      <button key={f.label} onClick={() => startConversation(f.label)} disabled={starting} className="w-full flex items-center gap-3.5 px-3 py-3.5 rounded-xl hover:bg-[#F9FAFB] transition-colors text-left disabled:opacity-60">
                         <div className="flex size-10 shrink-0 items-center justify-center rounded-xl" style={{ background: f.bg }}>
                           <Icon className="h-5 w-5" style={{ color: f.color }} strokeWidth={1.8} />
                         </div>
@@ -270,7 +302,7 @@ export default function SupportWidget() {
                           <p className="text-[14px] font-semibold text-[#111111]">{f.label}</p>
                           <p className="text-[12px] text-[#6B7280]">{f.sub}</p>
                         </div>
-                      </div>
+                      </button>
                     );
                   })}
                 </div>

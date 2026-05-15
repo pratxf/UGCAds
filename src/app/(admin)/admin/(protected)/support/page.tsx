@@ -16,8 +16,8 @@ type Category = "GENERAL" | "BUG" | "FEATURE" | "BILLING";
 
 type Message = {
   id: string;
-  isAdmin: boolean;
-  content: string;
+  fromAdmin: boolean;
+  body: string;
   createdAt: string;
   senderName?: string;
 };
@@ -229,7 +229,7 @@ export default function AdminSupportPage() {
         r.tickets.forEach((ticket) => {
           const prev = prevMsgCountsRef.current[ticket.id];
           if (prev !== undefined && ticket.messages.length > prev) {
-            if (ticket.messages.slice(prev).some((m) => !m.isAdmin)) playNotification();
+            if (ticket.messages.slice(prev).some((m) => !m.fromAdmin)) playNotification();
           }
         });
       }
@@ -472,7 +472,7 @@ export default function AdminSupportPage() {
             ) : (
               visibleTickets.map((t, i) => {
                 const isActive = selected?.id === t.id;
-                const preview = t.messages.at(-1)?.content ?? "";
+                const preview = t.messages.at(-1)?.body ?? "";
                 return (
                   <button
                     key={t.id}
@@ -618,7 +618,7 @@ export default function AdminSupportPage() {
                   <p className="text-center text-sm text-slate-600 py-8">No messages yet.</p>
                 )}
                 {selected.messages.map((msg) => {
-                  const isAdmin = msg.isAdmin;
+                  const isAdmin = msg.fromAdmin;
                   const displayName = isAdmin
                     ? (msg.senderName ?? "Admin")
                     : (selected.user.name ?? selected.user.email.split("@")[0]);
@@ -659,7 +659,7 @@ export default function AdminSupportPage() {
                           }
                         >
                           <p className="text-[13px] leading-relaxed text-slate-200 whitespace-pre-wrap">
-                            {msg.content}
+                            {msg.body}
                           </p>
                         </div>
                       </div>

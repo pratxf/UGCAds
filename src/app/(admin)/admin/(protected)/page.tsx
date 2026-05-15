@@ -362,7 +362,6 @@ export default function AdminDashboard() {
         <div className="rounded-2xl p-6" style={{ background: "#0F1629", border: "1px solid rgba(255,255,255,0.07)" }}>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-[15px] font-bold text-white">Subscription Breakdown</h2>
-            <span className="text-[11px] rounded-lg px-2.5 py-1 cursor-pointer" style={{ background: "rgba(255,255,255,0.05)", color: "#94A3B8", border: "1px solid rgba(255,255,255,0.08)" }}>This Month ▾</span>
           </div>
           <div className="flex items-center gap-6">
             <ResponsiveContainer width={120} height={120}>
@@ -399,7 +398,6 @@ export default function AdminDashboard() {
         <div className="rounded-2xl p-6" style={{ background: "#0F1629", border: "1px solid rgba(255,255,255,0.07)" }}>
           <div className="flex items-center justify-between mb-2">
             <h2 className="text-[15px] font-bold text-white">Revenue Overview</h2>
-            <span className="text-[11px] rounded-lg px-2.5 py-1 cursor-pointer" style={{ background: "rgba(255,255,255,0.05)", color: "#94A3B8", border: "1px solid rgba(255,255,255,0.08)" }}>This Month ▾</span>
           </div>
           <p className="text-[32px] font-bold text-white tabular-nums">${stats.thisMonthRevenue.toLocaleString()}</p>
           <div className="flex items-center gap-1 mb-4">
