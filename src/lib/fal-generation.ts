@@ -63,7 +63,7 @@ function buildVideoInput(modelId: string, prompt: string, imageUrl: string | und
     case "fal-ai/sora-2/image-to-video":
       return { prompt, ...(imageUrl ? { image_url: imageUrl } : {}), resolution: "720p", aspect_ratio: aspectRatio, duration };
     case "fal-ai/kling-video/v3/standard/image-to-video":
-      return { prompt, ...(imageUrl ? { start_image_url: imageUrl } : {}), aspect_ratio: aspectRatio, duration, generate_audio: true, negative_prompt: "blur, distort, and low quality", cfg_scale: 0.5 };
+      return { prompt, ...(imageUrl ? { start_image_url: imageUrl } : {}), aspect_ratio: aspectRatio, duration: String(duration), generate_audio: true, negative_prompt: "blur, distort, and low quality", cfg_scale: 0.5 };
     default:
       return { prompt, ...(imageUrl ? { image_url: imageUrl } : {}), aspect_ratio: aspectRatio, duration };
   }
