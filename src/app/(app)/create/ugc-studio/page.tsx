@@ -248,9 +248,11 @@ export default function UGCStudio() {
   function handleModelChange(id: string) {
     setVideoModel(id);
     const model = VIDEO_MODELS.find((m) => m.id === id);
-    if (model && parseInt(duration) > model.maxDuration) {
-      const opts = getDurationOptions(model);
-      setDuration(opts[opts.length - 1].value);
+    if (!model) return;
+    const opts = getDurationOptions(model);
+    const validDurations = opts.map((o) => o.value);
+    if (!validDurations.includes(duration)) {
+      setDuration(opts[0].value);
     }
   }
 
