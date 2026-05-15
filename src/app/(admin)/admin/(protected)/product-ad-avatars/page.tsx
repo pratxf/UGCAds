@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef, type ChangeEvent } from "react";
+import { useSetTopbarRight } from "@/app/(admin)/_components/AdminTopbarContext";
 import Image from "next/image";
 import { Plus, Trash2, Loader2, X, Pencil } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -29,6 +30,20 @@ export default function AdminProductAdAvatarsPage() {
     setLoading(false);
   }
 
+  const setTopbarRight = useSetTopbarRight();
+  useEffect(() => {
+    setTopbarRight(
+      <button
+        onClick={() => setShowCreate(true)}
+        className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-black hover:brightness-105 transition"
+      >
+        <Plus className="h-4 w-4" /> Add Avatar
+      </button>
+    );
+    return () => setTopbarRight(null);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [setTopbarRight]);
+
   useEffect(() => {
     load();
   }, []);
@@ -52,15 +67,6 @@ export default function AdminProductAdAvatarsPage() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
-      <div className="flex items-center justify-end gap-3 flex-wrap">
-        <button
-          onClick={() => setShowCreate(true)}
-          className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-black hover:brightness-105 transition"
-        >
-          <Plus className="h-4 w-4" /> Add Avatar
-        </button>
-      </div>
-
       <div className="flex flex-wrap gap-2">
         {(["all", "female", "male"] as const).map((g) => (
           <button

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
+import { useSetTopbarRight } from "@/app/(admin)/_components/AdminTopbarContext";
 import Link from "next/link";
 import {
   AreaChart, Area, LineChart, Line, PieChart, Pie, Cell,
@@ -79,6 +80,7 @@ export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("30D");
   const [dateOpen, setDateOpen] = useState(false);
   const dateRef = useRef<HTMLDivElement>(null);
+  const setTopbarRight = useSetTopbarRight();
 
   useEffect(() => {
     fetch("/api/admin/stats").then((r) => r.json()).then(setStats).catch(() => {});
@@ -114,6 +116,53 @@ export default function AdminDashboard() {
     const a = document.createElement("a"); a.href = url; a.download = "admin-report.csv"; a.click();
     URL.revokeObjectURL(url);
   }
+
+  // Inject topbar controls (re-runs when dateOpen/activeTab/stats change)
+  const exportReportRef = useRef(exportReport);
+  exportReportRef.current = exportReport;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    setTopbarRight(
+      <div className="flex items-center gap-2">
+        <div ref={dateRef} className="relative">
+          <button
+            onClick={() => setDateOpen((v) => !v)}
+            className="flex items-center gap-2 rounded-xl px-4 py-2 text-[13px] font-medium"
+            style={{ background: "#0F1629", border: dateOpen ? "1px solid rgba(99,102,241,0.4)" : "1px solid rgba(255,255,255,0.08)", color: "#94A3B8" }}
+          >
+            <span>📅</span>
+            <span>{DATE_RANGE_OPTIONS.find((o) => o.value === activeTab)?.label ?? "Last 30 Days"}</span>
+            <ChevronDown className="h-3.5 w-3.5" style={{ transform: dateOpen ? "rotate(180deg)" : "none", transition: "transform 0.15s" }} />
+          </button>
+          {dateOpen && (
+            <div
+              className="absolute right-0 top-11 z-30 min-w-[160px] rounded-xl overflow-hidden"
+              style={{ background: "#0F1629", border: "1px solid rgba(255,255,255,0.1)", boxShadow: "0 8px 24px rgba(0,0,0,0.6)" }}
+            >
+              {DATE_RANGE_OPTIONS.map((o) => (
+                <button
+                  key={o.value}
+                  onClick={() => { setActiveTab(o.value); setDateOpen(false); }}
+                  className="flex w-full items-center px-4 py-2.5 text-[13px] font-medium transition-colors"
+                  style={{ color: activeTab === o.value ? "#A5B4FC" : "#94A3B8", background: activeTab === o.value ? "rgba(99,102,241,0.1)" : "transparent" }}
+                >
+                  {o.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+        <button
+          onClick={() => stats && exportReportRef.current(stats)}
+          disabled={!stats}
+          className="flex items-center gap-2 rounded-xl px-4 py-2 text-[13px] font-semibold text-white disabled:opacity-40 transition-opacity"
+          style={{ background: "linear-gradient(135deg, #4F46E5, #7C3AED)" }}
+        >
+          <Download className="h-3.5 w-3.5" /> Export Report
+        </button>
+      </div>
+    );
+  }, [dateOpen, activeTab, stats, setTopbarRight]);
 
   if (!stats) {
     return (

@@ -2,11 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState, type ReactNode } from "react";
 import {
   BarChart3, Users, Film, DollarSign, Shield, ChevronLeft,
   UserCircle, ImageIcon, Shirt, RotateCcw, MessageCircle, Tag, Layers, BookOpen,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { AdminTopbarCtx } from "./AdminTopbarContext";
 
 type NavItem = { label: string; href: string; icon: typeof BarChart3; accent: string; activeBg: string; activeText: string };
 type Section = { label?: string; dotColor?: string; items: NavItem[] };
@@ -50,6 +52,7 @@ const SECTIONS: Section[] = [
 
 export default function AdminShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const [topbarRight, setTopbarRight] = useState<ReactNode>(null);
 
   return (
     <div className="flex min-h-screen" style={{ background: "#080C18" }}>
@@ -128,7 +131,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
       <div className="ml-[240px] flex-1 flex flex-col min-w-0">
         {/* Topbar */}
         <div
-          className="sticky top-0 z-20 flex h-[60px] shrink-0 items-center px-6"
+          className="sticky top-0 z-20 flex h-[60px] shrink-0 items-center px-6 gap-4"
           style={{ background: "#080C18", borderBottom: "1px solid rgba(255,255,255,0.06)" }}
         >
           <p className="text-[15px] font-bold text-slate-100">
@@ -140,8 +143,11 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
               return cur?.label ?? "Admin";
             })()}
           </p>
+          <div className="ml-auto flex items-center gap-2">{topbarRight}</div>
         </div>
-        <main className="flex-1 overflow-y-auto p-6 lg:p-8">{children}</main>
+        <AdminTopbarCtx.Provider value={setTopbarRight}>
+          <main className="flex-1 overflow-y-auto p-6 lg:p-8">{children}</main>
+        </AdminTopbarCtx.Provider>
       </div>
     </div>
   );

@@ -7,6 +7,7 @@ import {
   useCallback,
   type ChangeEvent,
 } from "react";
+import { useSetTopbarRight } from "@/app/(admin)/_components/AdminTopbarContext";
 import Image from "next/image";
 import {
   Plus,
@@ -770,6 +771,30 @@ export default function AdminAvatarsPage() {
   const [deleting, setDeleting] = useState(false);
 
   const sortRef = useRef<HTMLDivElement>(null);
+  const setTopbarRight = useSetTopbarRight();
+
+  useEffect(() => {
+    setTopbarRight(
+      <div className="flex items-center gap-2">
+        <button
+          onClick={() => setShowCategories(true)}
+          className="inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-[12px] font-semibold text-slate-400 hover:text-slate-200 transition-colors"
+          style={{ border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.03)" }}
+        >
+          <Tag className="h-3 w-3" /> Categories
+        </button>
+        <button
+          onClick={() => setShowUpload(true)}
+          className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-[12px] font-bold text-white transition-all hover:opacity-90"
+          style={{ background: "linear-gradient(135deg, #6366F1, #8B5CF6)", boxShadow: "0 0 16px rgba(99,102,241,0.25)" }}
+        >
+          <Plus className="h-3.5 w-3.5" /> Upload Avatar
+        </button>
+      </div>
+    );
+    return () => setTopbarRight(null);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [setTopbarRight]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -860,40 +885,8 @@ export default function AdminAvatarsPage() {
   };
 
   return (
-    <div
-      className="min-h-screen"
-      style={{ background: "#080C18", padding: "32px 24px" }}
-    >
-      <div className="max-w-[1400px] mx-auto space-y-6">
-        {/* ── Header ── */}
-        <div className="flex items-center justify-end gap-4 flex-wrap">
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setShowCategories(true)}
-              className="inline-flex items-center gap-1.5 rounded-xl px-4 py-2.5 text-[12px] font-semibold text-slate-400 hover:text-slate-200 transition-colors"
-              style={{
-                border: "1px solid rgba(255,255,255,0.08)",
-                background: "rgba(255,255,255,0.03)",
-              }}
-            >
-              <Tag className="h-3 w-3" />
-              Categories
-            </button>
-            <button
-              onClick={() => setShowUpload(true)}
-              className="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-[12px] font-bold text-white transition-all hover:opacity-90"
-              style={{
-                background: "linear-gradient(135deg, #6366F1, #8B5CF6)",
-                boxShadow: "0 0 20px rgba(99,102,241,0.3)",
-              }}
-            >
-              <Plus className="h-3.5 w-3.5" />
-              Upload Avatar
-            </button>
-          </div>
-        </div>
-
-        {/* ── Stat Cards ── */}
+    <div className="max-w-[1400px] mx-auto space-y-6">
+      {/* ── Stat Cards ── */}
         <div className="flex gap-4 flex-wrap">
           <StatCard
             label="Total Avatars"

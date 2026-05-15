@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef, useCallback, type ChangeEvent } from "react";
+import { useSetTopbarRight } from "@/app/(admin)/_components/AdminTopbarContext";
 import { Plus, Search, SlidersHorizontal, ChevronDown, LayoutGrid, List, Pencil, Trash2, Loader2, X, AlertTriangle, Users, User, CloudUpload, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -53,6 +54,21 @@ export default function AdminTryonModelsPage() {
     setLoading(false);
   }, []);
 
+  const setTopbarRight = useSetTopbarRight();
+  useEffect(() => {
+    setTopbarRight(
+      <button
+        onClick={() => setShowCreate(true)}
+        className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-[13px] font-bold text-white"
+        style={{ background: "linear-gradient(135deg, #10B981, #059669)", boxShadow: "0 0 16px rgba(16,185,129,0.25)" }}
+      >
+        <Plus className="h-3.5 w-3.5" /> Add Model
+      </button>
+    );
+    return () => setTopbarRight(null);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [setTopbarRight]);
+
   useEffect(() => { load(); }, [load]);
 
   async function handleDelete(id: string) {
@@ -79,12 +95,6 @@ export default function AdminTryonModelsPage() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-end gap-3">
-        <button onClick={() => setShowCreate(true)} className="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-[13px] font-bold text-white transition-all" style={{ background: "linear-gradient(135deg, #10B981, #059669)", boxShadow: "0 0 20px rgba(16,185,129,0.3)" }}>
-          <Plus className="h-4 w-4" /> Add Model
-        </button>
-      </div>
 
       {/* Stat cards */}
       <div className="grid grid-cols-3 gap-4">

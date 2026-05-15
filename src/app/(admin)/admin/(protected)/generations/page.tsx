@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback, useRef } from "react";
+import { useSetTopbarRight } from "@/app/(admin)/_components/AdminTopbarContext";
 import {
   Clapperboard,
   CheckCircle2,
@@ -304,6 +305,21 @@ export default function AdminGenerationsPage() {
     failed: 0,
   });
 
+  const setTopbarRight = useSetTopbarRight();
+  const exportCsvRef = useRef<() => void>(() => {});
+  useEffect(() => {
+    setTopbarRight(
+      <button
+        onClick={() => exportCsvRef.current()}
+        className="flex items-center gap-2 rounded-xl px-4 py-2 text-[13px] font-semibold transition-colors"
+        style={{ background: "#0F1629", border: "1px solid rgba(255,255,255,0.1)", color: "#94A3B8" }}
+      >
+        <Download size={14} /> Export CSV
+      </button>
+    );
+    return () => setTopbarRight(null);
+  }, [setTopbarRight]);
+
   // Debounce search
   useEffect(() => {
     const t = setTimeout(() => setDebouncedSearch(search), 350);
@@ -392,27 +408,10 @@ export default function AdminGenerationsPage() {
   const pendingPct = stats.total > 0 ? (stats.pending / stats.total) * 100 : 0;
   const failedPct = stats.total > 0 ? (stats.failed / stats.total) * 100 : 0;
 
+  exportCsvRef.current = exportCsv;
+
   return (
-    <div
-      className="min-h-screen p-6"
-      style={{ background: "#080C18" }}
-    >
-      <div className="max-w-[1400px] mx-auto space-y-6">
-
-        {/* Header */}
-        <div className="flex items-start justify-end gap-4 flex-wrap">
-          <button
-            onClick={exportCsv}
-            className="flex items-center gap-2 rounded-xl px-4 py-2 text-[13px] font-semibold transition-colors"
-            style={{ background: "#0F1629", border: "1px solid rgba(255,255,255,0.1)", color: "#94A3B8" }}
-            onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "#CBD5E1"; }}
-            onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "#94A3B8"; }}
-          >
-            <Download size={14} />
-            Export CSV
-          </button>
-        </div>
-
+    <div className="max-w-[1400px] mx-auto space-y-6">
         {/* Stat Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
           <StatCard
@@ -811,7 +810,6 @@ export default function AdminGenerationsPage() {
             </div>
           )}
         </div>
-      </div>
     </div>
   );
 }

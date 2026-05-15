@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
+import { useSetTopbarRight } from "@/app/(admin)/_components/AdminTopbarContext";
 import {
   Loader2, AlertTriangle, Clock, CheckCircle2, Copy, RotateCcw,
   ChevronLeft, ChevronRight, Download, XCircle,
@@ -580,6 +581,20 @@ export default function AdminRefundsPage() {
   const [loading, setLoading] = useState(true);
   const [refunding, setRefunding] = useState<string | null>(null);
   const [confirmRow, setConfirmRow] = useState<ConfirmTarget | null>(null);
+  const setTopbarRight = useSetTopbarRight();
+  const exportCsvRef = useRef<() => void>(() => {});
+  useEffect(() => {
+    setTopbarRight(
+      <button
+        onClick={() => exportCsvRef.current()}
+        className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition"
+        style={{ background: "#0F1629", border: "1px solid rgba(255,255,255,0.08)", color: "#94A3B8" }}
+      >
+        <Download className="h-4 w-4" /> Export CSV
+      </button>
+    );
+    return () => setTopbarRight(null);
+  }, [setTopbarRight]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -631,22 +646,10 @@ export default function AdminRefundsPage() {
     URL.revokeObjectURL(url);
   }
 
+  exportCsvRef.current = exportCsv;
+
   return (
     <div className="max-w-6xl mx-auto space-y-8">
-      {/* ---- Header ---- */}
-      <div className="flex items-center justify-end gap-4">
-        <div className="flex items-center gap-3 shrink-0">
-          <span className="text-[11px] text-slate-600 hidden sm:block">{dateRange()}</span>
-          <button
-            onClick={exportCsv}
-            className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition"
-            style={{ background: "#0F1629", border: "1px solid rgba(255,255,255,0.08)", color: "#94A3B8" }}
-          >
-            <Download className="h-4 w-4" />
-            Export CSV
-          </button>
-        </div>
-      </div>
 
       {/* ---- Stat Cards ---- */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

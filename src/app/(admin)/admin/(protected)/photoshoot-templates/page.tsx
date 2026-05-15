@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef, useCallback, type ChangeEvent, type DragEvent } from "react";
+import { useSetTopbarRight } from "@/app/(admin)/_components/AdminTopbarContext";
 import {
   Plus, Search, Tag, Pencil, Trash2, Loader2, X, CloudUpload, ImageIcon,
   Info, ChevronDown, ChevronLeft, ChevronRight, AlertTriangle,
@@ -222,6 +223,30 @@ export default function AdminPhotoshootTemplatesPage() {
   const [deleting, setDeleting] = useState(false);
   const sortRef = useRef<HTMLDivElement>(null);
 
+  const setTopbarRight = useSetTopbarRight();
+  useEffect(() => {
+    setTopbarRight(
+      <div className="flex items-center gap-2">
+        <button
+          onClick={() => setShowCategories(true)}
+          className="inline-flex items-center gap-2 h-9 px-4 rounded-xl text-[13px] font-semibold transition"
+          style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", color: "#94A3B8" }}
+        >
+          <Tag className="h-3.5 w-3.5" /> Categories
+        </button>
+        <button
+          onClick={() => setShowUpload(true)}
+          className="inline-flex items-center gap-2 h-9 px-4 rounded-xl text-[13px] font-bold text-white transition-all"
+          style={{ background: "linear-gradient(135deg, #F59E0B, #D97706)", boxShadow: "0 0 16px rgba(245,158,11,0.25)" }}
+        >
+          <Plus className="h-3.5 w-3.5" /> New Template
+        </button>
+      </div>
+    );
+    return () => setTopbarRight(null);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [setTopbarRight]);
+
   const load = useCallback(async () => {
     setLoading(true);
     const [t, c] = await Promise.all([
@@ -273,25 +298,6 @@ export default function AdminPhotoshootTemplatesPage() {
 
   return (
     <div className="max-w-[1400px] mx-auto space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-end gap-3 flex-wrap">
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setShowCategories(true)}
-            className="inline-flex items-center gap-2 h-10 px-4 rounded-xl text-[13px] font-semibold transition"
-            style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", color: "#94A3B8" }}
-          >
-            <Tag className="h-3.5 w-3.5" /> Categories <ChevronDown className="h-3 w-3 opacity-50" />
-          </button>
-          <button
-            onClick={() => setShowUpload(true)}
-            className="inline-flex items-center gap-2 h-10 px-4 rounded-xl text-[13px] font-bold text-white transition-all"
-            style={{ background: "linear-gradient(135deg, #F59E0B, #D97706)", boxShadow: "0 0 20px rgba(245,158,11,0.3)" }}
-          >
-            <Plus className="h-4 w-4" /> New Template
-          </button>
-        </div>
-      </div>
 
       {/* Stat Cards */}
       <div className="grid grid-cols-3 gap-4">

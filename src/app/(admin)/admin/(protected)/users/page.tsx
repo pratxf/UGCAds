@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
+import { useSetTopbarRight } from "@/app/(admin)/_components/AdminTopbarContext";
 import { Search, Download, ChevronLeft, ChevronRight, X, Coins } from "lucide-react";
 
 type Row = {
@@ -128,6 +129,20 @@ export default function AdminUsersPage() {
   const [page, setPage] = useState(1);
   const [givingCredits, setGivingCredits] = useState<Row | null>(null);
   const pageSize = 50;
+  const setTopbarRight = useSetTopbarRight();
+  const exportCsvRef = useRef<() => void>(() => {});
+  useEffect(() => {
+    setTopbarRight(
+      <button
+        onClick={() => exportCsvRef.current()}
+        className="flex items-center gap-2 rounded-xl px-4 py-2 text-[13px] font-semibold transition hover:text-white"
+        style={{ background: "#0F1629", border: "1px solid rgba(255,255,255,0.08)", color: "#94A3B8" }}
+      >
+        <Download className="h-4 w-4" /> Export CSV
+      </button>
+    );
+    return () => setTopbarRight(null);
+  }, [setTopbarRight]);
 
   function exportCsv() {
     const headers = ["Name", "Email", "Plan", "Credits", "Ads Generated", "Joined", "Status"];
@@ -169,16 +184,10 @@ export default function AdminUsersPage() {
     { label: "Creators",     value: stats.creatorUsers, color: "#FCD34D", icon: "🎨", change: "+5.3%"  },
   ] : [];
 
+  exportCsvRef.current = exportCsv;
+
   return (
     <div className="space-y-6">
-
-      {/* Header */}
-      <div className="flex items-center justify-end">
-        <button onClick={exportCsv} className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-[13px] font-semibold transition hover:text-white" style={{ background: "#0F1629", border: "1px solid rgba(255,255,255,0.08)", color: "#94A3B8" }}>
-          <Download className="h-4 w-4" /> Export CSV
-        </button>
-      </div>
-
       {/* Stat Cards */}
       {stats && (
         <div className="grid grid-cols-4 gap-4">

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import { useSetTopbarRight } from "@/app/(admin)/_components/AdminTopbarContext";
 import {
   Plus, Search, SlidersHorizontal, ChevronDown, LayoutGrid, List,
   Pencil, Eye, MoreVertical, Loader2, X, CheckCircle2, ChevronLeft, ChevronRight,
@@ -56,6 +57,23 @@ export default function AdminBlogPage() {
   const [statusFilter, setStatusFilter] = useState<"all" | "published" | "draft">("all");
   const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
 
+  const setTopbarRight = useSetTopbarRight();
+  const newPostRef = useRef(newPost);
+  newPostRef.current = newPost;
+  useEffect(() => {
+    if (view !== "list") { setTopbarRight(null); return; }
+    setTopbarRight(
+      <button
+        onClick={() => newPostRef.current()}
+        className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-[13px] font-bold text-white"
+        style={{ background: "linear-gradient(135deg, #2563EB, #1D4ED8)", boxShadow: "0 0 16px rgba(37,99,235,0.25)" }}
+      >
+        <Plus className="h-3.5 w-3.5" /> New Post
+      </button>
+    );
+    return () => setTopbarRight(null);
+  }, [view, setTopbarRight]);
+
   const load = useCallback(async () => {
     setLoading(true);
     const res = await fetch("/api/admin/blog");
@@ -95,12 +113,6 @@ export default function AdminBlogPage() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-end gap-3">
-        <button onClick={newPost} className="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-[13px] font-bold text-white" style={{ background: "linear-gradient(135deg, #2563EB, #1D4ED8)", boxShadow: "0 0 20px rgba(37,99,235,0.3)" }}>
-          <Plus className="h-4 w-4" /> New Post
-        </button>
-      </div>
 
       {/* Stat cards */}
       <div className="grid grid-cols-4 gap-4">
