@@ -78,7 +78,7 @@ function MessageBubble({ msg }: { msg: Message }) {
 
 export default function SupportWidget() {
   const [open, setOpen] = useState(false);
-  const [view, setView] = useState<"home" | "conversation">("home");
+  const [view, setView] = useState<"home" | "tickets" | "conversation">("home");
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
   const [adminOnline, setAdminOnline] = useState(false);
@@ -319,13 +319,12 @@ export default function SupportWidget() {
                     Start a conversation
                     <ChevronLeft className="h-4 w-4 rotate-180" />
                   </button>
-                  <a href="/pricing"
+                  <button
+                    onClick={() => setView("tickets")}
                     className="w-full flex items-center justify-center gap-2 rounded-xl border border-[#E5E7EB] px-5 py-3.5 text-[14px] font-semibold text-[#374151] hover:bg-[#F9FAFB] transition">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="h-4 w-4">
-                      <rect x="2" y="5" width="20" height="14" rx="2" /><path d="M2 10h20" />
-                    </svg>
-                    View pricing
-                  </a>
+                    <ChevronLeft className="h-4 w-4 rotate-180" />
+                    Past conversations
+                  </button>
                 </div>
 
                 {/* Footer */}
@@ -428,6 +427,65 @@ export default function SupportWidget() {
               )}
 
               {/* Powered by */}
+              <div className="flex items-center justify-center gap-1.5 py-2.5 bg-white border-t border-[#F3F4F6] shrink-0">
+                <span className="text-amber-400 text-[11px]">⚡</span>
+                <p className="text-[11px] text-[#9CA3AF] font-medium">Powered by UGCads</p>
+              </div>
+            </>
+          )}
+
+          {/* ── TICKETS VIEW ────────────────────────────── */}
+          {view === "tickets" && (
+            <>
+              {/* Header */}
+              <div className="flex items-center gap-3 px-5 py-4 shrink-0" style={{ background: HEADER_BG }}>
+                <button onClick={() => setView("home")}
+                  className="flex size-8 shrink-0 items-center justify-center rounded-full bg-white/15 text-white hover:bg-white/25 transition">
+                  <ChevronLeft className="h-4 w-4" />
+                </button>
+                <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-[#111]">
+                  <ArrowUpRight className="h-4 w-4 text-white" strokeWidth={2.5} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[14px] font-bold text-white leading-tight">Past conversations</p>
+                </div>
+                <button onClick={() => setOpen(false)} className="flex size-8 shrink-0 items-center justify-center rounded-full bg-white/15 text-white hover:bg-white/25 transition">
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+
+              {/* List */}
+              <div className="flex-1 overflow-y-auto bg-white">
+                {tickets.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-16 text-[#9CA3AF]">
+                    <p className="text-[14px] font-medium">No conversations yet</p>
+                    <p className="text-[12px] mt-1">Start a conversation to get help</p>
+                  </div>
+                ) : (
+                  <div className="divide-y divide-[#F3F4F6]">
+                    {tickets.map((t) => (
+                      <button key={t.id} onClick={() => openTicket(t)}
+                        className="w-full flex items-start gap-3 px-5 py-4 hover:bg-[#F9FAFB] transition text-left">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[13px] font-semibold text-[#111111] truncate">{t.subject}</p>
+                          <p className="text-[12px] text-[#6B7280] truncate mt-0.5">
+                            {t.messages.at(-1)?.body ?? "No messages yet"}
+                          </p>
+                        </div>
+                        <div className="flex flex-col items-end gap-1 shrink-0">
+                          <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full",
+                            t.status === "REPLIED" ? "bg-blue-50 text-blue-500" :
+                            t.status === "CLOSED"  ? "bg-gray-100 text-gray-400" :
+                                                     "bg-emerald-50 text-emerald-500"
+                          )}>{t.status}</span>
+                          <span className="text-[10px] text-[#9CA3AF]">{relTime(t.updatedAt)}</span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               <div className="flex items-center justify-center gap-1.5 py-2.5 bg-white border-t border-[#F3F4F6] shrink-0">
                 <span className="text-amber-400 text-[11px]">⚡</span>
                 <p className="text-[11px] text-[#9CA3AF] font-medium">Powered by UGCads</p>
