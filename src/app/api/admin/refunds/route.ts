@@ -81,7 +81,7 @@ export async function POST(req: Request) {
     await prisma.$transaction([
       prisma.generation.update({
         where: { id: gen.id },
-        data: gen.status === "FAILED" ? {} : { status: "FAILED", errorMessage: "Manually refunded by admin" },
+        data: gen.status === "FAILED" ? {} : { status: "FAILED", errorMessage: "Your credits have been refunded." },
       }),
       prisma.user.update({
         where: { id: gen.userId },
