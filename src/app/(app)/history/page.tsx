@@ -20,6 +20,7 @@ export default async function HistoryPage() {
     characterImage: g.characterImage,
     finalUrl: playbackUrl(g.type, g.finalVideoUrl),
     thumbnailUrl: g.thumbnailUrl,
+    errorMessage: g.errorMessage ?? null,
   }));
 
   return <HistoryClient items={items} />;

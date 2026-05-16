@@ -36,6 +36,7 @@ interface Item {
   characterImage: string | null;
   finalUrl: string | null;
   thumbnailUrl: string | null;
+  errorMessage?: string | null;
 }
 
 const tabs = [
@@ -244,6 +245,18 @@ export default function HistoryClient({ items: rawItems }: { items: Item[] }) {
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
                       <FontAwesomeIcon icon={faFilm} style={{ fontSize: 32, color: "#D1D5DB" }} />
+                    </div>
+                  )}
+
+                  {/* Failed overlay */}
+                  {g.status === "Failed" && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 px-3"
+                      style={{ background: "rgba(0,0,0,0.65)" }}>
+                      <FontAwesomeIcon icon={faXmark} style={{ fontSize: 24, color: "#F87171" }} />
+                      <p className="text-white text-[12px] font-semibold">Generation Failed</p>
+                      {g.errorMessage && (
+                        <p className="text-[10px] text-red-300 text-center leading-relaxed line-clamp-4">{g.errorMessage}</p>
+                      )}
                     </div>
                   )}
 
