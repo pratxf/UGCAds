@@ -25,8 +25,8 @@ type Duration = "4" | "5" | "8" | "10" | "12" | "15" | "16" | "20";
 type VideoModel = FalVideoModel & { allowedDurations?: Duration[] };
 
 const VIDEO_MODELS: VideoModel[] = [
-  { id: "bytedance/seedance-2.0/fast/image-to-video",    name: "Seedance 2", tag: "ByteDance · 720p", logo: "/models/seedance-2.webp", credits: 15, maxDuration: 15, allowedDurations: ["5", "10", "15"] },
   { id: "fal-ai/sora-2/image-to-video",                  name: "Sora 2",     tag: "OpenAI · 16s",     logo: "/models/sora-2.webp",     credits: 20, maxDuration: 16, allowedDurations: ["8", "12", "16"] },
+  { id: "bytedance/seedance-2.0/fast/image-to-video",    name: "Seedance 2", tag: "ByteDance · 720p", logo: "/models/seedance-2.webp", credits: 20, maxDuration: 15, allowedDurations: ["5", "10", "15"], creditsByDuration: { "5": 20, "10": 25, "15": 30 } },
   { id: "fal-ai/kling-video/v3/standard/image-to-video", name: "Kling 3.0",  tag: "Kling · Standard", logo: "/models/kling-3.webp",    credits: 15, maxDuration: 15, allowedDurations: ["5", "10", "15"] },
 ];
 
@@ -241,7 +241,7 @@ export default function UGCStudio() {
   const [prompt, setPrompt] = useState("");
   const [videoModel, setVideoModel] = useState<string>(VIDEO_MODELS[0].id);
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>("9:16");
-  const [duration, setDuration] = useState<Duration>("5");
+  const [duration, setDuration] = useState<Duration>(getDurationOptions(VIDEO_MODELS[0])[0].value);
 
   const activeModel = VIDEO_MODELS.find((m) => m.id === videoModel) ?? VIDEO_MODELS[0];
 
@@ -357,7 +357,7 @@ export default function UGCStudio() {
 
   const canGenerate = prompt.trim().length > 0 && !isGenerating;
   const durationNum = parseInt(duration);
-  const creditCost = durationNum >= 15 ? 25 : durationNum >= 10 ? 20 : 15;
+  const creditCost = activeModel.creditsByDuration?.[duration] ?? (durationNum >= 15 ? 25 : durationNum >= 10 ? 20 : 15);
   const [isDragging, setIsDragging] = useState(false);
 
   return (
