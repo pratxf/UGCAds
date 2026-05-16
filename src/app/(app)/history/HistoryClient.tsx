@@ -87,7 +87,7 @@ function downloadAsset(url: string, type: string, id: string) {
 }
 
 export default function HistoryClient({ items: rawItems }: { items: Item[] }) {
-  const [liveItems, setLiveItems] = useState<Item[]>(rawItems.filter((i) => i.status !== "Failed"));
+  const [liveItems, setLiveItems] = useState<Item[]>(rawItems);
   const items = liveItems;
   const [tab, setTab] = useState("all");
   const [search, setSearch] = useState("");
@@ -129,7 +129,7 @@ export default function HistoryClient({ items: rawItems }: { items: Item[] }) {
           }
           return item;
         });
-        return changed ? next.filter((i) => i.status !== "Failed") : prev;
+        return changed ? next : prev;
       });
     }, 5000);
 
